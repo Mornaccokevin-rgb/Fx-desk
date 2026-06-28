@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FX Macro Terminal</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06070a;--bg2:#0b0d12;--panel:#0e1117;--panel2:#141821;--panel3:#1a1f2b;
+  --bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.13);
+  --t:#e6e9f0;--t2:#8b93a7;--t3:#5a6076;--t4:#3a4054;
+  --buy:#16d39a;--buy-dim:rgba(22,211,154,.12);--buy-glow:rgba(22,211,154,.3);
+  --sell:#ff4d5e;--sell-dim:rgba(255,77,94,.12);--sell-glow:rgba(255,77,94,.3);
+  --amber:#f5a623;--amber-dim:rgba(245,166,35,.12);
+  --accent:#5b8cff;--accent-dim:rgba(91,140,255,.12);
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+  --r:6px;--r2:10px;--r3:14px;
+}
+body.light{
+  --bg:#eef1f6;--bg2:#e4e8f0;--panel:#ffffff;--panel2:#f4f6fa;--panel3:#e9edf4;
+  --bd:rgba(0,0,0,.09);--bd2:rgba(0,0,0,.15);
+  --t:#10131a;--t2:#4a5163;--t3:#6b7185;--t4:#9aa0b2;
+}
+html,body{min-height:100vh}
+body{background:var(--bg);color:var(--t);font-family:var(--sans);overflow-x:hidden;transition:background .25s,color .25s}
+::-webkit-scrollbar{width:7px;height:7px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#262c3a;border-radius:4px}
+a{color:inherit;text-decoration:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tickMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ─── TOP COMMAND BAR ─── */
+.cmdbar{display:flex;align-items:center;gap:16px;height:50px;padding:0 18px;background:var(--bg2);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-mark{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--buy),var(--accent));display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;font-weight:700}
+.logo-txt{font-weight:700;font-size:14px;letter-spacing:.3px}
+.logo-txt span{color:var(--accent)}
+.logo-sub{font-size:9.5px;color:var(--t3);font-family:var(--mono);letter-spacing:.5px;margin-top:1px}
+.cmd-nav{display:flex;gap:4px;margin-left:8px}
+.cmd-tab{background:none;border:1px solid transparent;color:var(--t2);font-family:var(--sans);font-size:12.5px;font-weight:500;padding:7px 14px;border-radius:var(--r);cursor:pointer;transition:all .15s}
+.cmd-tab:hover{color:var(--t);background:var(--panel2)}
+.cmd-tab.active{background:var(--panel2);color:var(--accent);border-color:var(--bd);font-weight:600}
+.cmd-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.live-badge{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--buy);letter-spacing:.5px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--buy);animation:pulse 1.8s infinite;box-shadow:0 0 8px var(--buy-glow)}
+.clock{font-family:var(--mono);font-size:12px;color:var(--t2);letter-spacing:.5px}
+.icon-btn{width:32px;height:32px;border-radius:var(--r);background:var(--panel2);border:1px solid var(--bd);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .15s}
+.icon-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ─── TICKER ─── */
+.ticker{display:flex;align-items:stretch;background:var(--bg2);border-bottom:1px solid var(--bd);overflow:hidden;height:32px}
+.ticker-lbl{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:0 14px;background:var(--accent-dim);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.7px;border-right:1px solid var(--bd)}
+.ticker-scroll{flex:1;overflow:hidden;position:relative}
+.ticker-inner{display:flex;align-items:center;height:100%;white-space:nowrap;animation:tickMove 80s linear infinite;will-change:transform}
+.ticker-inner:hover{animation-play-state:paused}
+.ticker-item{display:flex;align-items:center;gap:7px;padding:0 22px;font-size:11.5px;color:var(--t2);font-family:var(--mono)}
+.ticker-item b{font-weight:700}
+.up{color:var(--buy)}.down{color:var(--sell)}.flat{color:var(--amber)}
+
+/* ─── LAYOUT ─── */
+.wrap{max-width:1280px;margin:0 auto;padding:20px 18px 80px}
+.tab-pane{display:none;animation:fadeIn .3s ease}
+.tab-pane.active{display:block}
+
+.sec-hdr{display:flex;align-items:center;gap:12px;margin:26px 0 14px}
+.sec-hdr:first-child{margin-top:6px}
+.sec-hdr h2{font-size:12px;font-weight:600;color:var(--t2);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.sec-hdr .ti{color:var(--accent);font-size:15px}
+.sec-hdr-line{flex:1;height:1px;background:var(--bd)}
+.sec-hdr .badge-est{font-size:9px;font-weight:600;letter-spacing:.06em;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,166,35,.3);padding:2px 8px;border-radius:20px;text-transform:uppercase}
+
+/* ─── CURRENCY GRID ─── */
+.ccy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:880px){.ccy-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.ccy-grid{grid-template-columns:1fr}}
+.ccy-card{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r2);padding:14px 16px;cursor:pointer;transition:border-color .18s,transform .1s,background .18s;position:relative;overflow:hidden}
+.ccy-card:hover{border-color:var(--bd2);background:var(--panel2)}
+.ccy-card:active{transform:scale(.99)}
+.ccy-card.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.ccy-card.buy-side::before,.ccy-card.sell-side::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.ccy-card.buy-side::before{background:var(--buy)}
+.ccy-card.sell-side::before{background:var(--sell)}
+.ccy-top{display:flex;align-items:center;gap:11px}
+.ccy-flag{font-size:24px;line-height:1}
+.ccy-id{flex:1;min-width:0}
+.ccy-code{font-size:15px;font-weight:700;letter-spacing:.2px}
+.ccy-name{font-size:10.5px;color:var(--t3)}
+.ccy-score-wrap{text-align:right}
+.ccy-score{font-family:var(--mono);font-size:24px;font-weight:700;line-height:1}
+.ccy-signal{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.s-buy{color:var(--buy)}.s-sell{color:var(--sell)}.s-neu{color:var(--amber)}
+.ccy-bar-bg{height:4px;border-radius:3px;background:var(--panel3);margin-top:12px;overflow:hidden;position:relative}
+.ccy-bar-mid{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--t4);z-index:1}
+.ccy-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.ccy-dims{display:flex;gap:5px;margin-top:11px}
+.dim-chip{flex:1;text-align:center;font-size:8.5px;color:var(--t3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.03em}
+.dim-chip .dv{display:block;font-size:11px;font-weight:700;margin-top:2px}
+
+/* ─── DETAIL PANEL ─── */
+.detail{background:var(--panel);border:1px solid var(--bd2);border-radius:var(--r3);margin-top:14px;animation:fadeIn .2s ease;overflow:hidden}
+.detail-hd{display:flex;align-items:flex-start;gap:16px;padding:20px 22px;border-bottom:1px solid var(--bd);background:var(--bg2)}
+.detail-flag{font-size:38px;line-height:1}
+.detail-id{flex:1}
+.detail-code{font-size:24px;font-weight:700;letter-spacing:.3px}
+.detail-name{font-size:13px;color:var(--t2);margin-top:1px}
+.detail-meta{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
+.detail-sig{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px}
+.detail-sig.buy-side{color:var(--buy);background:var(--buy-dim);border:1px solid var(--buy-glow)}
+.detail-sig.sell-side{color:var(--sell);background:var(--sell-dim);border:1px solid var(--sell-glow)}
+.detail-sig.neu-side{color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,166,35,.3)}
+.detail-scorebox{text-align:center;flex-shrink:0}
+.detail-scorebox .num{font-family:var(--mono);font-size:42px;font-weight:700;line-height:1}
+.detail-scorebox .lbl{font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase}
+.detail-close{width:32px;height:32px;border-radius:var(--r);background:var(--panel2);border:1px solid var(--bd);color:var(--t2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.detail-close:hover{background:var(--panel3);color:var(--t)}
+.detail-body{padding:18px 22px 24px}
+
+/* score breakdown */
+.score-break{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+@media(max-width:620px){.score-break{grid-template-columns:repeat(2,1fr)}}
+.sb-cell{background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2);padding:11px 12px}
+.sb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sb-name{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:5px}
+.sb-val{font-family:var(--mono);font-size:14px;font-weight:700}
+.sb-bar-bg{height:3px;border-radius:2px;background:var(--panel3);overflow:hidden}
+.sb-bar{height:100%;border-radius:2px}
+
+/* section nav */
+.dsec-nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:18px}
+.dsec-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--r2);border:1px solid var(--bd);background:transparent;color:var(--t2);font-family:var(--sans);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s}
+.dsec-btn:hover{border-color:var(--bd2);color:var(--t)}
+.dsec-btn.active{background:var(--panel2);border-color:var(--bd2);color:var(--t);font-weight:600}
+.dsec-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* section content */
+.dsec-overview{background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2);padding:15px 17px;margin-bottom:16px}
+.dsec-ovh{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t2);margin-bottom:9px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.dsec-sig-tag{font-weight:700}
+.dsec-ovtxt{font-size:13px;line-height:1.65;color:var(--t)}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:16px}
+.kpi{background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2);padding:11px 13px;position:relative}
+.kpi-lbl{font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.kpi-val{font-family:var(--mono);font-size:18px;font-weight:700;line-height:1}
+.kpi-sub{font-size:9.5px;color:var(--t3);margin-top:4px}
+.src-tag{font-size:7.5px;font-weight:700;letter-spacing:.04em;padding:1px 5px;border-radius:4px;text-transform:uppercase}
+.src-live{color:var(--buy);background:var(--buy-dim)}
+.src-est{color:var(--amber);background:var(--amber-dim)}
+.src-na{color:var(--t3);background:var(--panel3)}
+.kv-pos{color:var(--buy)}.kv-neg{color:var(--sell)}.kv-neu{color:var(--t)}
+.analysis{border-left:2px solid var(--accent);background:var(--accent-dim);border-radius:0 var(--r2) var(--r2) 0;padding:13px 16px;margin-bottom:14px}
+.analysis-lbl{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.analysis-txt{font-size:13px;line-height:1.7;color:var(--t)}
+.analysis-txt b{color:var(--t)}
+.watch{margin-top:6px}
+.watch-lbl{font-size:10px;font-weight:600;color:var(--t2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.watch-list{display:flex;flex-wrap:wrap;gap:6px}
+.watch-item{font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid var(--bd);color:var(--t2);display:flex;align-items:center;gap:5px}
+
+/* ─── NEWS FEED / SQUAWK ─── */
+.news-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.news-filter{background:var(--panel2);border:1px solid var(--bd);color:var(--t2);font-family:var(--sans);font-size:11.5px;padding:6px 12px;border-radius:var(--r);cursor:pointer;transition:all .15s}
+.news-filter:hover{color:var(--t);border-color:var(--bd2)}
+.news-filter.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+.news-feed{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r2);max-height:560px;overflow-y:auto}
+.news-item{display:flex;gap:14px;padding:13px 16px;border-bottom:1px solid var(--bd);transition:background .12s;cursor:pointer}
+.news-item:last-child{border-bottom:none}
+.news-item:hover{background:var(--panel2)}
+.news-time{flex-shrink:0;width:64px;font-family:var(--mono);font-size:10.5px;color:var(--t3);padding-top:2px}
+.news-time b{display:block;color:var(--t2);font-size:11px}
+.news-main{flex:1;min-width:0}
+.news-head{font-size:13px;font-weight:500;line-height:1.45;color:var(--t)}
+.news-sum{font-size:11.5px;color:var(--t2);line-height:1.5;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-foot{display:flex;align-items:center;gap:8px;margin-top:7px}
+.news-src{font-size:10px;color:var(--t3);font-family:var(--mono)}
+.news-ccy{font-size:9.5px;font-weight:700;padding:1px 7px;border-radius:4px;background:var(--accent-dim);color:var(--accent);font-family:var(--mono)}
+.news-thumb{flex-shrink:0;width:74px;height:54px;border-radius:var(--r);object-fit:cover;background:var(--panel3)}
+.news-loading{padding:40px;text-align:center;color:var(--t3);font-size:13px}
+
+/* ─── RATE EXPECTATIONS ─── */
+.rate-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.rate-grid{grid-template-columns:1fr}}
+.rate-card{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r2);padding:15px 17px}
+.rate-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.rate-cb{display:flex;align-items:center;gap:9px}
+.rate-flag{font-size:20px}
+.rate-bank{font-size:13px;font-weight:700}
+.rate-now{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent)}
+.rate-meet{font-size:10.5px;color:var(--t3);margin-bottom:12px}
+.rate-meet b{color:var(--t2)}
+.rate-bars{display:flex;height:30px;border-radius:var(--r);overflow:hidden;background:var(--panel3)}
+.rate-seg{display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;font-family:var(--mono);color:#06070a;transition:width .5s ease;min-width:0;overflow:hidden;white-space:nowrap}
+.seg-hike{background:var(--buy)}
+.seg-hold{background:var(--amber)}
+.seg-cut{background:var(--sell)}
+.rate-legend{display:flex;gap:14px;margin-top:9px;font-size:10px;color:var(--t3)}
+.rate-legend span{display:flex;align-items:center;gap:5px}
+.rate-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+/* ─── MAINTENANCE ─── */
+.maint{text-align:center;padding:90px 24px;background:var(--panel);border:1px dashed var(--bd2);border-radius:var(--r3)}
+.maint .ti{font-size:52px;color:var(--t3);margin-bottom:18px}
+.maint-title{font-size:21px;font-weight:700;margin-bottom:10px}
+.maint-desc{font-size:14px;color:var(--t2);max-width:440px;margin:0 auto;line-height:1.6}
+
+/* ─── MISC ─── */
+.spinner{width:30px;height:30px;border:3px solid var(--accent-dim);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--panel);border:1px solid var(--bd2);border-radius:var(--r2);padding:11px 18px;font-size:12.5px;z-index:999;opacity:0;transform:translateY(8px);transition:all .3s}
+.toast.show{opacity:1;transform:translateY(0)}
+.note-banner{background:var(--amber-dim);border:1px solid rgba(245,166,35,.25);border-radius:var(--r2);padding:11px 15px;font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start}
+.note-banner .ti{color:var(--amber);font-size:16px;flex-shrink:0;margin-top:1px}
+.note-banner b{color:var(--t)}
+.empty-mini{padding:30px;text-align:center;color:var(--t3);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<!-- COMMAND BAR -->
+<div class="cmdbar">
+  <div class="logo">
+    <div class="logo-mark">◈</div>
+    <div>
+      <div class="logo-txt">FX <span>MACRO</span> TERMINAL</div>
+      <div class="logo-sub">FOREX INTELLIGENCE DESK</div>
+    </div>
+  </div>
+  <div class="cmd-nav">
+    <button class="cmd-tab active" id="tab-btn-dash" onclick="switchTab('dash')">Dashboard</button>
+    <button class="cmd-tab" id="tab-btn-market" onclick="switchTab('market')">Analyse Marché</button>
+  </div>
+  <div class="cmd-right">
+    <div class="live-badge"><span class="live-dot"></span>LIVE</div>
+    <div class="clock" id="clock">--:--:--</div>
+    <button class="icon-btn" onclick="toggleTheme()" title="Thème"><i class="ti ti-sun" id="theme-icon"></i></button>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-lbl"><i class="ti ti-bolt"></i> FX SQUAWK</div>
+  <div class="ticker-scroll"><div class="ticker-inner" id="ticker-inner"></div></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ═══════ DASHBOARD TAB ═══════ -->
+  <div id="tab-dash" class="tab-pane active">
+
+    <div class="sec-hdr">
+      <i class="ti ti-world"></i><h2>Force des devises &mdash; Note macro /100</h2>
+      <div class="sec-hdr-line"></div>
+      <span id="dash-updated" style="font-size:10px;color:var(--t3);font-family:var(--mono)"></span>
+    </div>
+
+    <div class="ccy-grid" id="ccy-grid"></div>
+    <div id="detail-mount"></div>
+
+    <!-- NEWS FEED -->
+    <div class="sec-hdr">
+      <i class="ti ti-news"></i><h2>News Feed &mdash; Squawk temps réel</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est" style="color:var(--buy);background:var(--buy-dim);border-color:var(--buy-glow)">LIVE · Finnhub</span>
+    </div>
+    <div class="news-toolbar" id="news-toolbar"></div>
+    <div class="news-feed" id="news-feed"><div class="news-loading"><div class="spinner"></div><div style="margin-top:12px">Chargement du flux…</div></div></div>
+
+    <!-- RATE EXPECTATIONS -->
+    <div class="sec-hdr">
+      <i class="ti ti-building-bank"></i><h2>Attentes de politique monétaire</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est">EST · à actualiser</span>
+    </div>
+    <div class="rate-grid" id="rate-grid"></div>
+
+  </div>
+
+  <!-- ═══════ MARKET ANALYSIS TAB (maintenance) ═══════ -->
+  <div id="tab-market" class="tab-pane">
+    <div class="maint">
+      <i class="ti ti-tool"></i>
+      <div class="maint-title">Section en maintenance</div>
+      <div class="maint-desc">L'analyse de marché globale (corrélations cross-asset, risk sentiment, positionnement COT, flux) est en cours de développement. Disponible prochainement.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   CONFIG — clés & réglages.  ⚠️ Côté navigateur, ces clés sont
+   visibles dans le code source. OK pour des clés gratuites/perso ;
+   pour de la prod, passer par un backend proxy.
+═══════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  // ─── DÉPLOIEMENT PUBLIC ───────────────────────────────────────
+  // Mets ici l'URL de ton proxy Cloudflare Worker (voir fx-proxy-worker.js).
+  // Si renseigné : les clés restent CÔTÉ SERVEUR (rien d'exposé) ET FRED se débloque.
+  // Si vide : appels directs depuis le navigateur avec les clés ci-dessous (dev local).
+  API_BASE: "",   // ex: "https://fx-proxy.ton-compte.workers.dev"
+
+  // Clés utilisées UNIQUEMENT en mode dev local (API_BASE vide).
+  // En public avec API_BASE renseigné, tu peux les laisser vides.
+  FINNHUB_KEY: "d8njp6hr01qvvn98gudgd8njp6hr01qvvn98gue0",
+  BLS_KEY:     "a17b23e584e5450694597f88fb80ccba",
+  FRED_KEY:    "507d43a7aaaf3e228041abfb01c717b0",
+
+  CACHE_TTL_MS: 6 * 60 * 60 * 1000,   // 6h
+  // Poids du score composite (somme = 1)
+  WEIGHTS: { growth:0.25, inflation:0.15, monetary:0.35, geo:0.25 }
+};
+
+/* ══════════════════════════════════════════════════════════════
+   DEVISES — métadonnées + codes zone OCDE
+═══════════════════════════════════════════════════════════════ */
+const CURRENCIES = [
+  { code:'USD', flag:'🇺🇸', name:'Dollar US',          country:'États-Unis',     oecd:'USA', cpiArea:'USA', us:true },
+  { code:'EUR', flag:'🇪🇺', name:'Euro',               country:'Zone Euro',      oecd:'EA20',cpiArea:'EA', gdpArea:'EA' },
+  { code:'GBP', flag:'🇬🇧', name:'Livre Sterling',     country:'Royaume-Uni',    oecd:'GBR', cpiArea:'GBR' },
+  { code:'JPY', flag:'🇯🇵', name:'Yen Japonais',       country:'Japon',          oecd:'JPN', cpiArea:'JPN' },
+  { code:'CHF', flag:'🇨🇭', name:'Franc Suisse',       country:'Suisse',         oecd:'CHE', cpiArea:'CHE' },
+  { code:'AUD', flag:'🇦🇺', name:'Dollar Australien',  country:'Australie',      oecd:'AUS', cpiArea:'AUS' },
+  { code:'NZD', flag:'🇳🇿', name:'Dollar Néo-Zélandais',country:'Nouvelle-Zélande',oecd:'NZL',cpiArea:'NZL' },
+  { code:'CAD', flag:'🇨🇦', name:'Dollar Canadien',    country:'Canada',         oecd:'CAN', cpiArea:'CAN' },
+  { code:'CNH', flag:'🇨🇳', name:'Yuan (offshore)',    country:'Chine',          oecd:'CHN', cpiArea:'CHN' },
+];
+
+/* ══════════════════════════════════════════════════════════════
+   DONNÉES MAINTENUES À LA MAIN (pas d'API gratuite fiable)
+   → politique monétaire, géopolitique, attentes de taux.
+   ⚠️ À ACTUALISER. Dernière révision : voir LAST_MANUAL_UPDATE.
+═══════════════════════════════════════════════════════════════ */
+const LAST_MANUAL_UPDATE = "2026-06-16";
+
+// Politique monétaire : taux directeur actuel + biais (-100 dovish … +100 hawkish)
+const MONETARY = {
+  USD:{ rate:'4.25–4.50%', bias:+20, stance:'Hold prudent',     note:'Fed en pause, dépendante des données ; biais légèrement restrictif tant que l\'inflation des services reste collante.' },
+  EUR:{ rate:'2.40%',      bias:-25, stance:'Assouplissement',  note:'BCE en cycle de baisse, croissance atone ; le différentiel de taux pèse sur l\'euro.' },
+  GBP:{ rate:'4.00%',      bias:+5,  stance:'Hold',             note:'BoE prudente, inflation des services au-dessus de la cible ; assouplissement graduel attendu.' },
+  JPY:{ rate:'0.75%',      bias:+45, stance:'Normalisation',    note:'BoJ en resserrement progressif — seule grande banque centrale hawkish, catalyseur structurel pour le yen.' },
+  CHF:{ rate:'0.00%',      bias:-30, stance:'Plancher',         note:'BNS proche de zéro, inflation très basse ; tolère un franc moins fort.' },
+  AUD:{ rate:'3.60%',      bias:-10, stance:'Assouplissement',  note:'RBA en baisse graduelle, sensible au cycle chinois et aux matières premières.' },
+  NZD:{ rate:'3.00%',      bias:-20, stance:'Assouplissement',  note:'RBNZ en détente après resserrement agressif ; économie fragile.' },
+  CAD:{ rate:'2.75%',      bias:-15, stance:'Assouplissement',  note:'BoC accommodante, marché du travail mou ; exposée au pétrole et aux tarifs US.' },
+  CNH:{ rate:'3.00% (LPR1A)',bias:-35,stance:'Stimulus',        note:'PBoC en soutien (baisses ciblées, RRR) face à la déflation et à la crise immobilière.' },
+};
+
+// Géopolitique / risque structurel : score 0–100 (50 neutre)
+// note = vue d'ensemble · impl = implication trading (cohérente avec le régime de marché actuel)
+const GEO = {
+  USD:{ score:70,
+    note:'Statut de première monnaie de réserve et refuge de référence : le dollar reste la destination des flux en stress de marché. Bémols structurels : trajectoire budgétaire dégradée, recours à l\'arme tarifaire et politisation de la Fed qui entament progressivement la prime de confiance.',
+    impl:'Le USD demeure le refuge le plus fiable : il s\'apprécie quand la liquidité mondiale se tend (sell-off actions, choc géopolitique). Reste la jambe « longue » par défaut des paniers risk-off. Vigilance : sur les chocs d\'origine US (crise budgétaire, tarifs), le dollar peut paradoxalement baisser — distinguez stress « exogène » (USD up) du stress « made in USA » (USD down).' },
+  EUR:{ score:43,
+    note:'Prime de risque pénalisée par la fragmentation politique (montée des extrêmes, instabilité budgétaire française), la dépendance énergétique et la proximité directe du conflit en Ukraine.',
+    impl:'L\'euro n\'a aucune qualité refuge : il sous-performe en risk-off et lors des pics de tension géopolitique européenne. Jouez-le plutôt sur le différentiel de taux et le flux risk-on ; méfiez-vous des fenêtres électorales/budgétaires qui élargissent les spreads souverains (OAT-Bund, BTP-Bund) et pèsent mécaniquement sur l\'EUR.' },
+  GBP:{ score:50,
+    note:'Stabilité institutionnelle correcte mais dette publique élevée, croissance faible et dépendance aux flux financiers internationaux rendent la livre sensible à l\'appétit pour le risque.',
+    impl:'Profil neutre à légèrement cyclique : la livre se comporte davantage comme un actif risqué que comme un refuge. Elle profite des phases de risk-on et souffre des chocs de financement (épisode « mini-budget » type). Pas de biais géopolitique structurel fort — réagit surtout aux taux et au flux.' },
+  JPY:{ score:52,
+    note:'⚠️ Le statut historique de valeur refuge du yen s\'est largement érodé. Depuis le creusement des différentiels de taux, le JPY est devenu la principale monnaie de financement du carry trade : il évolue désormais au rythme des taux (surtout US 10 ans) bien plus qu\'au rythme de l\'aversion au risque. La normalisation de la BoJ lui redonne un soutien structurel partiel, mais il ne joue plus son rôle de refuge de manière fiable.',
+    impl:'Ne traitez plus le yen comme un refuge automatique : sur un sell-off classique, il peut ne pas monter, voire baisser si les rendements US grimpent. Son driver dominant est le différentiel de taux JP/US et la trajectoire de la BoJ. Le JPY ne rallie violemment qu\'en cas de débouclage brutal du carry (chute conjointe des rendements US et des actions) — c\'est ce scénario précis, pas un risk-off ordinaire, qu\'il faut guetter pour le jouer à la hausse.' },
+  CHF:{ score:73,
+    note:'Refuge par excellence : neutralité politique, note AAA, excédent courant et place financière solide. Première destination des flux de fuite, BNS susceptible d\'intervenir pour limiter une appréciation excessive.',
+    impl:'Le franc est aujourd\'hui le refuge le plus « pur » du G10, plus fiable que le yen pour couvrir le risque géopolitique européen. Privilégiez-le comme jambe longue en risk-off (ex. long CHF vs devises cycliques). Seul garde-fou : le risque d\'intervention/verbal de la BNS quand le franc devient trop fort.' },
+  AUD:{ score:41,
+    note:'Proxy du cycle chinois et des matières premières industrielles ; très exposée au ralentissement asiatique, aux tensions commerciales et à la demande de minerai de fer.',
+    impl:'Devise à haut bêta du risque : à éviter à l\'achat en risk-off et lors des tensions US-Chine. L\'AUD est un baromètre du sentiment global — il surperforme en risk-on confirmé (relance chinoise, hausse des matières premières) et décroche dès que la Chine ou les actions faiblissent.' },
+  NZD:{ score:39,
+    note:'Petite économie ouverte ultra-dépendante de la Chine et des produits laitiers ; la plus haute bêta du risque parmi les G10.',
+    impl:'Même logique que l\'AUD, en plus extrême : amplificateur du sentiment de risque, à fuir en stress de marché. Les rebonds se jouent uniquement en risk-on franc avec catalyseur (stimulus chinois, envolée des prix laitiers GDT). Souvent utilisé en paire avec l\'AUD (AUDNZD) pour isoler le différentiel de politique monétaire.' },
+  CAD:{ score:52,
+    note:'Ancrage nord-américain stable, mais devise pétrolière exposée au prix du brut et très sensible à la politique commerciale américaine (tarifs, renégociations).',
+    impl:'Profil cyclique modéré, corrélé au pétrole et au USD. Moins haute bêta que l\'AUD/NZD grâce à la proximité US. Driver géopolitique clé : toute escalade tarifaire américaine vis-à-vis du Canada pèse directement sur le CAD — surveillez le calendrier commercial US autant que le baril.' },
+  CNH:{ score:30,
+    note:'Risques élevés et structurels : rivalité stratégique US-Chine, dossier taïwanais, sorties de capitaux, opacité statistique et gestion administrée du change par la PBoC (fixing quotidien).',
+    impl:'Devise sous contrôle, à manier avec prudence : la PBoC pilote le fixing et peut figer ou inverser une tendance du jour au lendemain. Biais structurellement défensif. Toute escalade US-Chine (tarifs, Taïwan, sanctions tech) provoque une dépréciation du CNH et contamine l\'AUD/NZD par corrélation — le CNH sert souvent de signal avancé du risque asiatique.' },
+};
+
+// Attentes de taux pour la PROCHAINE réunion (probabilités %, somme=100)
+const RATE_EXPECTATIONS = {
+  USD:{ bank:'Fed',  flag:'🇺🇸', rate:'4.25–4.50%', meeting:'29–30 juil. 2026', hike:5,  hold:70, cut:25 },
+  EUR:{ bank:'BCE',  flag:'🇪🇺', rate:'2.40%',      meeting:'23 juil. 2026',    hike:0,  hold:55, cut:45 },
+  GBP:{ bank:'BoE',  flag:'🇬🇧', rate:'4.00%',      meeting:'6 août 2026',      hike:0,  hold:60, cut:40 },
+  JPY:{ bank:'BoJ',  flag:'🇯🇵', rate:'0.75%',      meeting:'31 juil. 2026',    hike:40, hold:58, cut:2  },
+  CHF:{ bank:'BNS',  flag:'🇨🇭', rate:'0.00%',      meeting:'24 sept. 2026',    hike:10, hold:80, cut:10 },
+  AUD:{ bank:'RBA',  flag:'🇦🇺', rate:'3.60%',      meeting:'4 août 2026',      hike:0,  hold:65, cut:35 },
+  NZD:{ bank:'RBNZ', flag:'🇳🇿', rate:'3.00%',      meeting:'9 juil. 2026',     hike:0,  hold:62, cut:38 },
+  CAD:{ bank:'BoC',  flag:'🇨🇦', rate:'2.75%',      meeting:'29 juil. 2026',    hike:0,  hold:68, cut:32 },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   ÉTAT
+═══════════════════════════════════════════════════════════════ */
+let CCY_DATA = {};        // code -> { growth, inflation, unemp, score, dims, ... }
+let activeCcy = null, activeSection = 'croissance';
+let allNews = [], newsFilter = 'ALL';
+
+/* ══════════════════════════════════════════════════════════════
+   UTILITAIRES
+═══════════════════════════════════════════════════════════════ */
+function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
+function num(v){const n=parseFloat(v);return isNaN(n)?null:n;}
+function round2(n){return n==null?null:Math.round(n*100)/100;}  // 2 décimales max
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+function cacheGet(key){
+  try{const r=JSON.parse(localStorage.getItem('fxmt_'+key));if(r&&Date.now()-r.t<CONFIG.CACHE_TTL_MS)return r.v;}catch(e){}
+  return null;
+}
+function cacheSet(key,v){try{localStorage.setItem('fxmt_'+key,JSON.stringify({t:Date.now(),v}));}catch(e){}}
+
+async function fetchJSON(url,opts){
+  const r=await fetch(url,opts);
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+/* ── Parseur SDMX-JSON (OCDE) : renvoie {value, period} le plus récent ── */
+function parseSDMXLatest(json){
+  const data=json.data||json;
+  const struct=(data.structures&&data.structures[0])||json.structure;
+  const ds=(data.dataSets&&data.dataSets[0])||(json.dataSets&&json.dataSets[0]);
+  if(!struct||!ds)return null;
+  const obsDims=(struct.dimensions&&struct.dimensions.observation)||[];
+  const timeIdx=obsDims.findIndex(d=>d.id==='TIME_PERIOD');
+  const obs=ds.observations||{};
+  let best=null,bestTime=-1,bestLabel=null;
+  for(const key in obs){
+    const idxs=key.split(':').map(Number);
+    const ti=timeIdx>=0?idxs[timeIdx]:0;
+    if(ti>bestTime){
+      bestTime=ti;
+      const val=obs[key][0];
+      best=(val===null||val===undefined)?null:parseFloat(val);
+      if(timeIdx>=0&&obsDims[timeIdx].values[ti])
+        bestLabel=obsDims[timeIdx].values[ti].name||obsDims[timeIdx].values[ti].id;
+    }
+  }
+  return best===null?null:{value:best,period:bestLabel};
+}
+
+async function oecd(url){
+  if(CONFIG.API_BASE) return fetchJSON(CONFIG.API_BASE+'/oecd?url='+encodeURIComponent(url));
+  // Direct navigateur : NE PAS envoyer d'en-tête Accept (valeur non-safelistée → preflight
+  // OPTIONS que l'OCDE refuse car il n'autorise pas le header "accept"). On négocie le
+  // SDMX-JSON via le query param → requête "simple", aucun preflight.
+  const sep=url.includes('?')?'&':'?';
+  return fetchJSON(url+sep+'format=jsondata');
+}
+// BLS : le client envoie seriesid+années ; la clé est injectée par le proxy (ou inline en dev)
+async function blsFetch(seriesid){
+  const y=new Date().getFullYear();
+  const body={seriesid,startyear:String(y-1),endyear:String(y)};
+  if(CONFIG.API_BASE) return fetchJSON(CONFIG.API_BASE+'/bls',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  body.registrationkey=CONFIG.BLS_KEY;
+  return fetchJSON('https://api.bls.gov/publicAPI/v2/timeseries/data/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+}
+async function finnhubNews(category){
+  if(CONFIG.API_BASE) return fetchJSON(CONFIG.API_BASE+'/finnhub?category='+category);
+  return fetchJSON(`https://finnhub.io/api/v1/news?category=${category}&token=${CONFIG.FINNHUB_KEY}`);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RÉCUPÉRATION DES DONNÉES MACRO (live)
+═══════════════════════════════════════════════════════════════ */
+async function fetchGrowth(c){
+  const area=c.gdpArea||c.oecd;
+  const ck='growth_'+area;const cached=cacheGet(ck);if(cached!==null)return cached;
+  try{
+    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.NAD,DSD_NAAG@DF_NAAG_I,1.0/A.${area}.B1GQ_R_GR..?startPeriod=2022&dimensionAtObservation=AllDimensions`;
+    const j=await oecd(url);const r=parseSDMXLatest(j);
+    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE'};cacheSet(ck,out);return out;}
+  }catch(e){console.warn('growth',c.code,e.message);}
+  return null;
+}
+
+// Indicateur avancé composite OCDE (CLI) — équivalent libre du PMI (100 = tendance LT)
+async function fetchCLI(c){
+  const ck='cli_'+c.oecd;const cached=cacheGet(ck);if(cached!==null)return cached;
+  try{
+    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI,4.1/${c.oecd}.M.LI...AA...H?startPeriod=${isoMonth(-8)}&dimensionAtObservation=AllDimensions`;
+    const j=await oecd(url);const r=parseSDMXLatest(j);
+    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE CLI'};cacheSet(ck,out);return out;}
+  }catch(e){console.warn('cli',c.code,e.message);}
+  return null;
+}
+
+// Core CPI (hors alim. & énergie) — US via BLS ; pas de série libre cross-pays fiable
+async function fetchCoreCPI(c){
+  if(!c.us)return null;
+  const ck='core_'+c.cpiArea;const cached=cacheGet(ck);if(cached!==null)return cached;
+  const b=await fetchBLS_YoY('CUUR0000SA0L1E');
+  if(b){cacheSet(ck,b);return b;}
+  return null;
+}
+
+async function fetchInflation(c){
+  const ck='infl_'+c.cpiArea;const cached=cacheGet(ck);if(cached!==null)return cached;
+  // 1) US → BLS (CPI-U, YoY calculé)
+  if(c.us){
+    const b=await fetchBLS_CPI();if(b){cacheSet(ck,b);return b;}
+  }
+  // 2) OCDE G20 prices (variation annuelle, PA)
+  try{
+    const start=isoMonth(-14);
+    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_G20_PRICES@DF_G20_PRICES,1.0/${c.cpiArea}.M...PA...?startPeriod=${start}&dimensionAtObservation=AllDimensions`;
+    const j=await oecd(url);const r=parseSDMXLatest(j);
+    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE'};cacheSet(ck,out);return out;}
+  }catch(e){console.warn('infl',c.code,e.message);}
+  return null;
+}
+
+async function fetchUnemp(c){
+  const ck='unemp_'+c.oecd;const cached=cacheGet(ck);if(cached!==null)return cached;
+  if(c.us){const b=await fetchBLS_UNEMP();if(b){cacheSet(ck,b);return b;}}
+  try{
+    const start=isoMonth(-6);
+    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_LFS@DF_IALFS_INDIC,1.0/${c.oecd}.UNE_LF_M...Y._T.Y_GE15..M?startPeriod=${start}&dimensionAtObservation=AllDimensions`;
+    const j=await oecd(url);const r=parseSDMXLatest(j);
+    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE'};cacheSet(ck,out);return out;}
+  }catch(e){console.warn('unemp',c.code,e.message);}
+  return null;
+}
+
+function isoMonth(offset){
+  const d=new Date();d.setMonth(d.getMonth()+offset);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+
+/* ── BLS (US) ── */
+async function fetchBLS_YoY(seriesId){           // variation annuelle d'un indice (CPI, core…)
+  try{
+    const j=await blsFetch([seriesId]);
+    const series=j.Results.series[0].data;
+    if(series.length<13)return null;
+    const latest=series[0];
+    const yearAgo=series.find(d=>d.period===latest.period&&+d.year===+latest.year-1);
+    if(!yearAgo)return null;
+    const yoy=((+latest.value-+yearAgo.value)/+yearAgo.value)*100;
+    return {value:round2(yoy),period:latest.periodName+' '+latest.year,src:'BLS'};
+  }catch(e){console.warn('BLS YoY',seriesId,e.message);return null;}
+}
+async function fetchBLS_CPI(){ return fetchBLS_YoY('CUUR0000SA0'); }
+async function fetchBLS_UNEMP(){
+  try{
+    const j=await blsFetch(['LNS14000000']);
+    const d=j.Results.series[0].data[0];
+    return {value:round2(+d.value),period:d.periodName+' '+d.year,src:'BLS'};
+  }catch(e){console.warn('BLS UNEMP',e.message);return null;}
+}
+async function fetchNFP(){   // NFP variation mensuelle (en milliers) — US only
+  try{
+    const j=await blsFetch(['CES0000000001']);
+    const s=j.Results.series[0].data;
+    if(s.length<2)return null;
+    const chg=Math.round((+s[0].value-(+s[1].value)));
+    return {value:chg,period:s[0].periodName+' '+s[0].year,src:'BLS'};
+  }catch(e){console.warn('BLS NFP',e.message);return null;}
+}
+async function fetchAHE(){   // Average Hourly Earnings YoY % — US only
+  try{return await fetchBLS_YoY('CES0500000003');}
+  catch(e){console.warn('BLS AHE',e.message);return null;}
+}
+async function fetchLFP(){   // Labor Force Participation Rate — US only
+  try{
+    const j=await blsFetch(['LNS11300000']);
+    const d=j.Results.series[0].data[0];
+    return {value:round2(+d.value),period:d.periodName+' '+d.year,src:'BLS'};
+  }catch(e){console.warn('BLS LFP',e.message);return null;}
+}
+async function fetchEmpRate(c){   // Taux d'emploi OCDE (non-US)
+  if(c.us)return null;
+  const ck='emprate_'+c.oecd;const cached=cacheGet(ck);if(cached!==null)return cached;
+  try{
+    const start=isoMonth(-6);
+    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_LFS@DF_IALFS_INDIC,1.0/${c.oecd}.EMP_LF_M...Y._T.Y_GE15..M?startPeriod=${start}&dimensionAtObservation=AllDimensions`;
+    const j=await oecd(url);const r=parseSDMXLatest(j);
+    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE'};cacheSet(ck,out);return out;}
+  }catch(e){console.warn('emprate',c.code,e.message);}
+  return null;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SCORING — chaque dimension 0..100 (50 neutre)
+═══════════════════════════════════════════════════════════════ */
+function scoreGrowth(g,cli){
+  if(g==null&&cli==null)return null;
+  let base=g!=null?clamp(50+g*8,5,95):50;           // PIB a/a : 0%→50, +3%→74
+  if(cli!=null)base+=clamp((cli-100)*6,-15,15);      // CLI avancé : 100 neutre, >100 expansion
+  return Math.round(clamp(base,5,95));
+}
+function scoreInflation(p){
+  if(p==null)return null;
+  // FX : modérément au-dessus de la cible (2%) = pression haussière taux = soutien.
+  // Trop chaud (>5) ou déflation = pénalité.
+  if(p<0)   return Math.round(clamp(30+p*4,5,40));        // déflation → bearish
+  if(p<1.5) return Math.round(clamp(40+p*6,40,50));        // sous cible → légèrement dovish
+  if(p<=4)  return Math.round(clamp(50+(p-1.5)*8,50,72));  // zone hawkish-friendly
+  return Math.round(clamp(72-(p-4)*7,40,72));              // surchauffe → on retire
+}
+function scoreMonetary(code){
+  const m=MONETARY[code];if(!m)return 50;
+  return Math.round(clamp(50+m.bias*0.45,8,92));
+}
+function scoreGeo(code){ return GEO[code]?GEO[code].score:50; }
+
+function computeScore(code,growth,cli,inflation){
+  const g=scoreGrowth(growth?growth.value:null,cli?cli.value:null);
+  const i=scoreInflation(inflation?inflation.value:null);
+  const mo=scoreMonetary(code);
+  const ge=scoreGeo(code);
+  const dims={
+    croissance:{score:g,live:!!(growth||cli)},
+    inflation:{score:i,live:!!inflation},
+    monetaire:{score:mo,live:false},
+    geo:{score:ge,live:false}
+  };
+  const W=CONFIG.WEIGHTS;
+  let sum=0,wsum=0;
+  const add=(s,w)=>{if(s!=null){sum+=s*w;wsum+=w;}};
+  add(g,W.growth);add(i,W.inflation);add(mo,W.monetary);add(ge,W.geo);
+  const composite=wsum>0?Math.round(sum/wsum):50;
+  return {composite,dims};
+}
+
+function signalOf(score){
+  if(score>=58)return{cls:'buy-side',sCls:'s-buy',txt:'Acheter',short:'BUY'};
+  if(score>=50)return{cls:'buy-side',sCls:'s-buy',txt:'Biais acheteur',short:'BUY'};
+  if(score>=42)return{cls:'sell-side',sCls:'s-sell',txt:'Biais vendeur',short:'SELL'};
+  return{cls:'sell-side',sCls:'s-sell',txt:'Vendre',short:'SELL'};
+}
+function scoreColor(s){return s>=50?'var(--buy)':'var(--sell)';}
+
+/* ══════════════════════════════════════════════════════════════
+   CHARGEMENT GLOBAL
+═══════════════════════════════════════════════════════════════ */
+async function loadAllCurrencies(){
+  await Promise.all(CURRENCIES.map(async c=>{
+    const [growth,cli,inflation,coreCpi,unemp,nfp,ahe,lfp,empRate]=await Promise.all([
+      fetchGrowth(c),fetchCLI(c),fetchInflation(c),fetchCoreCPI(c),fetchUnemp(c),
+      c.us?fetchNFP():Promise.resolve(null),
+      c.us?fetchAHE():Promise.resolve(null),
+      c.us?fetchLFP():Promise.resolve(null),
+      fetchEmpRate(c)
+    ]);
+    const {composite,dims}=computeScore(c.code,growth,cli,inflation);
+    CCY_DATA[c.code]={growth,cli,inflation,coreCpi,unemp,nfp,ahe,lfp,empRate,score:composite,dims};
+    renderGrid(); // re-render progressif au fur et à mesure
+  }));
+  document.getElementById('dash-updated').textContent='Maj : '+new Date().toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDU — GRILLE DEVISES
+═══════════════════════════════════════════════════════════════ */
+function renderGrid(){
+  const grid=document.getElementById('ccy-grid');
+  const sorted=[...CURRENCIES].sort((a,b)=>{
+    const sa=CCY_DATA[a.code]?CCY_DATA[a.code].score:50;
+    const sb=CCY_DATA[b.code]?CCY_DATA[b.code].score:50;
+    return sb-sa;
+  });
+  grid.innerHTML=sorted.map(c=>{
+    const d=CCY_DATA[c.code];
+    if(!d)return `<div class="ccy-card"><div class="ccy-top"><div class="ccy-flag">${c.flag}</div><div class="ccy-id"><div class="ccy-code">${c.code}</div><div class="ccy-name">${c.name}</div></div><div class="ccy-score-wrap"><div class="ccy-score" style="color:var(--t4)">··</div></div></div><div class="empty-mini" style="padding:8px 0 0;text-align:left;font-size:10px">Chargement…</div></div>`;
+    const sig=signalOf(d.score);
+    const dimChip=(lbl,o)=>{
+      const v=o&&o.score!=null?o.score:'—';
+      const col=o&&o.score!=null?scoreColor(o.score):'var(--t4)';
+      return `<div class="dim-chip">${lbl}<span class="dv" style="color:${col}">${v}</span></div>`;
+    };
+    return `<div class="ccy-card ${sig.cls} ${activeCcy===c.code?'sel':''}" onclick="openDetail('${c.code}')">
+      <div class="ccy-top">
+        <div class="ccy-flag">${c.flag}</div>
+        <div class="ccy-id"><div class="ccy-code">${c.code}</div><div class="ccy-name">${c.name}</div></div>
+        <div class="ccy-score-wrap">
+          <div class="ccy-score" style="color:${scoreColor(d.score)}">${d.score}</div>
+          <div class="ccy-signal ${sig.sCls}">${sig.short}</div>
+        </div>
+      </div>
+      <div class="ccy-bar-bg"><div class="ccy-bar-mid"></div><div class="ccy-bar-fill" style="width:${d.score}%;background:${scoreColor(d.score)}"></div></div>
+      <div class="ccy-dims">
+        ${dimChip('Crois.',d.dims.croissance)}
+        ${dimChip('Infl.',d.dims.inflation)}
+        ${dimChip('Mon.',d.dims.monetaire)}
+        ${dimChip('Géo.',d.dims.geo)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDU — PANNEAU DÉTAIL
+═══════════════════════════════════════════════════════════════ */
+const SECTIONS=[
+  {key:'croissance',lbl:'Croissance',   icon:'ti-chart-line'},
+  {key:'emploi',    lbl:'Emploi',       icon:'ti-users'},
+  {key:'inflation', lbl:'Inflation',    icon:'ti-flame'},
+  {key:'monetaire', lbl:'Pol. Monétaire',icon:'ti-building-bank'},
+  {key:'geo',       lbl:'Géopolitique', icon:'ti-world'},
+];
+
+function openDetail(code){
+  activeCcy=code;activeSection='croissance';
+  renderGrid();renderDetail();
+  document.getElementById('detail-mount').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeDetail(){activeCcy=null;document.getElementById('detail-mount').innerHTML='';renderGrid();}
+function switchSection(k){activeSection=k;renderDetail();}
+
+function dimDot(s){const c=s==null?'var(--t4)':scoreColor(s);return c;}
+
+function renderDetail(){
+  const c=CURRENCIES.find(x=>x.code===activeCcy);
+  const d=CCY_DATA[activeCcy];if(!c||!d)return;
+  const sig=signalOf(d.score);
+
+  const navHtml=SECTIONS.map(s=>{
+    const dm=d.dims[s.key];
+    return `<button class="dsec-btn ${activeSection===s.key?'active':''}" onclick="switchSection('${s.key}')">
+      <span class="dsec-dot" style="background:${dimDot(dm?dm.score:null)}"></span>
+      <i class="ti ${s.icon}" style="font-size:14px"></i>${s.lbl}
+    </button>`;
+  }).join('');
+
+  // score breakdown
+  const sbCell=(lbl,o)=>{
+    const v=o&&o.score!=null?o.score:'—';
+    const col=o&&o.score!=null?scoreColor(o.score):'var(--t4)';
+    const w=o&&o.score!=null?o.score:0;
+    return `<div class="sb-cell"><div class="sb-top"><span class="sb-name">${lbl}</span><span class="sb-val" style="color:${col}">${v}</span></div><div class="sb-bar-bg"><div class="sb-bar" style="width:${w}%;background:${col}"></div></div></div>`;
+  };
+
+  const sec=renderSectionContent(c,d);
+
+  document.getElementById('detail-mount').innerHTML=`
+  <div class="detail">
+    <div class="detail-hd">
+      <div class="detail-flag">${c.flag}</div>
+      <div class="detail-id">
+        <div class="detail-code">${c.code}</div>
+        <div class="detail-name">${c.name} · ${c.country}</div>
+        <div class="detail-meta">
+          <span class="detail-sig ${sig.cls}">${d.score>=50?'▲':'▼'} ${sig.txt}</span>
+          <span style="font-size:11px;color:var(--t3);font-family:var(--mono)">Pondéré : croissance 25% · inflation 15% · monétaire 35% · géo 25%</span>
+        </div>
+      </div>
+      <div class="detail-scorebox">
+        <div class="num" style="color:${scoreColor(d.score)}">${d.score}</div>
+        <div class="lbl">/ 100</div>
+      </div>
+      <button class="detail-close" onclick="closeDetail()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="detail-body">
+      <div class="score-break">
+        ${sbCell('Croissance',d.dims.croissance)}
+        ${sbCell('Inflation',d.dims.inflation)}
+        ${sbCell('Monétaire',d.dims.monetaire)}
+        ${sbCell('Géopolitique',d.dims.geo)}
+      </div>
+      <div class="dsec-nav">${navHtml}</div>
+      <div>${sec}</div>
+    </div>
+  </div>`;
+}
+
+function srcBadge(o){
+  if(!o)return '<span class="src-tag src-na">N/A</span>';
+  return `<span class="src-tag src-live">LIVE · ${o.src}</span>`;
+}
+function kpi(lbl,val,sub,cls,badge){
+  return `<div class="kpi"><div class="kpi-lbl"><span>${lbl}</span>${badge||''}</div><div class="kpi-val ${cls||'kv-neu'}">${val}</div>${sub?`<div class="kpi-sub">${sub}</div>`:''}</div>`;
+}
+
+function renderSectionContent(c,d){
+  const code=c.code;
+  if(activeSection==='croissance'){
+    const g=d.growth,u=d.unemp;
+    const gv=g?(g.value>=0?'+':'')+g.value+'%':'Indisponible';
+    const gcls=g?(g.value>=2?'kv-pos':g.value>=0?'kv-neu':'kv-neg'):'';
+    const uv=u?u.value+'%':'Indisponible';
+    const ov=g?(g.value>=2.5?'Croissance solide':g.value>=1?'Croissance modérée':g.value>=0?'Croissance atone':'Contraction'):'Donnée OCDE indisponible';
+    return `
+      <div class="dsec-overview">
+        <div class="dsec-ovh"><i class="ti ti-chart-line"></i> Croissance · ${g?'dernier point : '+g.period:'—'} <span class="dsec-sig-tag" style="color:${g?scoreColor(d.dims.croissance.score):'var(--t3)'}">${ov}</span></div>
+        <div class="dsec-ovtxt">${growthNarrative(code,g,d)}</div>
+      </div>
+      <div class="kpi-row">
+        ${kpi('Croissance PIB (a/a)',gv,g?g.period:'',gcls,srcBadge(g))}
+        ${(()=>{const cl=d.cli;const cv=cl?cl.value:null;return kpi('Indicateur avancé (CLI)',cl?cv:'Indisponible',cl?cl.period+' · 100 = tendance':'Équivalent PMI (libre)',cl?(cv>=100?'kv-pos':'kv-neg'):'',srcBadge(cl));})()}
+        ${kpi('Taux de chômage',uv,u?u.period:'',u&&u.value<=5?'kv-pos':u&&u.value>=7?'kv-neg':'kv-neu',srcBadge(u))}
+        ${kpi('Sous-score croissance',(d.dims.croissance.score??'—')+(d.dims.croissance.score!=null?'/100':''),'Impact sur la note',d.dims.croissance.score>=50?'kv-pos':'kv-neg')}
+      </div>
+      <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${growthImplication(code,g,d)}</div></div>
+      ${watchBlock(['Publication PIB trimestriel','PMI Manufacturier & Services','Ventes au détail'])}`;
+  }
+  if(activeSection==='emploi'){
+    const u=d.unemp,nfp=d.nfp,ahe=d.ahe,lfp=d.lfp,empRate=d.empRate;
+    const uv=u?u.value+'%':'N/A';
+    const ucls=u?(u.value<=5?'kv-pos':u.value>=7?'kv-neg':'kv-neu'):'';
+    return `
+      <div class="dsec-overview">
+        <div class="dsec-ovh"><i class="ti ti-users"></i> Marché du travail · ${u?'chômage : '+u.period:empRate?'emploi : '+empRate.period:'—'}</div>
+        <div class="dsec-ovtxt">${emploiNarrative(code,d)}</div>
+      </div>
+      <div class="kpi-row">
+        ${kpi('Taux de chômage',uv,u?u.period:'',ucls,srcBadge(u))}
+        ${(()=>{if(code==='USD'&&lfp)return kpi('Participation (LFP)',lfp.value+'%',lfp.period,lfp.value>=62?'kv-pos':lfp.value>=60?'kv-neu':'kv-neg',srcBadge(lfp));if(empRate)return kpi('Taux d\'emploi',empRate.value+'%',empRate.period,empRate.value>=70?'kv-pos':empRate.value>=60?'kv-neu':'kv-neg',srcBadge(empRate));return kpi('Taux d\'emploi','N/A','Source OCDE indispo','kv-neu','<span class="src-tag src-na">N/A</span>');})()}
+        ${code==='USD'&&nfp?kpi('NFP (variation mensuelle)',(nfp.value>0?'+':'')+nfp.value+'k',nfp.period,nfp.value>=150?'kv-pos':nfp.value>=0?'kv-neu':'kv-neg',srcBadge(nfp)):kpi('NFP','—','US uniquement','kv-neu','')}
+        ${code==='USD'&&ahe?kpi('Salaires horaires (AHE a/a)',(ahe.value>=0?'+':'')+ahe.value+'%',ahe.period,ahe.value>4?'kv-neg':ahe.value>=2.5?'kv-pos':'kv-neu',srcBadge(ahe)):kpi('Salaires (AHE)','—','US uniquement','kv-neu','')}
+      </div>
+      <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${emploiImplication(code,d)}</div></div>
+      ${watchBlock(['NFP (Non-Farm Payrolls)','Taux de chômage mensuel','Salaires horaires moyens (AHE)','Taux de participation / JOLTS'])}`;
+  }
+  if(activeSection==='inflation'){
+    const p=d.inflation;
+    const pv=p?(p.value>=0?'+':'')+p.value+'%':'Indisponible';
+    const pcls=p?(p.value>4?'kv-neg':p.value>=1.5?'kv-pos':'kv-neu'):'';
+    const ov=p?(p.value>4?'Inflation élevée':p.value>=1.5?'Proche / au-dessus de la cible':p.value>=0?'Sous la cible':'Déflation'):'Donnée indisponible';
+    return `
+      <div class="dsec-overview">
+        <div class="dsec-ovh"><i class="ti ti-flame"></i> Inflation · ${p?'dernier point : '+p.period:'—'} <span class="dsec-sig-tag" style="color:${p?scoreColor(d.dims.inflation.score):'var(--t3)'}">${ov}</span></div>
+        <div class="dsec-ovtxt">${inflationNarrative(code,p)}</div>
+      </div>
+      <div class="kpi-row">
+        ${kpi('Inflation CPI (a/a)',pv,p?p.period:'',pcls,srcBadge(p))}
+        ${(()=>{const cc=d.coreCpi;if(cc)return kpi('Core CPI (hors alim/énergie)',(cc.value>=0?'+':'')+cc.value+'%',cc.period,cc.value>4?'kv-neg':cc.value>=1.5?'kv-pos':'kv-neu',srcBadge(cc));return kpi('Core CPI (hors alim/énergie)','N/A',c.us?'—':'Source libre cross-pays indispo.','kv-neu','<span class="src-tag src-na">N/A</span>');})()}
+        ${kpi('Cible banque centrale','≈ 2%','Standard',pcls)}
+        ${kpi('Sous-score inflation',(d.dims.inflation.score??'—')+(d.dims.inflation.score!=null?'/100':''),'Impact sur la note',d.dims.inflation.score>=50?'kv-pos':'kv-neg')}
+      </div>
+      <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${inflationImplication(code,p)}</div></div>
+      ${watchBlock(['CPI / PCE mensuel','Inflation des services (core)','Anticipations d\'inflation','Salaires'])}`;
+  }
+  if(activeSection==='monetaire'){
+    const m=MONETARY[code];const re=RATE_EXPECTATIONS[code];
+    return `
+      <div class="dsec-overview">
+        <div class="dsec-ovh"><i class="ti ti-building-bank"></i> Politique monétaire <span class="src-tag src-est">EST · ${LAST_MANUAL_UPDATE}</span> <span class="dsec-sig-tag" style="color:${scoreColor(d.dims.monetaire.score)}">${m.stance}</span></div>
+        <div class="dsec-ovtxt">${m.note}</div>
+      </div>
+      <div class="kpi-row">
+        ${kpi('Taux directeur',m.rate,'Actuel','kv-neu','<span class="src-tag src-est">EST</span>')}
+        ${kpi('Orientation',m.stance,(m.bias>0?'Biais hawkish (+'+m.bias+')':m.bias<0?'Biais dovish ('+m.bias+')':'Neutre'),m.bias>0?'kv-pos':m.bias<0?'kv-neg':'kv-neu')}
+        ${kpi('Sous-score monétaire',d.dims.monetaire.score+'/100','Poids fort (35%)',d.dims.monetaire.score>=50?'kv-pos':'kv-neg')}
+        ${re?kpi('Prochaine réunion',re.meeting,'Hold '+re.hold+'% · Cut '+re.cut+'% · Hike '+re.hike+'%','kv-neu'):''}
+      </div>
+      <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${monetaryImplication(code,m,d)}</div></div>
+      ${watchBlock(['Décision de taux','Discours / minutes','Dot plot & projections','Différentiel de taux'])}`;
+  }
+  // geo
+  const ge=GEO[code];
+  return `
+    <div class="dsec-overview">
+      <div class="dsec-ovh"><i class="ti ti-world"></i> Géopolitique &amp; risque <span class="src-tag src-est">EST · ${LAST_MANUAL_UPDATE}</span> <span class="dsec-sig-tag" style="color:${scoreColor(ge.score)}">${ge.score>=60?'Favorable / refuge':ge.score>=45?'Neutre':'Défavorable'}</span></div>
+      <div class="dsec-ovtxt">${ge.note}</div>
+    </div>
+    <div class="kpi-row">
+      ${kpi('Score géopolitique',ge.score+'/100','Stabilité / statut refuge',ge.score>=55?'kv-pos':ge.score>=45?'kv-neu':'kv-neg','<span class="src-tag src-est">EST</span>')}
+      ${kpi('Profil',ge.score>=60?'Valeur refuge':ge.score>=45?'Cyclique neutre':'Risque élevé','En contexte de stress',ge.score>=55?'kv-pos':'kv-neg')}
+    </div>
+    <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${geoImplication(code,ge)}</div></div>
+    ${watchBlock(['Élections / risque politique','Conflits & tensions régionales','Flux de capitaux','Prix des matières premières'])}`;
+}
+
+function watchBlock(items){
+  return `<div class="watch"><div class="watch-lbl"><i class="ti ti-radar" style="font-size:12px"></i> À surveiller</div><div class="watch-list">${items.map(i=>`<span class="watch-item"><i class="ti ti-eye" style="font-size:11px"></i>${i}</span>`).join('')}</div></div>`;
+}
+
+/* ── Narratifs (data-aware) ── */
+function growthNarrative(code,g,d){
+  const cli=d&&d.cli;
+  const cliTxt=cli?` L'indicateur avancé OCDE (CLI) est à <b>${cli.value}</b> (${cli.value>=100?'au-dessus de 100 → momentum d\'expansion':'sous 100 → momentum de ralentissement'}).`:'';
+  if(!g)return (cli?`Le PIB annuel OCDE n'est pas disponible pour ${code}, mais l'indicateur avancé (CLI) à <b>${cli.value}</b> ${cli.value>=100?'pointe vers une expansion':'signale un ralentissement'}.`:`La donnée de croissance OCDE n'est pas disponible actuellement pour ${code}. Le sous-score croissance est exclu du calcul et la note se base sur les autres dimensions.`);
+  const v=g.value;
+  if(v>=2.5)return `L'économie affiche une croissance robuste de <b>${v}%</b>, signe d'une demande interne solide qui soutient structurellement la devise et donne des marges de manœuvre à la banque centrale.`+cliTxt;
+  if(v>=1)return `Croissance modérée de <b>${v}%</b> : l'expansion se poursuit sans surchauffe. Contexte globalement neutre-positif pour la devise.`+cliTxt;
+  if(v>=0)return `Croissance atone (<b>${v}%</b>) : l'économie stagne, ce qui plaide pour une politique plus accommodante et tend à peser sur la devise.`+cliTxt;
+  return `Contraction de <b>${v}%</b> : l'économie se replie, scénario défavorable à la devise et propice à un assouplissement monétaire.`+cliTxt;
+}
+function growthImplication(code,g,d){
+  const s=d.dims.croissance.score;
+  if(!g)return `Sans donnée de croissance fiable, privilégiez les autres piliers (monétaire surtout) pour cadrer votre biais sur ${code}. À recroiser dès que l'OCDE republie.`;
+  const dir=s>=50?'soutient un biais acheteur':'renforce un biais vendeur';
+  return `Le différentiel de croissance est un moteur de moyen terme du change. Ici, la dynamique ${dir} sur ${code}. Pratique : comparez ce score à celui de la devise opposée dans une paire — un écart de croissance large (ex. ${code} fort vs devise faible) offre les configurations directionnelles les plus propres. Confirmez avec la politique monétaire avant d'engager.`;
+}
+function inflationNarrative(code,p){
+  if(!p)return `Donnée d'inflation indisponible pour ${code} actuellement. Sous-score inflation exclu du calcul.`;
+  const v=p.value;
+  if(v>4)return `Inflation élevée à <b>${v}%</b>, nettement au-dessus de la cible. Cela maintient la pression pour des taux restrictifs (soutien court terme) mais fait planer un risque d'instabilité si elle ne reflue pas.`;
+  if(v>=1.5)return `Inflation à <b>${v}%</b>, proche ou au-dessus de la cible de 2%. Zone qui entretient un biais restrictif modéré, plutôt favorable à la devise.`;
+  if(v>=0)return `Inflation faible (<b>${v}%</b>), sous la cible : la banque centrale dispose de latitude pour assouplir, ce qui tend à affaiblir la devise.`;
+  return `Déflation (<b>${v}%</b>) : signal défavorable fort, qui pousse à un assouplissement agressif et pèse sur la devise.`;
+}
+function inflationImplication(code,p){
+  if(!p)return `À recroiser dès publication. L'inflation pilote en grande partie les anticipations de taux — pilier le plus lourd du score.`;
+  const v=p.value;
+  if(v>4)return `Une inflation forte est à double tranchant : haussière à court terme (hausses de taux anticipées) mais source de volatilité. Tradez les <b>surprises</b> vs consensus plutôt que le niveau absolu — un chiffre supérieur aux attentes provoque typiquement une appréciation immédiate de ${code}, surtout si la banque centrale est jugée crédible.`;
+  if(v>=1.5)return `Inflation autour de la cible : configuration «&nbsp;Goldilocks&nbsp;» qui n'oblige pas la banque centrale à assouplir. Neutre-positif pour ${code}. Surveillez surtout la composante <b>services / core</b>, plus collante, qui dicte la trajectoire des taux.`;
+  return `Inflation basse = munitions pour assouplir = pression baissière sur ${code}. Recherchez les paires où ${code} (inflation faible) fait face à une devise à inflation/taux plus élevés : le portage joue contre ${code}.`;
+}
+function monetaryImplication(code,m,d){
+  const re=RATE_EXPECTATIONS[code];
+  const base=`La politique monétaire est le pilier le plus lourd du score (35%) car le <b>différentiel de taux</b> est le premier moteur du Forex. Orientation actuelle pour ${code} : <b>${m.stance}</b> (${m.bias>0?'hawkish':m.bias<0?'dovish':'neutre'}).`;
+  let trade;
+  if(m.bias>15)trade=` Un biais hawkish attire les flux de portage et soutient ${code} : privilégiez les achats de ${code} contre une devise dovish (assouplissement actif).`;
+  else if(m.bias<-15)trade=` Un biais dovish érode l'attrait de ${code} : privilégiez les ventes de ${code} contre une devise dont la banque centrale reste ferme.`;
+  else trade=` Orientation neutre : ${code} réagira surtout aux <b>surprises</b> (réunions, données d'inflation) plutôt qu'à une tendance de taux établie.`;
+  const meet=re?` Prochain rendez-vous : <b>${re.meeting}</b> — le marché price ${re.hold}% de statu quo, ${re.cut}% de baisse, ${re.hike}% de hausse. Un repricing de ces probabilités est le catalyseur le plus tradable.`:'';
+  return base+trade+meet;
+}
+function geoImplication(code,ge){
+  if(ge.impl)return ge.impl;
+  if(ge.score>=60)return `${code} joue un rôle de <b>refuge</b> : il s'apprécie quand l'aversion au risque monte.`;
+  if(ge.score>=45)return `Profil géopolitique neutre pour ${code} : pas de biais fort, amplificateur ponctuel lors d'événements spécifiques.`;
+  return `${code} est une devise à <b>haut bêta du risque</b> : elle souffre en stress de marché et se joue en risk-on confirmé.`;
+}
+
+function emploiNarrative(code,d){
+  const u=d.unemp,nfp=d.nfp,ahe=d.ahe,lfp=d.lfp,empRate=d.empRate;
+  if(code==='USD'){
+    if(!u&&!nfp)return `Données d'emploi US temporairement indisponibles. Le NFP mensuel et le taux de chômage sont les indicateurs clés pour la Fed.`;
+    let txt='';
+    if(u)txt+=`Le taux de chômage s'établit à <b>${u.value}%</b> (${u.period})`;
+    if(nfp)txt+=(txt?`, avec une variation NFP de <b>${nfp.value>0?'+':''}${nfp.value}k</b> postes créés (${nfp.period})`:`NFP : <b>${nfp.value>0?'+':''}${nfp.value}k</b> postes (${nfp.period})`);
+    if(ahe)txt+=`. Les salaires horaires moyens (AHE) progressent de <b>${ahe.value}%</b> en glissement annuel`;
+    if(lfp)txt+=`. Le taux de participation atteint <b>${lfp.value}%</b>`;
+    return txt+'.';
+  }
+  if(!u&&!empRate)return `Données d'emploi OCDE indisponibles pour ${code} actuellement.`;
+  let txt='';
+  if(u)txt+=`Le taux de chômage s'établit à <b>${u.value}%</b> (${u.period})`;
+  if(empRate)txt+=(txt?`. Le taux d'emploi est de <b>${empRate.value}%</b> (${empRate.period})`:`Taux d'emploi : <b>${empRate.value}%</b> (${empRate.period})`);
+  return txt+'.';
+}
+
+function emploiImplication(code,d){
+  const u=d.unemp;
+  const low=u&&u.value<5;
+  const high=u&&u.value>7;
+  const ahe=d.ahe;
+  let base=`Le marché du travail est un pilier critique pour la politique monétaire : un emploi tendu alimente les salaires, qui alimentent l'inflation des services — le composant le plus résistant. `;
+  if(code==='USD'){
+    base+=`Pour la Fed, le duo <b>NFP + AHE</b> est le signal le plus suivi : un NFP fort combiné à une AHE >3% maintient la pression hawkish. `;
+    if(ahe&&ahe.value>4)base+=`L'AHE actuelle à <b>${ahe.value}%</b> reste élevée — argument pour des taux restrictifs plus longtemps, soutien structurel pour le USD.`;
+    else if(ahe&&ahe.value<3)base+=`L'AHE à <b>${ahe.value}%</b> se modère — signal dovish pour la Fed, pression sur le USD si la tendance se confirme.`;
+  }
+  if(low)return base+` Chômage bas = marché du travail tendu = pressions salariales persistantes = banque centrale sous pression de maintenir des taux fermes. Soutien structurel pour <b>${code}</b>. Une surprise haussière (emploi encore plus fort) serait le catalyseur de nouvelle appréciation.`;
+  if(high)return base+` Chômage élevé = marché du travail en détente = pression dovish croissante sur la banque centrale. Poids sur <b>${code}</b>. Une amélioration surprise (baisse du chômage, NFP solide) constituerait le catalyseur haussier le plus puissant.`;
+  return base+`Marché du travail équilibré : l'emploi seul ne délivre pas de signal directionnel fort. Croisez avec l'AHE et le core CPI pour jauger la marge de manœuvre de la banque centrale sur <b>${code}</b>.`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NEWS FEED (Finnhub)
+═══════════════════════════════════════════════════════════════ */
+const CCY_KEYWORDS={
+  USD:['dollar','fed','powell','fomc','u.s.','united states','treasury'],
+  EUR:['euro','ecb','lagarde','eurozone','germany','france'],
+  GBP:['pound','sterling','boe','bank of england','u.k.','britain'],
+  JPY:['yen','boj','japan','ueda'],
+  CHF:['franc','snb','swiss','switzerland'],
+  AUD:['aussie','rba','australia','australian'],
+  NZD:['kiwi','rbnz','new zealand'],
+  CAD:['loonie','boc','canada','canadian'],
+  CNH:['yuan','renminbi','pboc','china','chinese'],
+};
+function tagNews(text){
+  const t=(text||'').toLowerCase();const tags=[];
+  for(const [c,kws] of Object.entries(CCY_KEYWORDS)){
+    if(kws.some(k=>t.includes(k)))tags.push(c);
+  }
+  return tags;
+}
+function relTime(ts){
+  const s=Math.floor((Date.now()-ts*1000)/1000);
+  if(s<60)return 'à l\'instant';
+  if(s<3600)return Math.floor(s/60)+' min';
+  if(s<86400)return Math.floor(s/3600)+' h';
+  return Math.floor(s/86400)+' j';
+}
+async function loadNews(){
+  try{
+    const cats=['forex','general'];
+    const results=await Promise.all(cats.map(cat=>finnhubNews(cat).catch(()=>[])));
+    let items=[].concat(...results);
+    const seen=new Set();
+    items=items.filter(n=>{if(!n.headline||seen.has(n.id))return false;seen.add(n.id);return true;});
+    items.forEach(n=>{n._tags=tagNews(n.headline+' '+(n.summary||''));});
+    items.sort((a,b)=>b.datetime-a.datetime);
+    allNews=items.slice(0,60);
+    buildNewsToolbar();renderNews();buildTicker();
+  }catch(e){
+    document.getElementById('news-feed').innerHTML=`<div class="news-loading">Flux indisponible (${e.message}). Vérifiez la clé Finnhub.</div>`;
+  }
+}
+function buildNewsToolbar(){
+  const counts={ALL:allNews.length};
+  CURRENCIES.forEach(c=>counts[c.code]=allNews.filter(n=>n._tags.includes(c.code)).length);
+  const tb=document.getElementById('news-toolbar');
+  const btn=(k,lbl)=>`<button class="news-filter ${newsFilter===k?'active':''}" onclick="setNewsFilter('${k}')">${lbl}${counts[k]?` <span style="opacity:.6">${counts[k]}</span>`:''}</button>`;
+  tb.innerHTML=btn('ALL','Tout')+CURRENCIES.filter(c=>counts[c.code]>0).map(c=>btn(c.code,c.flag+' '+c.code)).join('');
+}
+function setNewsFilter(k){newsFilter=k;buildNewsToolbar();renderNews();}
+function renderNews(){
+  const feed=document.getElementById('news-feed');
+  let items=newsFilter==='ALL'?allNews:allNews.filter(n=>n._tags.includes(newsFilter));
+  if(!items.length){feed.innerHTML='<div class="news-loading">Aucune actualité pour ce filtre.</div>';return;}
+  feed.innerHTML=items.map(n=>`
+    <div class="news-item" onclick="window.open('${(n.url||'#').replace(/'/g,'')}','_blank')">
+      <div class="news-time"><b>${relTime(n.datetime)}</b>${new Date(n.datetime*1000).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>
+      <div class="news-main">
+        <div class="news-head">${n.headline}</div>
+        ${n.summary?`<div class="news-sum">${n.summary}</div>`:''}
+        <div class="news-foot">
+          <span class="news-src">${(n.source||'').toUpperCase()}</span>
+          ${n._tags.map(t=>`<span class="news-ccy">${t}</span>`).join('')}
+        </div>
+      </div>
+      ${n.image?`<img class="news-thumb" src="${n.image}" loading="lazy" onerror="this.style.display='none'">`:''}
+    </div>`).join('');
+}
+function buildTicker(){
+  const inner=document.getElementById('ticker-inner');
+  const head=allNews.slice(0,18);
+  if(!head.length){inner.innerHTML='<div class="ticker-item">En attente du flux…</div>';return;}
+  const make=n=>{
+    const tag=n._tags[0]||'FX';
+    return `<div class="ticker-item"><b class="flat">${tag}</b>${n.headline}</div>`;
+  };
+  inner.innerHTML=(head.map(make).join('')).repeat(2);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ATTENTES DE TAUX (bar chart CSS)
+═══════════════════════════════════════════════════════════════ */
+function renderRateExpectations(){
+  const grid=document.getElementById('rate-grid');
+  grid.innerHTML=Object.entries(RATE_EXPECTATIONS).map(([code,r])=>{
+    const seg=(cls,v,lbl)=>v>0?`<div class="rate-seg ${cls}" style="width:${v}%" title="${lbl} ${v}%">${v>=12?v+'%':''}</div>`:'';
+    return `<div class="rate-card">
+      <div class="rate-hd">
+        <div class="rate-cb"><span class="rate-flag">${r.flag}</span><span class="rate-bank">${r.bank} · ${code}</span></div>
+        <span class="rate-now">${r.rate}</span>
+      </div>
+      <div class="rate-meet">Prochaine réunion : <b>${r.meeting}</b></div>
+      <div class="rate-bars">
+        ${seg('seg-hike',r.hike,'Hausse')}
+        ${seg('seg-hold',r.hold,'Statu quo')}
+        ${seg('seg-cut',r.cut,'Baisse')}
+      </div>
+      <div class="rate-legend">
+        <span><i style="background:var(--buy)"></i>Hausse ${r.hike}%</span>
+        <span><i style="background:var(--amber)"></i>Statu quo ${r.hold}%</span>
+        <span><i style="background:var(--sell)"></i>Baisse ${r.cut}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAV / THEME / CLOCK / INIT
+═══════════════════════════════════════════════════════════════ */
+function switchTab(t){
+  document.querySelectorAll('.cmd-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-btn-'+t).classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  window.scrollTo(0,0);
+}
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  const light=document.body.classList.contains('light');
+  document.getElementById('theme-icon').className=light?'ti ti-moon':'ti ti-sun';
+  localStorage.setItem('fxmt_theme',light?'light':'dark');
+}
+function tickClock(){
+  const d=new Date();
+  document.getElementById('clock').textContent=d.toLocaleTimeString('fr-FR',{hour12:false})+' '+Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop();
+}
+async function refreshAll(){
+  Object.keys(localStorage).filter(k=>k.startsWith('fxmt_')&&k!=='fxmt_theme').forEach(k=>localStorage.removeItem(k));
+  toast('Rafraîchissement des données…');
+  CCY_DATA={};renderGrid();
+  await loadAllCurrencies();
+  await loadNews();
+  if(activeCcy)renderDetail();
+  toast('Données à jour ✅');
+}
+
+
+function init(){
+  if(localStorage.getItem('fxmt_theme')==='light'){document.body.classList.add('light');document.getElementById('theme-icon').className='ti ti-moon';}
+  tickClock();setInterval(tickClock,1000);
+  renderGrid();
+  renderRateExpectations();
+  loadAllCurrencies();
+  loadNews();
+}
+window.addEventListener('load',init);
+</script>

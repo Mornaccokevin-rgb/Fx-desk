@@ -2352,7 +2352,6 @@ a{color:inherit;text-decoration:none}
   &lt;div class=&quot;cmd-right&quot;&gt;
     &lt;div class=&quot;live-badge&quot;&gt;&lt;span class=&quot;live-dot&quot;&gt;&lt;/span&gt;LIVE&lt;/div&gt;
     &lt;div class=&quot;clock&quot; id=&quot;clock&quot;&gt;--:--:--&lt;/div&gt;
-    &lt;button class=&quot;icon-btn&quot; onclick=&quot;refreshAll()&quot; title=&quot;Rafraîchir les données&quot;&gt;&lt;i class=&quot;ti ti-refresh&quot;&gt;&lt;/i&gt;&lt;/button&gt;
     &lt;button class=&quot;icon-btn&quot; onclick=&quot;toggleTheme()&quot; title=&quot;Thème&quot;&gt;&lt;i class=&quot;ti ti-sun&quot; id=&quot;theme-icon&quot;&gt;&lt;/i&gt;&lt;/button&gt;
   &lt;/div&gt;
 &lt;/div&gt;
@@ -2373,10 +2372,6 @@ a{color:inherit;text-decoration:none}
       &lt;div class=&quot;sec-hdr-line&quot;&gt;&lt;/div&gt;
       &lt;span id=&quot;dash-updated&quot; style=&quot;font-size:10px;color:var(--t3);font-family:var(--mono)&quot;&gt;&lt;/span&gt;
     &lt;/div&gt;
-    &lt;div class=&quot;note-banner&quot;&gt;
-      &lt;i class=&quot;ti ti-info-circle&quot;&gt;&lt;/i&gt;
-      &lt;div&gt;&lt;b&gt;Lecture :&lt;/b&gt; score &amp;gt; 50 = biais acheteur · &amp;lt; 50 = biais vendeur. Le score combine croissance, inflation, politique monétaire et géopolitique. Cliquez une devise pour le détail. Données macro &lt;b&gt;live&lt;/b&gt; via OCDE/BLS&amp;nbsp;; politique monétaire &amp;amp; géopo &lt;b&gt;maintenues manuellement&lt;/b&gt; (étiquetées &lt;span style=&quot;color:var(--amber)&quot;&gt;EST&lt;/span&gt;).&lt;/div&gt;
-    &lt;/div&gt;
 
     &lt;div class=&quot;ccy-grid&quot; id=&quot;ccy-grid&quot;&gt;&lt;/div&gt;
     &lt;div id=&quot;detail-mount&quot;&gt;&lt;/div&gt;
@@ -2395,10 +2390,6 @@ a{color:inherit;text-decoration:none}
       &lt;i class=&quot;ti ti-building-bank&quot;&gt;&lt;/i&gt;&lt;h2&gt;Attentes de politique monétaire&lt;/h2&gt;
       &lt;div class=&quot;sec-hdr-line&quot;&gt;&lt;/div&gt;
       &lt;span class=&quot;badge-est&quot;&gt;EST · à actualiser&lt;/span&gt;
-    &lt;/div&gt;
-    &lt;div class=&quot;note-banner&quot;&gt;
-      &lt;i class=&quot;ti ti-alert-triangle&quot;&gt;&lt;/i&gt;
-      &lt;div&gt;Aucune API gratuite ne fournit les probabilités de marché (type CME FedWatch). Ces estimations sont &lt;b&gt;maintenues à la main&lt;/b&gt; dans le bloc &lt;code&gt;RATE_EXPECTATIONS&lt;/code&gt; en haut du fichier &amp;mdash; mets-les à jour après chaque réunion / repricing.&lt;/div&gt;
     &lt;/div&gt;
     &lt;div class=&quot;rate-grid&quot; id=&quot;rate-grid&quot;&gt;&lt;/div&gt;
 

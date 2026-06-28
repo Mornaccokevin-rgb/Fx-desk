@@ -1699,7 +1699,6 @@
                 <div class="fx-tabs">
                     <button class="fx-tab active" onclick="fxTab('dashboard',this)">Dashboard</button>
                     <button class="fx-tab" onclick="fxTab('analyse',this)">Analyse</button>
-                    <button class="fx-tab" onclick="fxTab('bilan',this)">Forces &amp; Faiblesses</button>
                     <button class="fx-tab" onclick="fxTab('trades',this)">Trades</button>
                 </div>
             </div>
@@ -1879,32 +1878,6 @@
                     </div>
                 </div>
 
-                <!-- BILAN -->
-                <div id="fx-bilan" class="fx-pane">
-                    <div id="fx-empty-bilan" class="fx-empty">
-                        <div class="fx-empty-icon">🧠</div>
-                        <div class="fx-empty-title">Analyse indisponible</div>
-                        <div style="font-size:12px;color:var(--fx-muted)">
-                            Ajoutez au moins 
-                            <strong>5 trades</strong>
-                            .
-                        </div>
-                    </div>
-                    <div id="fx-bilan-content" style="display:none">
-                        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--fx-card);border:1px solid var(--fx-bd);border-radius:10px;padding:12px 14px;margin-bottom:16px">
-                            <span style="font-size:11px;font-weight:600;color:var(--fx-vl);letter-spacing:.04em;display:flex;align-items:center;gap:6px">✨ ANALYSE IA</span>
-                            <button class="btn-checklist" onclick="generateBilanAI(true)" id="bilan-ai-btn">↻ Régénérer l'analyse IA</button>
-                            <button class="fx-btn-export" onclick="openAnalysisModal()">📥 Importer mes analyses</button>
-                            <span id="bilan-ai-status" style="font-size:11px;color:var(--fx-muted)"></span>
-                        </div>
-                        <div class="fx-st">Points forts</div>
-                        <div id="bilan-strengths"></div>
-                        <div class="fx-st">Faiblesses</div>
-                        <div id="bilan-weaknesses"></div>
-                        <div class="fx-st">Préconisations</div>
-                        <div id="tipsGrid"></div>
-                    </div>
-                </div>
 
                 <!-- TRADES -->
                 <div id="fx-trades" class="fx-pane">
@@ -2139,17 +2112,17 @@
             <div class="topbar-sep"></div>
             <span class="topbar-mod" style="color:var(--fx-vl)">FX Macro Compass</span>
         </nav>
-        <iframe id="fxMacroFrame" title="FX Macro Terminal" style="width:100%;height:calc(100vh - 52px);border:0;display:block;background:#05050c" srcdoc="<!DOCTYPE html>
-<html lang=&quot;fr&quot;>
-<head>
-<meta charset=&quot;UTF-8&quot;>
-<meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0&quot;>
-<title>FX Macro Terminal</title>
-<script src=&quot;https://cdn.jsdelivr.net/npm/chart.js&quot;></script>
-<link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;>
-<link href=&quot;https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Space+Mono:wght@400;700&amp;display=swap&quot; rel=&quot;stylesheet&quot;>
-<link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css&quot;>
-<style>
+        <iframe id="fxMacroFrame" title="FX Macro Terminal" style="width:100%;height:calc(100vh - 52px);border:0;display:block;background:#05050c" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;fr&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0&quot;&gt;
+&lt;title&gt;FX Macro Terminal&lt;/title&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/chart.js&quot;&gt;&lt;/script&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
+&lt;link href=&quot;https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Space+Mono:wght@400;700&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css&quot;&gt;
+&lt;style&gt;
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#06070a;--bg2:#0b0d12;--panel:#0e1117;--panel2:#141821;--panel3:#1a1f2b;
@@ -2300,25 +2273,6 @@ a{color:inherit;text-decoration:none}
 .analysis-lbl{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:6px}
 .analysis-txt{font-size:13px;line-height:1.7;color:var(--t)}
 .analysis-txt b{color:var(--t)}
-/* ── ANALYSE IA EN DIRECT ── */
-.ai-live{background:linear-gradient(180deg,rgba(91,140,255,.07),rgba(91,140,255,.02));border:1px solid var(--accent);border-radius:var(--r2);padding:15px 17px;margin-bottom:16px;box-shadow:0 0 0 1px rgba(91,140,255,.08)}
-.ai-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}
-.ai-badge{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--accent)}
-.ai-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1.8s infinite;box-shadow:0 0 8px var(--accent)}
-.ai-bias{font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:2px 10px;border-radius:20px;border:1px solid;text-transform:uppercase}
-.ai-meta{font-size:9.5px;color:var(--t3);font-family:var(--mono);margin-left:auto}
-.ai-title{font-size:14px;font-weight:600;color:var(--t);line-height:1.4;margin-bottom:6px}
-.ai-txt{font-size:13px;line-height:1.7;color:var(--t2)}
-.ai-refuge{margin-top:9px;font-size:12px;line-height:1.6;color:var(--amber);background:var(--amber-dim);border-radius:var(--r);padding:8px 11px;display:flex;gap:7px;align-items:flex-start}
-.ai-refuge .ti{margin-top:2px}
-.ai-drivers{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
-.ai-driver{font-size:10.5px;color:var(--t2);background:var(--panel2);border:1px solid var(--bd);border-radius:20px;padding:3px 10px}
-.ai-loading{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--t2);padding:6px 0}
-.ai-loading .spinner{width:18px;height:18px;border-width:2px;margin:0}
-.ai-err{font-size:12px;color:var(--t2);line-height:1.6}
-.ai-err code{font-family:var(--mono);color:var(--amber);font-size:11px}
-.ai-refresh{margin-top:11px;background:var(--panel2);border:1px solid var(--bd);color:var(--t2);font-family:var(--sans);font-size:11px;padding:5px 12px;border-radius:var(--r);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
-.ai-refresh:hover{color:var(--accent);border-color:var(--accent)}
 .watch{margin-top:6px}
 .watch-lbl{font-size:10px;font-weight:600;color:var(--t2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
 .watch-list{display:flex;flex-wrap:wrap;gap:6px}
@@ -2378,92 +2332,92 @@ a{color:inherit;text-decoration:none}
 .note-banner .ti{color:var(--amber);font-size:16px;flex-shrink:0;margin-top:1px}
 .note-banner b{color:var(--t)}
 .empty-mini{padding:30px;text-align:center;color:var(--t3);font-size:12.5px}
-</style>
-</head>
-<body>
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
 
-<!-- COMMAND BAR -->
-<div class=&quot;cmdbar&quot;>
-  <div class=&quot;logo&quot;>
-    <div class=&quot;logo-mark&quot;>◈</div>
-    <div>
-      <div class=&quot;logo-txt&quot;>FX <span>MACRO</span> TERMINAL</div>
-      <div class=&quot;logo-sub&quot;>FOREX INTELLIGENCE DESK</div>
-    </div>
-  </div>
-  <div class=&quot;cmd-nav&quot;>
-    <button class=&quot;cmd-tab active&quot; id=&quot;tab-btn-dash&quot; onclick=&quot;switchTab('dash')&quot;>Dashboard</button>
-    <button class=&quot;cmd-tab&quot; id=&quot;tab-btn-market&quot; onclick=&quot;switchTab('market')&quot;>Analyse Marché</button>
-  </div>
-  <div class=&quot;cmd-right&quot;>
-    <div class=&quot;live-badge&quot;><span class=&quot;live-dot&quot;></span>LIVE</div>
-    <div class=&quot;clock&quot; id=&quot;clock&quot;>--:--:--</div>
-    <button class=&quot;icon-btn&quot; onclick=&quot;refreshAll()&quot; title=&quot;Rafraîchir les données&quot;><i class=&quot;ti ti-refresh&quot;></i></button>
-    <button class=&quot;icon-btn&quot; onclick=&quot;toggleTheme()&quot; title=&quot;Thème&quot;><i class=&quot;ti ti-sun&quot; id=&quot;theme-icon&quot;></i></button>
-  </div>
-</div>
+&lt;!-- COMMAND BAR --&gt;
+&lt;div class=&quot;cmdbar&quot;&gt;
+  &lt;div class=&quot;logo&quot;&gt;
+    &lt;div class=&quot;logo-mark&quot;&gt;◈&lt;/div&gt;
+    &lt;div&gt;
+      &lt;div class=&quot;logo-txt&quot;&gt;FX &lt;span&gt;MACRO&lt;/span&gt; TERMINAL&lt;/div&gt;
+      &lt;div class=&quot;logo-sub&quot;&gt;FOREX INTELLIGENCE DESK&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;cmd-nav&quot;&gt;
+    &lt;button class=&quot;cmd-tab active&quot; id=&quot;tab-btn-dash&quot; onclick=&quot;switchTab('dash')&quot;&gt;Dashboard&lt;/button&gt;
+    &lt;button class=&quot;cmd-tab&quot; id=&quot;tab-btn-market&quot; onclick=&quot;switchTab('market')&quot;&gt;Analyse Marché&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;cmd-right&quot;&gt;
+    &lt;div class=&quot;live-badge&quot;&gt;&lt;span class=&quot;live-dot&quot;&gt;&lt;/span&gt;LIVE&lt;/div&gt;
+    &lt;div class=&quot;clock&quot; id=&quot;clock&quot;&gt;--:--:--&lt;/div&gt;
+    &lt;button class=&quot;icon-btn&quot; onclick=&quot;refreshAll()&quot; title=&quot;Rafraîchir les données&quot;&gt;&lt;i class=&quot;ti ti-refresh&quot;&gt;&lt;/i&gt;&lt;/button&gt;
+    &lt;button class=&quot;icon-btn&quot; onclick=&quot;toggleTheme()&quot; title=&quot;Thème&quot;&gt;&lt;i class=&quot;ti ti-sun&quot; id=&quot;theme-icon&quot;&gt;&lt;/i&gt;&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
 
-<!-- TICKER -->
-<div class=&quot;ticker&quot;>
-  <div class=&quot;ticker-lbl&quot;><i class=&quot;ti ti-bolt&quot;></i> FX SQUAWK</div>
-  <div class=&quot;ticker-scroll&quot;><div class=&quot;ticker-inner&quot; id=&quot;ticker-inner&quot;></div></div>
-</div>
+&lt;!-- TICKER --&gt;
+&lt;div class=&quot;ticker&quot;&gt;
+  &lt;div class=&quot;ticker-lbl&quot;&gt;&lt;i class=&quot;ti ti-bolt&quot;&gt;&lt;/i&gt; FX SQUAWK&lt;/div&gt;
+  &lt;div class=&quot;ticker-scroll&quot;&gt;&lt;div class=&quot;ticker-inner&quot; id=&quot;ticker-inner&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
 
-<div class=&quot;wrap&quot;>
+&lt;div class=&quot;wrap&quot;&gt;
 
-  <!-- ═══════ DASHBOARD TAB ═══════ -->
-  <div id=&quot;tab-dash&quot; class=&quot;tab-pane active&quot;>
+  &lt;!-- ═══════ DASHBOARD TAB ═══════ --&gt;
+  &lt;div id=&quot;tab-dash&quot; class=&quot;tab-pane active&quot;&gt;
 
-    <div class=&quot;sec-hdr&quot;>
-      <i class=&quot;ti ti-world&quot;></i><h2>Force des devises &amp;mdash; Note macro /100</h2>
-      <div class=&quot;sec-hdr-line&quot;></div>
-      <span id=&quot;dash-updated&quot; style=&quot;font-size:10px;color:var(--t3);font-family:var(--mono)&quot;></span>
-    </div>
-    <div class=&quot;note-banner&quot;>
-      <i class=&quot;ti ti-info-circle&quot;></i>
-      <div><b>Lecture :</b> score &amp;gt; 50 = biais acheteur · &amp;lt; 50 = biais vendeur. Le score combine croissance, inflation, politique monétaire et géopolitique. Cliquez une devise pour le détail. Données macro <b>live</b> via OCDE/BLS&amp;nbsp;; politique monétaire &amp;amp; géopo <b>maintenues manuellement</b> (étiquetées <span style=&quot;color:var(--amber)&quot;>EST</span>).</div>
-    </div>
+    &lt;div class=&quot;sec-hdr&quot;&gt;
+      &lt;i class=&quot;ti ti-world&quot;&gt;&lt;/i&gt;&lt;h2&gt;Force des devises &amp;mdash; Note macro /100&lt;/h2&gt;
+      &lt;div class=&quot;sec-hdr-line&quot;&gt;&lt;/div&gt;
+      &lt;span id=&quot;dash-updated&quot; style=&quot;font-size:10px;color:var(--t3);font-family:var(--mono)&quot;&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;note-banner&quot;&gt;
+      &lt;i class=&quot;ti ti-info-circle&quot;&gt;&lt;/i&gt;
+      &lt;div&gt;&lt;b&gt;Lecture :&lt;/b&gt; score &amp;gt; 50 = biais acheteur · &amp;lt; 50 = biais vendeur. Le score combine croissance, inflation, politique monétaire et géopolitique. Cliquez une devise pour le détail. Données macro &lt;b&gt;live&lt;/b&gt; via OCDE/BLS&amp;nbsp;; politique monétaire &amp;amp; géopo &lt;b&gt;maintenues manuellement&lt;/b&gt; (étiquetées &lt;span style=&quot;color:var(--amber)&quot;&gt;EST&lt;/span&gt;).&lt;/div&gt;
+    &lt;/div&gt;
 
-    <div class=&quot;ccy-grid&quot; id=&quot;ccy-grid&quot;></div>
-    <div id=&quot;detail-mount&quot;></div>
+    &lt;div class=&quot;ccy-grid&quot; id=&quot;ccy-grid&quot;&gt;&lt;/div&gt;
+    &lt;div id=&quot;detail-mount&quot;&gt;&lt;/div&gt;
 
-    <!-- NEWS FEED -->
-    <div class=&quot;sec-hdr&quot;>
-      <i class=&quot;ti ti-news&quot;></i><h2>News Feed &amp;mdash; Squawk temps réel</h2>
-      <div class=&quot;sec-hdr-line&quot;></div>
-      <span class=&quot;badge-est&quot; style=&quot;color:var(--buy);background:var(--buy-dim);border-color:var(--buy-glow)&quot;>LIVE · Finnhub</span>
-    </div>
-    <div class=&quot;news-toolbar&quot; id=&quot;news-toolbar&quot;></div>
-    <div class=&quot;news-feed&quot; id=&quot;news-feed&quot;><div class=&quot;news-loading&quot;><div class=&quot;spinner&quot;></div><div style=&quot;margin-top:12px&quot;>Chargement du flux…</div></div></div>
+    &lt;!-- NEWS FEED --&gt;
+    &lt;div class=&quot;sec-hdr&quot;&gt;
+      &lt;i class=&quot;ti ti-news&quot;&gt;&lt;/i&gt;&lt;h2&gt;News Feed &amp;mdash; Squawk temps réel&lt;/h2&gt;
+      &lt;div class=&quot;sec-hdr-line&quot;&gt;&lt;/div&gt;
+      &lt;span class=&quot;badge-est&quot; style=&quot;color:var(--buy);background:var(--buy-dim);border-color:var(--buy-glow)&quot;&gt;LIVE · Finnhub&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;news-toolbar&quot; id=&quot;news-toolbar&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;news-feed&quot; id=&quot;news-feed&quot;&gt;&lt;div class=&quot;news-loading&quot;&gt;&lt;div class=&quot;spinner&quot;&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:12px&quot;&gt;Chargement du flux…&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
 
-    <!-- RATE EXPECTATIONS -->
-    <div class=&quot;sec-hdr&quot;>
-      <i class=&quot;ti ti-building-bank&quot;></i><h2>Attentes de politique monétaire</h2>
-      <div class=&quot;sec-hdr-line&quot;></div>
-      <span class=&quot;badge-est&quot;>EST · à actualiser</span>
-    </div>
-    <div class=&quot;note-banner&quot;>
-      <i class=&quot;ti ti-alert-triangle&quot;></i>
-      <div>Aucune API gratuite ne fournit les probabilités de marché (type CME FedWatch). Ces estimations sont <b>maintenues à la main</b> dans le bloc <code>RATE_EXPECTATIONS</code> en haut du fichier &amp;mdash; mets-les à jour après chaque réunion / repricing.</div>
-    </div>
-    <div class=&quot;rate-grid&quot; id=&quot;rate-grid&quot;></div>
+    &lt;!-- RATE EXPECTATIONS --&gt;
+    &lt;div class=&quot;sec-hdr&quot;&gt;
+      &lt;i class=&quot;ti ti-building-bank&quot;&gt;&lt;/i&gt;&lt;h2&gt;Attentes de politique monétaire&lt;/h2&gt;
+      &lt;div class=&quot;sec-hdr-line&quot;&gt;&lt;/div&gt;
+      &lt;span class=&quot;badge-est&quot;&gt;EST · à actualiser&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;note-banner&quot;&gt;
+      &lt;i class=&quot;ti ti-alert-triangle&quot;&gt;&lt;/i&gt;
+      &lt;div&gt;Aucune API gratuite ne fournit les probabilités de marché (type CME FedWatch). Ces estimations sont &lt;b&gt;maintenues à la main&lt;/b&gt; dans le bloc &lt;code&gt;RATE_EXPECTATIONS&lt;/code&gt; en haut du fichier &amp;mdash; mets-les à jour après chaque réunion / repricing.&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;rate-grid&quot; id=&quot;rate-grid&quot;&gt;&lt;/div&gt;
 
-  </div>
+  &lt;/div&gt;
 
-  <!-- ═══════ MARKET ANALYSIS TAB (maintenance) ═══════ -->
-  <div id=&quot;tab-market&quot; class=&quot;tab-pane&quot;>
-    <div class=&quot;maint&quot;>
-      <i class=&quot;ti ti-tool&quot;></i>
-      <div class=&quot;maint-title&quot;>Section en maintenance</div>
-      <div class=&quot;maint-desc&quot;>L'analyse de marché globale (corrélations cross-asset, risk sentiment, positionnement COT, flux) est en cours de développement. Disponible prochainement.</div>
-    </div>
-  </div>
+  &lt;!-- ═══════ MARKET ANALYSIS TAB (maintenance) ═══════ --&gt;
+  &lt;div id=&quot;tab-market&quot; class=&quot;tab-pane&quot;&gt;
+    &lt;div class=&quot;maint&quot;&gt;
+      &lt;i class=&quot;ti ti-tool&quot;&gt;&lt;/i&gt;
+      &lt;div class=&quot;maint-title&quot;&gt;Section en maintenance&lt;/div&gt;
+      &lt;div class=&quot;maint-desc&quot;&gt;L'analyse de marché globale (corrélations cross-asset, risk sentiment, positionnement COT, flux) est en cours de développement. Disponible prochainement.&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
 
-</div>
+&lt;/div&gt;
 
-<div class=&quot;toast&quot; id=&quot;toast&quot;></div>
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot;&gt;&lt;/div&gt;
 
-<script>
+&lt;script&gt;
 /* ══════════════════════════════════════════════════════════════
    CONFIG — clés &amp; réglages.  ⚠️ Côté navigateur, ces clés sont
    visibles dans le code source. OK pour des clés gratuites/perso ;
@@ -2481,14 +2435,6 @@ const CONFIG = {
   FINNHUB_KEY: &quot;d8njp6hr01qvvn98gudgd8njp6hr01qvvn98gue0&quot;,
   BLS_KEY:     &quot;a17b23e584e5450694597f88fb80ccba&quot;,
   FRED_KEY:    &quot;507d43a7aaaf3e228041abfb01c717b0&quot;,
-
-  // ─── ANALYSE IA QUOTIDIENNE (Gemini) ────────────────────────────
-  // Clé créée sur https://aistudio.google.com (CORS OK depuis le navigateur).
-  // L'IA génère une analyse contextuelle complète (cycle, emploi, monétaire,
-  // inflation, géopo) — mise à jour une fois par jour max pour préserver le quota.
-  GEMINI_KEY:   'AQ.Ab8RN6Ifg1zGbECBJY_fVCl5Ag5Ky_bripuLqE9oZxC8RzvXsA',
-  GEMINI_MODEL: 'gemini-2.0-flash',
-  GEMINI_TTL_MS: 24 * 60 * 60 * 1000,  // cache IA : 24h (quotidien)
 
   CACHE_TTL_MS: 6 * 60 * 60 * 1000,   // 6h
   // Poids du score composite (somme = 1)
@@ -2577,7 +2523,7 @@ const RATE_EXPECTATIONS = {
 /* ══════════════════════════════════════════════════════════════
    ÉTAT
 ═══════════════════════════════════════════════════════════════ */
-let CCY_DATA = {};        // code -> { growth, inflation, unemp, score, dims, ... }
+let CCY_DATA = {};        // code -&gt; { growth, inflation, unemp, score, dims, ... }
 let activeCcy = null, activeSection = 'croissance';
 let allNews = [], newsFilter = 'ALL';
 
@@ -2587,10 +2533,10 @@ let allNews = [], newsFilter = 'ALL';
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
 function num(v){const n=parseFloat(v);return isNaN(n)?null:n;}
 function round2(n){return n==null?null:Math.round(n*100)/100;}  // 2 décimales max
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=&gt;t.classList.remove('show'),2800);}
 
 function cacheGet(key){
-  try{const r=JSON.parse(localStorage.getItem('fxmt_'+key));if(r&amp;&amp;Date.now()-r.t<CONFIG.CACHE_TTL_MS)return r.v;}catch(e){}
+  try{const r=JSON.parse(localStorage.getItem('fxmt_'+key));if(r&amp;&amp;Date.now()-r.t&lt;CONFIG.CACHE_TTL_MS)return r.v;}catch(e){}
   return null;
 }
 function cacheSet(key,v){try{localStorage.setItem('fxmt_'+key,JSON.stringify({t:Date.now(),v}));}catch(e){}}
@@ -2608,17 +2554,17 @@ function parseSDMXLatest(json){
   const ds=(data.dataSets&amp;&amp;data.dataSets[0])||(json.dataSets&amp;&amp;json.dataSets[0]);
   if(!struct||!ds)return null;
   const obsDims=(struct.dimensions&amp;&amp;struct.dimensions.observation)||[];
-  const timeIdx=obsDims.findIndex(d=>d.id==='TIME_PERIOD');
+  const timeIdx=obsDims.findIndex(d=&gt;d.id==='TIME_PERIOD');
   const obs=ds.observations||{};
   let best=null,bestTime=-1,bestLabel=null;
   for(const key in obs){
     const idxs=key.split(':').map(Number);
-    const ti=timeIdx>=0?idxs[timeIdx]:0;
-    if(ti>bestTime){
+    const ti=timeIdx&gt;=0?idxs[timeIdx]:0;
+    if(ti&gt;bestTime){
       bestTime=ti;
       const val=obs[key][0];
       best=(val===null||val===undefined)?null:parseFloat(val);
-      if(timeIdx>=0&amp;&amp;obsDims[timeIdx].values[ti])
+      if(timeIdx&gt;=0&amp;&amp;obsDims[timeIdx].values[ti])
         bestLabel=obsDims[timeIdx].values[ti].name||obsDims[timeIdx].values[ti].id;
     }
   }
@@ -2718,9 +2664,9 @@ async function fetchBLS_YoY(seriesId){           // variation annuelle d'un indi
   try{
     const j=await blsFetch([seriesId]);
     const series=j.Results.series[0].data;
-    if(series.length<13)return null;
+    if(series.length&lt;13)return null;
     const latest=series[0];
-    const yearAgo=series.find(d=>d.period===latest.period&amp;&amp;+d.year===+latest.year-1);
+    const yearAgo=series.find(d=&gt;d.period===latest.period&amp;&amp;+d.year===+latest.year-1);
     if(!yearAgo)return null;
     const yoy=((+latest.value-+yearAgo.value)/+yearAgo.value)*100;
     return {value:round2(yoy),period:latest.periodName+' '+latest.year,src:'BLS'};
@@ -2738,7 +2684,7 @@ async function fetchNFP(){   // NFP variation mensuelle (en milliers) — US onl
   try{
     const j=await blsFetch(['CES0000000001']);
     const s=j.Results.series[0].data;
-    if(s.length<2)return null;
+    if(s.length&lt;2)return null;
     const chg=Math.round((+s[0].value-(+s[1].value)));
     return {value:chg,period:s[0].periodName+' '+s[0].year,src:'BLS'};
   }catch(e){console.warn('BLS NFP',e.message);return null;}
@@ -2772,16 +2718,16 @@ async function fetchEmpRate(c){   // Taux d'emploi OCDE (non-US)
 function scoreGrowth(g,cli){
   if(g==null&amp;&amp;cli==null)return null;
   let base=g!=null?clamp(50+g*8,5,95):50;           // PIB a/a : 0%→50, +3%→74
-  if(cli!=null)base+=clamp((cli-100)*6,-15,15);      // CLI avancé : 100 neutre, >100 expansion
+  if(cli!=null)base+=clamp((cli-100)*6,-15,15);      // CLI avancé : 100 neutre, &gt;100 expansion
   return Math.round(clamp(base,5,95));
 }
 function scoreInflation(p){
   if(p==null)return null;
   // FX : modérément au-dessus de la cible (2%) = pression haussière taux = soutien.
-  // Trop chaud (>5) ou déflation = pénalité.
-  if(p<0)   return Math.round(clamp(30+p*4,5,40));        // déflation → bearish
-  if(p<1.5) return Math.round(clamp(40+p*6,40,50));        // sous cible → légèrement dovish
-  if(p<=4)  return Math.round(clamp(50+(p-1.5)*8,50,72));  // zone hawkish-friendly
+  // Trop chaud (&gt;5) ou déflation = pénalité.
+  if(p&lt;0)   return Math.round(clamp(30+p*4,5,40));        // déflation → bearish
+  if(p&lt;1.5) return Math.round(clamp(40+p*6,40,50));        // sous cible → légèrement dovish
+  if(p&lt;=4)  return Math.round(clamp(50+(p-1.5)*8,50,72));  // zone hawkish-friendly
   return Math.round(clamp(72-(p-4)*7,40,72));              // surchauffe → on retire
 }
 function scoreMonetary(code){
@@ -2803,25 +2749,25 @@ function computeScore(code,growth,cli,inflation){
   };
   const W=CONFIG.WEIGHTS;
   let sum=0,wsum=0;
-  const add=(s,w)=>{if(s!=null){sum+=s*w;wsum+=w;}};
+  const add=(s,w)=&gt;{if(s!=null){sum+=s*w;wsum+=w;}};
   add(g,W.growth);add(i,W.inflation);add(mo,W.monetary);add(ge,W.geo);
-  const composite=wsum>0?Math.round(sum/wsum):50;
+  const composite=wsum&gt;0?Math.round(sum/wsum):50;
   return {composite,dims};
 }
 
 function signalOf(score){
-  if(score>=58)return{cls:'buy-side',sCls:'s-buy',txt:'Acheter',short:'BUY'};
-  if(score>=50)return{cls:'buy-side',sCls:'s-buy',txt:'Biais acheteur',short:'BUY'};
-  if(score>=42)return{cls:'sell-side',sCls:'s-sell',txt:'Biais vendeur',short:'SELL'};
+  if(score&gt;=58)return{cls:'buy-side',sCls:'s-buy',txt:'Acheter',short:'BUY'};
+  if(score&gt;=50)return{cls:'buy-side',sCls:'s-buy',txt:'Biais acheteur',short:'BUY'};
+  if(score&gt;=42)return{cls:'sell-side',sCls:'s-sell',txt:'Biais vendeur',short:'SELL'};
   return{cls:'sell-side',sCls:'s-sell',txt:'Vendre',short:'SELL'};
 }
-function scoreColor(s){return s>=50?'var(--buy)':'var(--sell)';}
+function scoreColor(s){return s&gt;=50?'var(--buy)':'var(--sell)';}
 
 /* ══════════════════════════════════════════════════════════════
    CHARGEMENT GLOBAL
 ═══════════════════════════════════════════════════════════════ */
 async function loadAllCurrencies(){
-  await Promise.all(CURRENCIES.map(async c=>{
+  await Promise.all(CURRENCIES.map(async c=&gt;{
     const [growth,cli,inflation,coreCpi,unemp,nfp,ahe,lfp,empRate]=await Promise.all([
       fetchGrowth(c),fetchCLI(c),fetchInflation(c),fetchCoreCPI(c),fetchUnemp(c),
       c.us?fetchNFP():Promise.resolve(null),
@@ -2841,37 +2787,37 @@ async function loadAllCurrencies(){
 ═══════════════════════════════════════════════════════════════ */
 function renderGrid(){
   const grid=document.getElementById('ccy-grid');
-  const sorted=[...CURRENCIES].sort((a,b)=>{
+  const sorted=[...CURRENCIES].sort((a,b)=&gt;{
     const sa=CCY_DATA[a.code]?CCY_DATA[a.code].score:50;
     const sb=CCY_DATA[b.code]?CCY_DATA[b.code].score:50;
     return sb-sa;
   });
-  grid.innerHTML=sorted.map(c=>{
+  grid.innerHTML=sorted.map(c=&gt;{
     const d=CCY_DATA[c.code];
-    if(!d)return `<div class=&quot;ccy-card&quot;><div class=&quot;ccy-top&quot;><div class=&quot;ccy-flag&quot;>${c.flag}</div><div class=&quot;ccy-id&quot;><div class=&quot;ccy-code&quot;>${c.code}</div><div class=&quot;ccy-name&quot;>${c.name}</div></div><div class=&quot;ccy-score-wrap&quot;><div class=&quot;ccy-score&quot; style=&quot;color:var(--t4)&quot;>··</div></div></div><div class=&quot;empty-mini&quot; style=&quot;padding:8px 0 0;text-align:left;font-size:10px&quot;>Chargement…</div></div>`;
+    if(!d)return `&lt;div class=&quot;ccy-card&quot;&gt;&lt;div class=&quot;ccy-top&quot;&gt;&lt;div class=&quot;ccy-flag&quot;&gt;${c.flag}&lt;/div&gt;&lt;div class=&quot;ccy-id&quot;&gt;&lt;div class=&quot;ccy-code&quot;&gt;${c.code}&lt;/div&gt;&lt;div class=&quot;ccy-name&quot;&gt;${c.name}&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;ccy-score-wrap&quot;&gt;&lt;div class=&quot;ccy-score&quot; style=&quot;color:var(--t4)&quot;&gt;··&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;empty-mini&quot; style=&quot;padding:8px 0 0;text-align:left;font-size:10px&quot;&gt;Chargement…&lt;/div&gt;&lt;/div&gt;`;
     const sig=signalOf(d.score);
-    const dimChip=(lbl,o)=>{
+    const dimChip=(lbl,o)=&gt;{
       const v=o&amp;&amp;o.score!=null?o.score:'—';
       const col=o&amp;&amp;o.score!=null?scoreColor(o.score):'var(--t4)';
-      return `<div class=&quot;dim-chip&quot;>${lbl}<span class=&quot;dv&quot; style=&quot;color:${col}&quot;>${v}</span></div>`;
+      return `&lt;div class=&quot;dim-chip&quot;&gt;${lbl}&lt;span class=&quot;dv&quot; style=&quot;color:${col}&quot;&gt;${v}&lt;/span&gt;&lt;/div&gt;`;
     };
-    return `<div class=&quot;ccy-card ${sig.cls} ${activeCcy===c.code?'sel':''}&quot; onclick=&quot;openDetail('${c.code}')&quot;>
-      <div class=&quot;ccy-top&quot;>
-        <div class=&quot;ccy-flag&quot;>${c.flag}</div>
-        <div class=&quot;ccy-id&quot;><div class=&quot;ccy-code&quot;>${c.code}</div><div class=&quot;ccy-name&quot;>${c.name}</div></div>
-        <div class=&quot;ccy-score-wrap&quot;>
-          <div class=&quot;ccy-score&quot; style=&quot;color:${scoreColor(d.score)}&quot;>${d.score}</div>
-          <div class=&quot;ccy-signal ${sig.sCls}&quot;>${sig.short}</div>
-        </div>
-      </div>
-      <div class=&quot;ccy-bar-bg&quot;><div class=&quot;ccy-bar-mid&quot;></div><div class=&quot;ccy-bar-fill&quot; style=&quot;width:${d.score}%;background:${scoreColor(d.score)}&quot;></div></div>
-      <div class=&quot;ccy-dims&quot;>
+    return `&lt;div class=&quot;ccy-card ${sig.cls} ${activeCcy===c.code?'sel':''}&quot; onclick=&quot;openDetail('${c.code}')&quot;&gt;
+      &lt;div class=&quot;ccy-top&quot;&gt;
+        &lt;div class=&quot;ccy-flag&quot;&gt;${c.flag}&lt;/div&gt;
+        &lt;div class=&quot;ccy-id&quot;&gt;&lt;div class=&quot;ccy-code&quot;&gt;${c.code}&lt;/div&gt;&lt;div class=&quot;ccy-name&quot;&gt;${c.name}&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;ccy-score-wrap&quot;&gt;
+          &lt;div class=&quot;ccy-score&quot; style=&quot;color:${scoreColor(d.score)}&quot;&gt;${d.score}&lt;/div&gt;
+          &lt;div class=&quot;ccy-signal ${sig.sCls}&quot;&gt;${sig.short}&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;ccy-bar-bg&quot;&gt;&lt;div class=&quot;ccy-bar-mid&quot;&gt;&lt;/div&gt;&lt;div class=&quot;ccy-bar-fill&quot; style=&quot;width:${d.score}%;background:${scoreColor(d.score)}&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;ccy-dims&quot;&gt;
         ${dimChip('Crois.',d.dims.croissance)}
         ${dimChip('Infl.',d.dims.inflation)}
         ${dimChip('Mon.',d.dims.monetaire)}
         ${dimChip('Géo.',d.dims.geo)}
-      </div>
-    </div>`;
+      &lt;/div&gt;
+    &lt;/div&gt;`;
   }).join('');
 }
 
@@ -2892,217 +2838,213 @@ function openDetail(code){
   document.getElementById('detail-mount').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function closeDetail(){activeCcy=null;document.getElementById('detail-mount').innerHTML='';renderGrid();}
-function switchSection(k){activeSection=k;renderDetail();if(k==='monetaire')renderGeminiMon(activeCcy);}
+function switchSection(k){activeSection=k;renderDetail();}
 
 function dimDot(s){const c=s==null?'var(--t4)':scoreColor(s);return c;}
 
 function renderDetail(){
-  const c=CURRENCIES.find(x=>x.code===activeCcy);
+  const c=CURRENCIES.find(x=&gt;x.code===activeCcy);
   const d=CCY_DATA[activeCcy];if(!c||!d)return;
   const sig=signalOf(d.score);
 
-  const navHtml=SECTIONS.map(s=>{
+  const navHtml=SECTIONS.map(s=&gt;{
     const dm=d.dims[s.key];
-    return `<button class=&quot;dsec-btn ${activeSection===s.key?'active':''}&quot; onclick=&quot;switchSection('${s.key}')&quot;>
-      <span class=&quot;dsec-dot&quot; style=&quot;background:${dimDot(dm?dm.score:null)}&quot;></span>
-      <i class=&quot;ti ${s.icon}&quot; style=&quot;font-size:14px&quot;></i>${s.lbl}
-    </button>`;
+    return `&lt;button class=&quot;dsec-btn ${activeSection===s.key?'active':''}&quot; onclick=&quot;switchSection('${s.key}')&quot;&gt;
+      &lt;span class=&quot;dsec-dot&quot; style=&quot;background:${dimDot(dm?dm.score:null)}&quot;&gt;&lt;/span&gt;
+      &lt;i class=&quot;ti ${s.icon}&quot; style=&quot;font-size:14px&quot;&gt;&lt;/i&gt;${s.lbl}
+    &lt;/button&gt;`;
   }).join('');
 
   // score breakdown
-  const sbCell=(lbl,o)=>{
+  const sbCell=(lbl,o)=&gt;{
     const v=o&amp;&amp;o.score!=null?o.score:'—';
     const col=o&amp;&amp;o.score!=null?scoreColor(o.score):'var(--t4)';
     const w=o&amp;&amp;o.score!=null?o.score:0;
-    return `<div class=&quot;sb-cell&quot;><div class=&quot;sb-top&quot;><span class=&quot;sb-name&quot;>${lbl}</span><span class=&quot;sb-val&quot; style=&quot;color:${col}&quot;>${v}</span></div><div class=&quot;sb-bar-bg&quot;><div class=&quot;sb-bar&quot; style=&quot;width:${w}%;background:${col}&quot;></div></div></div>`;
+    return `&lt;div class=&quot;sb-cell&quot;&gt;&lt;div class=&quot;sb-top&quot;&gt;&lt;span class=&quot;sb-name&quot;&gt;${lbl}&lt;/span&gt;&lt;span class=&quot;sb-val&quot; style=&quot;color:${col}&quot;&gt;${v}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sb-bar-bg&quot;&gt;&lt;div class=&quot;sb-bar&quot; style=&quot;width:${w}%;background:${col}&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;
   };
 
   const sec=renderSectionContent(c,d);
 
   document.getElementById('detail-mount').innerHTML=`
-  <div class=&quot;detail&quot;>
-    <div class=&quot;detail-hd&quot;>
-      <div class=&quot;detail-flag&quot;>${c.flag}</div>
-      <div class=&quot;detail-id&quot;>
-        <div class=&quot;detail-code&quot;>${c.code}</div>
-        <div class=&quot;detail-name&quot;>${c.name} · ${c.country}</div>
-        <div class=&quot;detail-meta&quot;>
-          <span class=&quot;detail-sig ${sig.cls}&quot;>${d.score>=50?'▲':'▼'} ${sig.txt}</span>
-          <span style=&quot;font-size:11px;color:var(--t3);font-family:var(--mono)&quot;>Pondéré : croissance 25% · inflation 15% · monétaire 35% · géo 25%</span>
-        </div>
-      </div>
-      <div class=&quot;detail-scorebox&quot;>
-        <div class=&quot;num&quot; style=&quot;color:${scoreColor(d.score)}&quot;>${d.score}</div>
-        <div class=&quot;lbl&quot;>/ 100</div>
-      </div>
-      <button class=&quot;detail-close&quot; onclick=&quot;closeDetail()&quot;><i class=&quot;ti ti-x&quot;></i></button>
-    </div>
-    <div class=&quot;detail-body&quot;>
-      <div class=&quot;ai-live&quot; id=&quot;ai-live-mount&quot;></div>
-      <div class=&quot;score-break&quot;>
+  &lt;div class=&quot;detail&quot;&gt;
+    &lt;div class=&quot;detail-hd&quot;&gt;
+      &lt;div class=&quot;detail-flag&quot;&gt;${c.flag}&lt;/div&gt;
+      &lt;div class=&quot;detail-id&quot;&gt;
+        &lt;div class=&quot;detail-code&quot;&gt;${c.code}&lt;/div&gt;
+        &lt;div class=&quot;detail-name&quot;&gt;${c.name} · ${c.country}&lt;/div&gt;
+        &lt;div class=&quot;detail-meta&quot;&gt;
+          &lt;span class=&quot;detail-sig ${sig.cls}&quot;&gt;${d.score&gt;=50?'▲':'▼'} ${sig.txt}&lt;/span&gt;
+          &lt;span style=&quot;font-size:11px;color:var(--t3);font-family:var(--mono)&quot;&gt;Pondéré : croissance 25% · inflation 15% · monétaire 35% · géo 25%&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;detail-scorebox&quot;&gt;
+        &lt;div class=&quot;num&quot; style=&quot;color:${scoreColor(d.score)}&quot;&gt;${d.score}&lt;/div&gt;
+        &lt;div class=&quot;lbl&quot;&gt;/ 100&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;button class=&quot;detail-close&quot; onclick=&quot;closeDetail()&quot;&gt;&lt;i class=&quot;ti ti-x&quot;&gt;&lt;/i&gt;&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;detail-body&quot;&gt;
+      &lt;div class=&quot;score-break&quot;&gt;
         ${sbCell('Croissance',d.dims.croissance)}
         ${sbCell('Inflation',d.dims.inflation)}
         ${sbCell('Monétaire',d.dims.monetaire)}
         ${sbCell('Géopolitique',d.dims.geo)}
-      </div>
-      <div class=&quot;dsec-nav&quot;>${navHtml}</div>
-      <div>${sec}</div>
-    </div>
-  </div>`;
-  renderGemini(activeCcy);
-  if(activeSection==='monetaire')renderGeminiMon(activeCcy);
+      &lt;/div&gt;
+      &lt;div class=&quot;dsec-nav&quot;&gt;${navHtml}&lt;/div&gt;
+      &lt;div&gt;${sec}&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;`;
 }
 
 function srcBadge(o){
-  if(!o)return '<span class=&quot;src-tag src-na&quot;>N/A</span>';
-  return `<span class=&quot;src-tag src-live&quot;>LIVE · ${o.src}</span>`;
+  if(!o)return '&lt;span class=&quot;src-tag src-na&quot;&gt;N/A&lt;/span&gt;';
+  return `&lt;span class=&quot;src-tag src-live&quot;&gt;LIVE · ${o.src}&lt;/span&gt;`;
 }
 function kpi(lbl,val,sub,cls,badge){
-  return `<div class=&quot;kpi&quot;><div class=&quot;kpi-lbl&quot;><span>${lbl}</span>${badge||''}</div><div class=&quot;kpi-val ${cls||'kv-neu'}&quot;>${val}</div>${sub?`<div class=&quot;kpi-sub&quot;>${sub}</div>`:''}</div>`;
+  return `&lt;div class=&quot;kpi&quot;&gt;&lt;div class=&quot;kpi-lbl&quot;&gt;&lt;span&gt;${lbl}&lt;/span&gt;${badge||''}&lt;/div&gt;&lt;div class=&quot;kpi-val ${cls||'kv-neu'}&quot;&gt;${val}&lt;/div&gt;${sub?`&lt;div class=&quot;kpi-sub&quot;&gt;${sub}&lt;/div&gt;`:''}&lt;/div&gt;`;
 }
 
 function renderSectionContent(c,d){
   const code=c.code;
   if(activeSection==='croissance'){
     const g=d.growth,u=d.unemp;
-    const gv=g?(g.value>=0?'+':'')+g.value+'%':'Indisponible';
-    const gcls=g?(g.value>=2?'kv-pos':g.value>=0?'kv-neu':'kv-neg'):'';
+    const gv=g?(g.value&gt;=0?'+':'')+g.value+'%':'Indisponible';
+    const gcls=g?(g.value&gt;=2?'kv-pos':g.value&gt;=0?'kv-neu':'kv-neg'):'';
     const uv=u?u.value+'%':'Indisponible';
-    const ov=g?(g.value>=2.5?'Croissance solide':g.value>=1?'Croissance modérée':g.value>=0?'Croissance atone':'Contraction'):'Donnée OCDE indisponible';
+    const ov=g?(g.value&gt;=2.5?'Croissance solide':g.value&gt;=1?'Croissance modérée':g.value&gt;=0?'Croissance atone':'Contraction'):'Donnée OCDE indisponible';
     return `
-      <div class=&quot;dsec-overview&quot;>
-        <div class=&quot;dsec-ovh&quot;><i class=&quot;ti ti-chart-line&quot;></i> Croissance · ${g?'dernier point : '+g.period:'—'} <span class=&quot;dsec-sig-tag&quot; style=&quot;color:${g?scoreColor(d.dims.croissance.score):'var(--t3)'}&quot;>${ov}</span></div>
-        <div class=&quot;dsec-ovtxt&quot;>${growthNarrative(code,g,d)}</div>
-      </div>
-      <div class=&quot;kpi-row&quot;>
+      &lt;div class=&quot;dsec-overview&quot;&gt;
+        &lt;div class=&quot;dsec-ovh&quot;&gt;&lt;i class=&quot;ti ti-chart-line&quot;&gt;&lt;/i&gt; Croissance · ${g?'dernier point : '+g.period:'—'} &lt;span class=&quot;dsec-sig-tag&quot; style=&quot;color:${g?scoreColor(d.dims.croissance.score):'var(--t3)'}&quot;&gt;${ov}&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsec-ovtxt&quot;&gt;${growthNarrative(code,g,d)}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;kpi-row&quot;&gt;
         ${kpi('Croissance PIB (a/a)',gv,g?g.period:'',gcls,srcBadge(g))}
-        ${(()=>{const cl=d.cli;const cv=cl?cl.value:null;return kpi('Indicateur avancé (CLI)',cl?cv:'Indisponible',cl?cl.period+' · 100 = tendance':'Équivalent PMI (libre)',cl?(cv>=100?'kv-pos':'kv-neg'):'',srcBadge(cl));})()}
-        ${kpi('Taux de chômage',uv,u?u.period:'',u&amp;&amp;u.value<=5?'kv-pos':u&amp;&amp;u.value>=7?'kv-neg':'kv-neu',srcBadge(u))}
-        ${kpi('Sous-score croissance',(d.dims.croissance.score??'—')+(d.dims.croissance.score!=null?'/100':''),'Impact sur la note',d.dims.croissance.score>=50?'kv-pos':'kv-neg')}
-      </div>
-      <div class=&quot;analysis&quot;><div class=&quot;analysis-lbl&quot;><i class=&quot;ti ti-brain&quot;></i> Analyse &amp;amp; implications trading</div><div class=&quot;analysis-txt&quot;>${growthImplication(code,g,d)}</div></div>
+        ${(()=&gt;{const cl=d.cli;const cv=cl?cl.value:null;return kpi('Indicateur avancé (CLI)',cl?cv:'Indisponible',cl?cl.period+' · 100 = tendance':'Équivalent PMI (libre)',cl?(cv&gt;=100?'kv-pos':'kv-neg'):'',srcBadge(cl));})()}
+        ${kpi('Taux de chômage',uv,u?u.period:'',u&amp;&amp;u.value&lt;=5?'kv-pos':u&amp;&amp;u.value&gt;=7?'kv-neg':'kv-neu',srcBadge(u))}
+        ${kpi('Sous-score croissance',(d.dims.croissance.score??'—')+(d.dims.croissance.score!=null?'/100':''),'Impact sur la note',d.dims.croissance.score&gt;=50?'kv-pos':'kv-neg')}
+      &lt;/div&gt;
+      &lt;div class=&quot;analysis&quot;&gt;&lt;div class=&quot;analysis-lbl&quot;&gt;&lt;i class=&quot;ti ti-brain&quot;&gt;&lt;/i&gt; Analyse &amp;amp; implications trading&lt;/div&gt;&lt;div class=&quot;analysis-txt&quot;&gt;${growthImplication(code,g,d)}&lt;/div&gt;&lt;/div&gt;
       ${watchBlock(['Publication PIB trimestriel','PMI Manufacturier &amp; Services','Ventes au détail'])}`;
   }
   if(activeSection==='emploi'){
     const u=d.unemp,nfp=d.nfp,ahe=d.ahe,lfp=d.lfp,empRate=d.empRate;
     const uv=u?u.value+'%':'N/A';
-    const ucls=u?(u.value<=5?'kv-pos':u.value>=7?'kv-neg':'kv-neu'):'';
+    const ucls=u?(u.value&lt;=5?'kv-pos':u.value&gt;=7?'kv-neg':'kv-neu'):'';
     return `
-      <div class=&quot;dsec-overview&quot;>
-        <div class=&quot;dsec-ovh&quot;><i class=&quot;ti ti-users&quot;></i> Marché du travail · ${u?'chômage : '+u.period:empRate?'emploi : '+empRate.period:'—'}</div>
-        <div class=&quot;dsec-ovtxt&quot;>${emploiNarrative(code,d)}</div>
-      </div>
-      <div class=&quot;kpi-row&quot;>
+      &lt;div class=&quot;dsec-overview&quot;&gt;
+        &lt;div class=&quot;dsec-ovh&quot;&gt;&lt;i class=&quot;ti ti-users&quot;&gt;&lt;/i&gt; Marché du travail · ${u?'chômage : '+u.period:empRate?'emploi : '+empRate.period:'—'}&lt;/div&gt;
+        &lt;div class=&quot;dsec-ovtxt&quot;&gt;${emploiNarrative(code,d)}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;kpi-row&quot;&gt;
         ${kpi('Taux de chômage',uv,u?u.period:'',ucls,srcBadge(u))}
-        ${(()=>{if(code==='USD'&amp;&amp;lfp)return kpi('Participation (LFP)',lfp.value+'%',lfp.period,lfp.value>=62?'kv-pos':lfp.value>=60?'kv-neu':'kv-neg',srcBadge(lfp));if(empRate)return kpi('Taux d\'emploi',empRate.value+'%',empRate.period,empRate.value>=70?'kv-pos':empRate.value>=60?'kv-neu':'kv-neg',srcBadge(empRate));return kpi('Taux d\'emploi','N/A','Source OCDE indispo','kv-neu','<span class=&quot;src-tag src-na&quot;>N/A</span>');})()}
-        ${code==='USD'&amp;&amp;nfp?kpi('NFP (variation mensuelle)',(nfp.value>0?'+':'')+nfp.value+'k',nfp.period,nfp.value>=150?'kv-pos':nfp.value>=0?'kv-neu':'kv-neg',srcBadge(nfp)):kpi('NFP','—','US uniquement','kv-neu','')}
-        ${code==='USD'&amp;&amp;ahe?kpi('Salaires horaires (AHE a/a)',(ahe.value>=0?'+':'')+ahe.value+'%',ahe.period,ahe.value>4?'kv-neg':ahe.value>=2.5?'kv-pos':'kv-neu',srcBadge(ahe)):kpi('Salaires (AHE)','—','US uniquement','kv-neu','')}
-      </div>
-      <div class=&quot;analysis&quot;><div class=&quot;analysis-lbl&quot;><i class=&quot;ti ti-brain&quot;></i> Analyse &amp;amp; implications trading</div><div class=&quot;analysis-txt&quot;>${emploiImplication(code,d)}</div></div>
+        ${(()=&gt;{if(code==='USD'&amp;&amp;lfp)return kpi('Participation (LFP)',lfp.value+'%',lfp.period,lfp.value&gt;=62?'kv-pos':lfp.value&gt;=60?'kv-neu':'kv-neg',srcBadge(lfp));if(empRate)return kpi('Taux d\'emploi',empRate.value+'%',empRate.period,empRate.value&gt;=70?'kv-pos':empRate.value&gt;=60?'kv-neu':'kv-neg',srcBadge(empRate));return kpi('Taux d\'emploi','N/A','Source OCDE indispo','kv-neu','&lt;span class=&quot;src-tag src-na&quot;&gt;N/A&lt;/span&gt;');})()}
+        ${code==='USD'&amp;&amp;nfp?kpi('NFP (variation mensuelle)',(nfp.value&gt;0?'+':'')+nfp.value+'k',nfp.period,nfp.value&gt;=150?'kv-pos':nfp.value&gt;=0?'kv-neu':'kv-neg',srcBadge(nfp)):kpi('NFP','—','US uniquement','kv-neu','')}
+        ${code==='USD'&amp;&amp;ahe?kpi('Salaires horaires (AHE a/a)',(ahe.value&gt;=0?'+':'')+ahe.value+'%',ahe.period,ahe.value&gt;4?'kv-neg':ahe.value&gt;=2.5?'kv-pos':'kv-neu',srcBadge(ahe)):kpi('Salaires (AHE)','—','US uniquement','kv-neu','')}
+      &lt;/div&gt;
+      &lt;div class=&quot;analysis&quot;&gt;&lt;div class=&quot;analysis-lbl&quot;&gt;&lt;i class=&quot;ti ti-brain&quot;&gt;&lt;/i&gt; Analyse &amp;amp; implications trading&lt;/div&gt;&lt;div class=&quot;analysis-txt&quot;&gt;${emploiImplication(code,d)}&lt;/div&gt;&lt;/div&gt;
       ${watchBlock(['NFP (Non-Farm Payrolls)','Taux de chômage mensuel','Salaires horaires moyens (AHE)','Taux de participation / JOLTS'])}`;
   }
   if(activeSection==='inflation'){
     const p=d.inflation;
-    const pv=p?(p.value>=0?'+':'')+p.value+'%':'Indisponible';
-    const pcls=p?(p.value>4?'kv-neg':p.value>=1.5?'kv-pos':'kv-neu'):'';
-    const ov=p?(p.value>4?'Inflation élevée':p.value>=1.5?'Proche / au-dessus de la cible':p.value>=0?'Sous la cible':'Déflation'):'Donnée indisponible';
+    const pv=p?(p.value&gt;=0?'+':'')+p.value+'%':'Indisponible';
+    const pcls=p?(p.value&gt;4?'kv-neg':p.value&gt;=1.5?'kv-pos':'kv-neu'):'';
+    const ov=p?(p.value&gt;4?'Inflation élevée':p.value&gt;=1.5?'Proche / au-dessus de la cible':p.value&gt;=0?'Sous la cible':'Déflation'):'Donnée indisponible';
     return `
-      <div class=&quot;dsec-overview&quot;>
-        <div class=&quot;dsec-ovh&quot;><i class=&quot;ti ti-flame&quot;></i> Inflation · ${p?'dernier point : '+p.period:'—'} <span class=&quot;dsec-sig-tag&quot; style=&quot;color:${p?scoreColor(d.dims.inflation.score):'var(--t3)'}&quot;>${ov}</span></div>
-        <div class=&quot;dsec-ovtxt&quot;>${inflationNarrative(code,p)}</div>
-      </div>
-      <div class=&quot;kpi-row&quot;>
+      &lt;div class=&quot;dsec-overview&quot;&gt;
+        &lt;div class=&quot;dsec-ovh&quot;&gt;&lt;i class=&quot;ti ti-flame&quot;&gt;&lt;/i&gt; Inflation · ${p?'dernier point : '+p.period:'—'} &lt;span class=&quot;dsec-sig-tag&quot; style=&quot;color:${p?scoreColor(d.dims.inflation.score):'var(--t3)'}&quot;&gt;${ov}&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsec-ovtxt&quot;&gt;${inflationNarrative(code,p)}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;kpi-row&quot;&gt;
         ${kpi('Inflation CPI (a/a)',pv,p?p.period:'',pcls,srcBadge(p))}
-        ${(()=>{const cc=d.coreCpi;if(cc)return kpi('Core CPI (hors alim/énergie)',(cc.value>=0?'+':'')+cc.value+'%',cc.period,cc.value>4?'kv-neg':cc.value>=1.5?'kv-pos':'kv-neu',srcBadge(cc));return kpi('Core CPI (hors alim/énergie)','N/A',c.us?'—':'Source libre cross-pays indispo.','kv-neu','<span class=&quot;src-tag src-na&quot;>N/A</span>');})()}
+        ${(()=&gt;{const cc=d.coreCpi;if(cc)return kpi('Core CPI (hors alim/énergie)',(cc.value&gt;=0?'+':'')+cc.value+'%',cc.period,cc.value&gt;4?'kv-neg':cc.value&gt;=1.5?'kv-pos':'kv-neu',srcBadge(cc));return kpi('Core CPI (hors alim/énergie)','N/A',c.us?'—':'Source libre cross-pays indispo.','kv-neu','&lt;span class=&quot;src-tag src-na&quot;&gt;N/A&lt;/span&gt;');})()}
         ${kpi('Cible banque centrale','≈ 2%','Standard',pcls)}
-        ${kpi('Sous-score inflation',(d.dims.inflation.score??'—')+(d.dims.inflation.score!=null?'/100':''),'Impact sur la note',d.dims.inflation.score>=50?'kv-pos':'kv-neg')}
-      </div>
-      <div class=&quot;analysis&quot;><div class=&quot;analysis-lbl&quot;><i class=&quot;ti ti-brain&quot;></i> Analyse &amp;amp; implications trading</div><div class=&quot;analysis-txt&quot;>${inflationImplication(code,p)}</div></div>
+        ${kpi('Sous-score inflation',(d.dims.inflation.score??'—')+(d.dims.inflation.score!=null?'/100':''),'Impact sur la note',d.dims.inflation.score&gt;=50?'kv-pos':'kv-neg')}
+      &lt;/div&gt;
+      &lt;div class=&quot;analysis&quot;&gt;&lt;div class=&quot;analysis-lbl&quot;&gt;&lt;i class=&quot;ti ti-brain&quot;&gt;&lt;/i&gt; Analyse &amp;amp; implications trading&lt;/div&gt;&lt;div class=&quot;analysis-txt&quot;&gt;${inflationImplication(code,p)}&lt;/div&gt;&lt;/div&gt;
       ${watchBlock(['CPI / PCE mensuel','Inflation des services (core)','Anticipations d\'inflation','Salaires'])}`;
   }
   if(activeSection==='monetaire'){
     const m=MONETARY[code];const re=RATE_EXPECTATIONS[code];
     return `
-      <div class=&quot;dsec-overview&quot;>
-        <div class=&quot;dsec-ovh&quot;><i class=&quot;ti ti-building-bank&quot;></i> Politique monétaire <span class=&quot;src-tag src-est&quot;>EST · ${LAST_MANUAL_UPDATE}</span> <span class=&quot;dsec-sig-tag&quot; style=&quot;color:${scoreColor(d.dims.monetaire.score)}&quot;>${m.stance}</span></div>
-        <div class=&quot;dsec-ovtxt&quot;>${m.note}</div>
-      </div>
-      <div class=&quot;ai-live&quot; id=&quot;ai-mon-mount&quot;></div>
-      <div class=&quot;kpi-row&quot;>
-        ${kpi('Taux directeur',m.rate,'Actuel','kv-neu','<span class=&quot;src-tag src-est&quot;>EST</span>')}
-        ${kpi('Orientation',m.stance,(m.bias>0?'Biais hawkish (+'+m.bias+')':m.bias<0?'Biais dovish ('+m.bias+')':'Neutre'),m.bias>0?'kv-pos':m.bias<0?'kv-neg':'kv-neu')}
-        ${kpi('Sous-score monétaire',d.dims.monetaire.score+'/100','Poids fort (35%)',d.dims.monetaire.score>=50?'kv-pos':'kv-neg')}
+      &lt;div class=&quot;dsec-overview&quot;&gt;
+        &lt;div class=&quot;dsec-ovh&quot;&gt;&lt;i class=&quot;ti ti-building-bank&quot;&gt;&lt;/i&gt; Politique monétaire &lt;span class=&quot;src-tag src-est&quot;&gt;EST · ${LAST_MANUAL_UPDATE}&lt;/span&gt; &lt;span class=&quot;dsec-sig-tag&quot; style=&quot;color:${scoreColor(d.dims.monetaire.score)}&quot;&gt;${m.stance}&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsec-ovtxt&quot;&gt;${m.note}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;kpi-row&quot;&gt;
+        ${kpi('Taux directeur',m.rate,'Actuel','kv-neu','&lt;span class=&quot;src-tag src-est&quot;&gt;EST&lt;/span&gt;')}
+        ${kpi('Orientation',m.stance,(m.bias&gt;0?'Biais hawkish (+'+m.bias+')':m.bias&lt;0?'Biais dovish ('+m.bias+')':'Neutre'),m.bias&gt;0?'kv-pos':m.bias&lt;0?'kv-neg':'kv-neu')}
+        ${kpi('Sous-score monétaire',d.dims.monetaire.score+'/100','Poids fort (35%)',d.dims.monetaire.score&gt;=50?'kv-pos':'kv-neg')}
         ${re?kpi('Prochaine réunion',re.meeting,'Hold '+re.hold+'% · Cut '+re.cut+'% · Hike '+re.hike+'%','kv-neu'):''}
-      </div>
-      <div class=&quot;analysis&quot;><div class=&quot;analysis-lbl&quot;><i class=&quot;ti ti-brain&quot;></i> Analyse &amp;amp; implications trading</div><div class=&quot;analysis-txt&quot;>${monetaryImplication(code,m,d)}</div></div>
+      &lt;/div&gt;
+      &lt;div class=&quot;analysis&quot;&gt;&lt;div class=&quot;analysis-lbl&quot;&gt;&lt;i class=&quot;ti ti-brain&quot;&gt;&lt;/i&gt; Analyse &amp;amp; implications trading&lt;/div&gt;&lt;div class=&quot;analysis-txt&quot;&gt;${monetaryImplication(code,m,d)}&lt;/div&gt;&lt;/div&gt;
       ${watchBlock(['Décision de taux','Discours / minutes','Dot plot &amp; projections','Différentiel de taux'])}`;
   }
   // geo
   const ge=GEO[code];
   return `
-    <div class=&quot;dsec-overview&quot;>
-      <div class=&quot;dsec-ovh&quot;><i class=&quot;ti ti-world&quot;></i> Géopolitique &amp;amp; risque <span class=&quot;src-tag src-est&quot;>EST · ${LAST_MANUAL_UPDATE}</span> <span class=&quot;dsec-sig-tag&quot; style=&quot;color:${scoreColor(ge.score)}&quot;>${ge.score>=60?'Favorable / refuge':ge.score>=45?'Neutre':'Défavorable'}</span></div>
-      <div class=&quot;dsec-ovtxt&quot;>${ge.note}</div>
-    </div>
-    <div class=&quot;kpi-row&quot;>
-      ${kpi('Score géopolitique',ge.score+'/100','Stabilité / statut refuge',ge.score>=55?'kv-pos':ge.score>=45?'kv-neu':'kv-neg','<span class=&quot;src-tag src-est&quot;>EST</span>')}
-      ${kpi('Profil',ge.score>=60?'Valeur refuge':ge.score>=45?'Cyclique neutre':'Risque élevé','En contexte de stress',ge.score>=55?'kv-pos':'kv-neg')}
-    </div>
-    <div class=&quot;analysis&quot;><div class=&quot;analysis-lbl&quot;><i class=&quot;ti ti-brain&quot;></i> Analyse &amp;amp; implications trading</div><div class=&quot;analysis-txt&quot;>${geoImplication(code,ge)}</div></div>
+    &lt;div class=&quot;dsec-overview&quot;&gt;
+      &lt;div class=&quot;dsec-ovh&quot;&gt;&lt;i class=&quot;ti ti-world&quot;&gt;&lt;/i&gt; Géopolitique &amp;amp; risque &lt;span class=&quot;src-tag src-est&quot;&gt;EST · ${LAST_MANUAL_UPDATE}&lt;/span&gt; &lt;span class=&quot;dsec-sig-tag&quot; style=&quot;color:${scoreColor(ge.score)}&quot;&gt;${ge.score&gt;=60?'Favorable / refuge':ge.score&gt;=45?'Neutre':'Défavorable'}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;dsec-ovtxt&quot;&gt;${ge.note}&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;kpi-row&quot;&gt;
+      ${kpi('Score géopolitique',ge.score+'/100','Stabilité / statut refuge',ge.score&gt;=55?'kv-pos':ge.score&gt;=45?'kv-neu':'kv-neg','&lt;span class=&quot;src-tag src-est&quot;&gt;EST&lt;/span&gt;')}
+      ${kpi('Profil',ge.score&gt;=60?'Valeur refuge':ge.score&gt;=45?'Cyclique neutre':'Risque élevé','En contexte de stress',ge.score&gt;=55?'kv-pos':'kv-neg')}
+    &lt;/div&gt;
+    &lt;div class=&quot;analysis&quot;&gt;&lt;div class=&quot;analysis-lbl&quot;&gt;&lt;i class=&quot;ti ti-brain&quot;&gt;&lt;/i&gt; Analyse &amp;amp; implications trading&lt;/div&gt;&lt;div class=&quot;analysis-txt&quot;&gt;${geoImplication(code,ge)}&lt;/div&gt;&lt;/div&gt;
     ${watchBlock(['Élections / risque politique','Conflits &amp; tensions régionales','Flux de capitaux','Prix des matières premières'])}`;
 }
 
 function watchBlock(items){
-  return `<div class=&quot;watch&quot;><div class=&quot;watch-lbl&quot;><i class=&quot;ti ti-radar&quot; style=&quot;font-size:12px&quot;></i> À surveiller</div><div class=&quot;watch-list&quot;>${items.map(i=>`<span class=&quot;watch-item&quot;><i class=&quot;ti ti-eye&quot; style=&quot;font-size:11px&quot;></i>${i}</span>`).join('')}</div></div>`;
+  return `&lt;div class=&quot;watch&quot;&gt;&lt;div class=&quot;watch-lbl&quot;&gt;&lt;i class=&quot;ti ti-radar&quot; style=&quot;font-size:12px&quot;&gt;&lt;/i&gt; À surveiller&lt;/div&gt;&lt;div class=&quot;watch-list&quot;&gt;${items.map(i=&gt;`&lt;span class=&quot;watch-item&quot;&gt;&lt;i class=&quot;ti ti-eye&quot; style=&quot;font-size:11px&quot;&gt;&lt;/i&gt;${i}&lt;/span&gt;`).join('')}&lt;/div&gt;&lt;/div&gt;`;
 }
 
 /* ── Narratifs (data-aware) ── */
 function growthNarrative(code,g,d){
   const cli=d&amp;&amp;d.cli;
-  const cliTxt=cli?` L'indicateur avancé OCDE (CLI) est à <b>${cli.value}</b> (${cli.value>=100?'au-dessus de 100 → momentum d\'expansion':'sous 100 → momentum de ralentissement'}).`:'';
-  if(!g)return (cli?`Le PIB annuel OCDE n'est pas disponible pour ${code}, mais l'indicateur avancé (CLI) à <b>${cli.value}</b> ${cli.value>=100?'pointe vers une expansion':'signale un ralentissement'}.`:`La donnée de croissance OCDE n'est pas disponible actuellement pour ${code}. Le sous-score croissance est exclu du calcul et la note se base sur les autres dimensions.`);
+  const cliTxt=cli?` L'indicateur avancé OCDE (CLI) est à &lt;b&gt;${cli.value}&lt;/b&gt; (${cli.value&gt;=100?'au-dessus de 100 → momentum d\'expansion':'sous 100 → momentum de ralentissement'}).`:'';
+  if(!g)return (cli?`Le PIB annuel OCDE n'est pas disponible pour ${code}, mais l'indicateur avancé (CLI) à &lt;b&gt;${cli.value}&lt;/b&gt; ${cli.value&gt;=100?'pointe vers une expansion':'signale un ralentissement'}.`:`La donnée de croissance OCDE n'est pas disponible actuellement pour ${code}. Le sous-score croissance est exclu du calcul et la note se base sur les autres dimensions.`);
   const v=g.value;
-  if(v>=2.5)return `L'économie affiche une croissance robuste de <b>${v}%</b>, signe d'une demande interne solide qui soutient structurellement la devise et donne des marges de manœuvre à la banque centrale.`+cliTxt;
-  if(v>=1)return `Croissance modérée de <b>${v}%</b> : l'expansion se poursuit sans surchauffe. Contexte globalement neutre-positif pour la devise.`+cliTxt;
-  if(v>=0)return `Croissance atone (<b>${v}%</b>) : l'économie stagne, ce qui plaide pour une politique plus accommodante et tend à peser sur la devise.`+cliTxt;
-  return `Contraction de <b>${v}%</b> : l'économie se replie, scénario défavorable à la devise et propice à un assouplissement monétaire.`+cliTxt;
+  if(v&gt;=2.5)return `L'économie affiche une croissance robuste de &lt;b&gt;${v}%&lt;/b&gt;, signe d'une demande interne solide qui soutient structurellement la devise et donne des marges de manœuvre à la banque centrale.`+cliTxt;
+  if(v&gt;=1)return `Croissance modérée de &lt;b&gt;${v}%&lt;/b&gt; : l'expansion se poursuit sans surchauffe. Contexte globalement neutre-positif pour la devise.`+cliTxt;
+  if(v&gt;=0)return `Croissance atone (&lt;b&gt;${v}%&lt;/b&gt;) : l'économie stagne, ce qui plaide pour une politique plus accommodante et tend à peser sur la devise.`+cliTxt;
+  return `Contraction de &lt;b&gt;${v}%&lt;/b&gt; : l'économie se replie, scénario défavorable à la devise et propice à un assouplissement monétaire.`+cliTxt;
 }
 function growthImplication(code,g,d){
   const s=d.dims.croissance.score;
   if(!g)return `Sans donnée de croissance fiable, privilégiez les autres piliers (monétaire surtout) pour cadrer votre biais sur ${code}. À recroiser dès que l'OCDE republie.`;
-  const dir=s>=50?'soutient un biais acheteur':'renforce un biais vendeur';
+  const dir=s&gt;=50?'soutient un biais acheteur':'renforce un biais vendeur';
   return `Le différentiel de croissance est un moteur de moyen terme du change. Ici, la dynamique ${dir} sur ${code}. Pratique : comparez ce score à celui de la devise opposée dans une paire — un écart de croissance large (ex. ${code} fort vs devise faible) offre les configurations directionnelles les plus propres. Confirmez avec la politique monétaire avant d'engager.`;
 }
 function inflationNarrative(code,p){
   if(!p)return `Donnée d'inflation indisponible pour ${code} actuellement. Sous-score inflation exclu du calcul.`;
   const v=p.value;
-  if(v>4)return `Inflation élevée à <b>${v}%</b>, nettement au-dessus de la cible. Cela maintient la pression pour des taux restrictifs (soutien court terme) mais fait planer un risque d'instabilité si elle ne reflue pas.`;
-  if(v>=1.5)return `Inflation à <b>${v}%</b>, proche ou au-dessus de la cible de 2%. Zone qui entretient un biais restrictif modéré, plutôt favorable à la devise.`;
-  if(v>=0)return `Inflation faible (<b>${v}%</b>), sous la cible : la banque centrale dispose de latitude pour assouplir, ce qui tend à affaiblir la devise.`;
-  return `Déflation (<b>${v}%</b>) : signal défavorable fort, qui pousse à un assouplissement agressif et pèse sur la devise.`;
+  if(v&gt;4)return `Inflation élevée à &lt;b&gt;${v}%&lt;/b&gt;, nettement au-dessus de la cible. Cela maintient la pression pour des taux restrictifs (soutien court terme) mais fait planer un risque d'instabilité si elle ne reflue pas.`;
+  if(v&gt;=1.5)return `Inflation à &lt;b&gt;${v}%&lt;/b&gt;, proche ou au-dessus de la cible de 2%. Zone qui entretient un biais restrictif modéré, plutôt favorable à la devise.`;
+  if(v&gt;=0)return `Inflation faible (&lt;b&gt;${v}%&lt;/b&gt;), sous la cible : la banque centrale dispose de latitude pour assouplir, ce qui tend à affaiblir la devise.`;
+  return `Déflation (&lt;b&gt;${v}%&lt;/b&gt;) : signal défavorable fort, qui pousse à un assouplissement agressif et pèse sur la devise.`;
 }
 function inflationImplication(code,p){
   if(!p)return `À recroiser dès publication. L'inflation pilote en grande partie les anticipations de taux — pilier le plus lourd du score.`;
   const v=p.value;
-  if(v>4)return `Une inflation forte est à double tranchant : haussière à court terme (hausses de taux anticipées) mais source de volatilité. Tradez les <b>surprises</b> vs consensus plutôt que le niveau absolu — un chiffre supérieur aux attentes provoque typiquement une appréciation immédiate de ${code}, surtout si la banque centrale est jugée crédible.`;
-  if(v>=1.5)return `Inflation autour de la cible : configuration «&amp;nbsp;Goldilocks&amp;nbsp;» qui n'oblige pas la banque centrale à assouplir. Neutre-positif pour ${code}. Surveillez surtout la composante <b>services / core</b>, plus collante, qui dicte la trajectoire des taux.`;
+  if(v&gt;4)return `Une inflation forte est à double tranchant : haussière à court terme (hausses de taux anticipées) mais source de volatilité. Tradez les &lt;b&gt;surprises&lt;/b&gt; vs consensus plutôt que le niveau absolu — un chiffre supérieur aux attentes provoque typiquement une appréciation immédiate de ${code}, surtout si la banque centrale est jugée crédible.`;
+  if(v&gt;=1.5)return `Inflation autour de la cible : configuration «&amp;nbsp;Goldilocks&amp;nbsp;» qui n'oblige pas la banque centrale à assouplir. Neutre-positif pour ${code}. Surveillez surtout la composante &lt;b&gt;services / core&lt;/b&gt;, plus collante, qui dicte la trajectoire des taux.`;
   return `Inflation basse = munitions pour assouplir = pression baissière sur ${code}. Recherchez les paires où ${code} (inflation faible) fait face à une devise à inflation/taux plus élevés : le portage joue contre ${code}.`;
 }
 function monetaryImplication(code,m,d){
   const re=RATE_EXPECTATIONS[code];
-  const base=`La politique monétaire est le pilier le plus lourd du score (35%) car le <b>différentiel de taux</b> est le premier moteur du Forex. Orientation actuelle pour ${code} : <b>${m.stance}</b> (${m.bias>0?'hawkish':m.bias<0?'dovish':'neutre'}).`;
+  const base=`La politique monétaire est le pilier le plus lourd du score (35%) car le &lt;b&gt;différentiel de taux&lt;/b&gt; est le premier moteur du Forex. Orientation actuelle pour ${code} : &lt;b&gt;${m.stance}&lt;/b&gt; (${m.bias&gt;0?'hawkish':m.bias&lt;0?'dovish':'neutre'}).`;
   let trade;
-  if(m.bias>15)trade=` Un biais hawkish attire les flux de portage et soutient ${code} : privilégiez les achats de ${code} contre une devise dovish (assouplissement actif).`;
-  else if(m.bias<-15)trade=` Un biais dovish érode l'attrait de ${code} : privilégiez les ventes de ${code} contre une devise dont la banque centrale reste ferme.`;
-  else trade=` Orientation neutre : ${code} réagira surtout aux <b>surprises</b> (réunions, données d'inflation) plutôt qu'à une tendance de taux établie.`;
-  const meet=re?` Prochain rendez-vous : <b>${re.meeting}</b> — le marché price ${re.hold}% de statu quo, ${re.cut}% de baisse, ${re.hike}% de hausse. Un repricing de ces probabilités est le catalyseur le plus tradable.`:'';
+  if(m.bias&gt;15)trade=` Un biais hawkish attire les flux de portage et soutient ${code} : privilégiez les achats de ${code} contre une devise dovish (assouplissement actif).`;
+  else if(m.bias&lt;-15)trade=` Un biais dovish érode l'attrait de ${code} : privilégiez les ventes de ${code} contre une devise dont la banque centrale reste ferme.`;
+  else trade=` Orientation neutre : ${code} réagira surtout aux &lt;b&gt;surprises&lt;/b&gt; (réunions, données d'inflation) plutôt qu'à une tendance de taux établie.`;
+  const meet=re?` Prochain rendez-vous : &lt;b&gt;${re.meeting}&lt;/b&gt; — le marché price ${re.hold}% de statu quo, ${re.cut}% de baisse, ${re.hike}% de hausse. Un repricing de ces probabilités est le catalyseur le plus tradable.`:'';
   return base+trade+meet;
 }
 function geoImplication(code,ge){
   if(ge.impl)return ge.impl;
-  if(ge.score>=60)return `${code} joue un rôle de <b>refuge</b> : il s'apprécie quand l'aversion au risque monte.`;
-  if(ge.score>=45)return `Profil géopolitique neutre pour ${code} : pas de biais fort, amplificateur ponctuel lors d'événements spécifiques.`;
-  return `${code} est une devise à <b>haut bêta du risque</b> : elle souffre en stress de marché et se joue en risk-on confirmé.`;
+  if(ge.score&gt;=60)return `${code} joue un rôle de &lt;b&gt;refuge&lt;/b&gt; : il s'apprécie quand l'aversion au risque monte.`;
+  if(ge.score&gt;=45)return `Profil géopolitique neutre pour ${code} : pas de biais fort, amplificateur ponctuel lors d'événements spécifiques.`;
+  return `${code} est une devise à &lt;b&gt;haut bêta du risque&lt;/b&gt; : elle souffre en stress de marché et se joue en risk-on confirmé.`;
 }
 
 function emploiNarrative(code,d){
@@ -3110,33 +3052,33 @@ function emploiNarrative(code,d){
   if(code==='USD'){
     if(!u&amp;&amp;!nfp)return `Données d'emploi US temporairement indisponibles. Le NFP mensuel et le taux de chômage sont les indicateurs clés pour la Fed.`;
     let txt='';
-    if(u)txt+=`Le taux de chômage s'établit à <b>${u.value}%</b> (${u.period})`;
-    if(nfp)txt+=(txt?`, avec une variation NFP de <b>${nfp.value>0?'+':''}${nfp.value}k</b> postes créés (${nfp.period})`:`NFP : <b>${nfp.value>0?'+':''}${nfp.value}k</b> postes (${nfp.period})`);
-    if(ahe)txt+=`. Les salaires horaires moyens (AHE) progressent de <b>${ahe.value}%</b> en glissement annuel`;
-    if(lfp)txt+=`. Le taux de participation atteint <b>${lfp.value}%</b>`;
+    if(u)txt+=`Le taux de chômage s'établit à &lt;b&gt;${u.value}%&lt;/b&gt; (${u.period})`;
+    if(nfp)txt+=(txt?`, avec une variation NFP de &lt;b&gt;${nfp.value&gt;0?'+':''}${nfp.value}k&lt;/b&gt; postes créés (${nfp.period})`:`NFP : &lt;b&gt;${nfp.value&gt;0?'+':''}${nfp.value}k&lt;/b&gt; postes (${nfp.period})`);
+    if(ahe)txt+=`. Les salaires horaires moyens (AHE) progressent de &lt;b&gt;${ahe.value}%&lt;/b&gt; en glissement annuel`;
+    if(lfp)txt+=`. Le taux de participation atteint &lt;b&gt;${lfp.value}%&lt;/b&gt;`;
     return txt+'.';
   }
   if(!u&amp;&amp;!empRate)return `Données d'emploi OCDE indisponibles pour ${code} actuellement.`;
   let txt='';
-  if(u)txt+=`Le taux de chômage s'établit à <b>${u.value}%</b> (${u.period})`;
-  if(empRate)txt+=(txt?`. Le taux d'emploi est de <b>${empRate.value}%</b> (${empRate.period})`:`Taux d'emploi : <b>${empRate.value}%</b> (${empRate.period})`);
+  if(u)txt+=`Le taux de chômage s'établit à &lt;b&gt;${u.value}%&lt;/b&gt; (${u.period})`;
+  if(empRate)txt+=(txt?`. Le taux d'emploi est de &lt;b&gt;${empRate.value}%&lt;/b&gt; (${empRate.period})`:`Taux d'emploi : &lt;b&gt;${empRate.value}%&lt;/b&gt; (${empRate.period})`);
   return txt+'.';
 }
 
 function emploiImplication(code,d){
   const u=d.unemp;
   const low=u&amp;&amp;u.value&lt;5;
-  const high=u&amp;&amp;u.value>7;
+  const high=u&amp;&amp;u.value&gt;7;
   const ahe=d.ahe;
   let base=`Le marché du travail est un pilier critique pour la politique monétaire : un emploi tendu alimente les salaires, qui alimentent l'inflation des services — le composant le plus résistant. `;
   if(code==='USD'){
-    base+=`Pour la Fed, le duo <b>NFP + AHE</b> est le signal le plus suivi : un NFP fort combiné à une AHE >3% maintient la pression hawkish. `;
-    if(ahe&amp;&amp;ahe.value>4)base+=`L'AHE actuelle à <b>${ahe.value}%</b> reste élevée — argument pour des taux restrictifs plus longtemps, soutien structurel pour le USD.`;
-    else if(ahe&amp;&amp;ahe.value&lt;3)base+=`L'AHE à <b>${ahe.value}%</b> se modère — signal dovish pour la Fed, pression sur le USD si la tendance se confirme.`;
+    base+=`Pour la Fed, le duo &lt;b&gt;NFP + AHE&lt;/b&gt; est le signal le plus suivi : un NFP fort combiné à une AHE &gt;3% maintient la pression hawkish. `;
+    if(ahe&amp;&amp;ahe.value&gt;4)base+=`L'AHE actuelle à &lt;b&gt;${ahe.value}%&lt;/b&gt; reste élevée — argument pour des taux restrictifs plus longtemps, soutien structurel pour le USD.`;
+    else if(ahe&amp;&amp;ahe.value&lt;3)base+=`L'AHE à &lt;b&gt;${ahe.value}%&lt;/b&gt; se modère — signal dovish pour la Fed, pression sur le USD si la tendance se confirme.`;
   }
-  if(low)return base+` Chômage bas = marché du travail tendu = pressions salariales persistantes = banque centrale sous pression de maintenir des taux fermes. Soutien structurel pour <b>${code}</b>. Une surprise haussière (emploi encore plus fort) serait le catalyseur de nouvelle appréciation.`;
-  if(high)return base+` Chômage élevé = marché du travail en détente = pression dovish croissante sur la banque centrale. Poids sur <b>${code}</b>. Une amélioration surprise (baisse du chômage, NFP solide) constituerait le catalyseur haussier le plus puissant.`;
-  return base+`Marché du travail équilibré : l'emploi seul ne délivre pas de signal directionnel fort. Croisez avec l'AHE et le core CPI pour jauger la marge de manœuvre de la banque centrale sur <b>${code}</b>.`;
+  if(low)return base+` Chômage bas = marché du travail tendu = pressions salariales persistantes = banque centrale sous pression de maintenir des taux fermes. Soutien structurel pour &lt;b&gt;${code}&lt;/b&gt;. Une surprise haussière (emploi encore plus fort) serait le catalyseur de nouvelle appréciation.`;
+  if(high)return base+` Chômage élevé = marché du travail en détente = pression dovish croissante sur la banque centrale. Poids sur &lt;b&gt;${code}&lt;/b&gt;. Une amélioration surprise (baisse du chômage, NFP solide) constituerait le catalyseur haussier le plus puissant.`;
+  return base+`Marché du travail équilibré : l'emploi seul ne délivre pas de signal directionnel fort. Croisez avec l'AHE et le core CPI pour jauger la marge de manœuvre de la banque centrale sur &lt;b&gt;${code}&lt;/b&gt;.`;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -3156,65 +3098,65 @@ const CCY_KEYWORDS={
 function tagNews(text){
   const t=(text||'').toLowerCase();const tags=[];
   for(const [c,kws] of Object.entries(CCY_KEYWORDS)){
-    if(kws.some(k=>t.includes(k)))tags.push(c);
+    if(kws.some(k=&gt;t.includes(k)))tags.push(c);
   }
   return tags;
 }
 function relTime(ts){
   const s=Math.floor((Date.now()-ts*1000)/1000);
-  if(s<60)return 'à l\'instant';
-  if(s<3600)return Math.floor(s/60)+' min';
-  if(s<86400)return Math.floor(s/3600)+' h';
+  if(s&lt;60)return 'à l\'instant';
+  if(s&lt;3600)return Math.floor(s/60)+' min';
+  if(s&lt;86400)return Math.floor(s/3600)+' h';
   return Math.floor(s/86400)+' j';
 }
 async function loadNews(){
   try{
     const cats=['forex','general'];
-    const results=await Promise.all(cats.map(cat=>finnhubNews(cat).catch(()=>[])));
+    const results=await Promise.all(cats.map(cat=&gt;finnhubNews(cat).catch(()=&gt;[])));
     let items=[].concat(...results);
     const seen=new Set();
-    items=items.filter(n=>{if(!n.headline||seen.has(n.id))return false;seen.add(n.id);return true;});
-    items.forEach(n=>{n._tags=tagNews(n.headline+' '+(n.summary||''));});
-    items.sort((a,b)=>b.datetime-a.datetime);
+    items=items.filter(n=&gt;{if(!n.headline||seen.has(n.id))return false;seen.add(n.id);return true;});
+    items.forEach(n=&gt;{n._tags=tagNews(n.headline+' '+(n.summary||''));});
+    items.sort((a,b)=&gt;b.datetime-a.datetime);
     allNews=items.slice(0,60);
     buildNewsToolbar();renderNews();buildTicker();
   }catch(e){
-    document.getElementById('news-feed').innerHTML=`<div class=&quot;news-loading&quot;>Flux indisponible (${e.message}). Vérifiez la clé Finnhub.</div>`;
+    document.getElementById('news-feed').innerHTML=`&lt;div class=&quot;news-loading&quot;&gt;Flux indisponible (${e.message}). Vérifiez la clé Finnhub.&lt;/div&gt;`;
   }
 }
 function buildNewsToolbar(){
   const counts={ALL:allNews.length};
-  CURRENCIES.forEach(c=>counts[c.code]=allNews.filter(n=>n._tags.includes(c.code)).length);
+  CURRENCIES.forEach(c=&gt;counts[c.code]=allNews.filter(n=&gt;n._tags.includes(c.code)).length);
   const tb=document.getElementById('news-toolbar');
-  const btn=(k,lbl)=>`<button class=&quot;news-filter ${newsFilter===k?'active':''}&quot; onclick=&quot;setNewsFilter('${k}')&quot;>${lbl}${counts[k]?` <span style=&quot;opacity:.6&quot;>${counts[k]}</span>`:''}</button>`;
-  tb.innerHTML=btn('ALL','Tout')+CURRENCIES.filter(c=>counts[c.code]>0).map(c=>btn(c.code,c.flag+' '+c.code)).join('');
+  const btn=(k,lbl)=&gt;`&lt;button class=&quot;news-filter ${newsFilter===k?'active':''}&quot; onclick=&quot;setNewsFilter('${k}')&quot;&gt;${lbl}${counts[k]?` &lt;span style=&quot;opacity:.6&quot;&gt;${counts[k]}&lt;/span&gt;`:''}&lt;/button&gt;`;
+  tb.innerHTML=btn('ALL','Tout')+CURRENCIES.filter(c=&gt;counts[c.code]&gt;0).map(c=&gt;btn(c.code,c.flag+' '+c.code)).join('');
 }
 function setNewsFilter(k){newsFilter=k;buildNewsToolbar();renderNews();}
 function renderNews(){
   const feed=document.getElementById('news-feed');
-  let items=newsFilter==='ALL'?allNews:allNews.filter(n=>n._tags.includes(newsFilter));
-  if(!items.length){feed.innerHTML='<div class=&quot;news-loading&quot;>Aucune actualité pour ce filtre.</div>';return;}
-  feed.innerHTML=items.map(n=>`
-    <div class=&quot;news-item&quot; onclick=&quot;window.open('${(n.url||'#').replace(/'/g,'')}','_blank')&quot;>
-      <div class=&quot;news-time&quot;><b>${relTime(n.datetime)}</b>${new Date(n.datetime*1000).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>
-      <div class=&quot;news-main&quot;>
-        <div class=&quot;news-head&quot;>${n.headline}</div>
-        ${n.summary?`<div class=&quot;news-sum&quot;>${n.summary}</div>`:''}
-        <div class=&quot;news-foot&quot;>
-          <span class=&quot;news-src&quot;>${(n.source||'').toUpperCase()}</span>
-          ${n._tags.map(t=>`<span class=&quot;news-ccy&quot;>${t}</span>`).join('')}
-        </div>
-      </div>
-      ${n.image?`<img class=&quot;news-thumb&quot; src=&quot;${n.image}&quot; loading=&quot;lazy&quot; onerror=&quot;this.style.display='none'&quot;>`:''}
-    </div>`).join('');
+  let items=newsFilter==='ALL'?allNews:allNews.filter(n=&gt;n._tags.includes(newsFilter));
+  if(!items.length){feed.innerHTML='&lt;div class=&quot;news-loading&quot;&gt;Aucune actualité pour ce filtre.&lt;/div&gt;';return;}
+  feed.innerHTML=items.map(n=&gt;`
+    &lt;div class=&quot;news-item&quot; onclick=&quot;window.open('${(n.url||'#').replace(/'/g,'')}','_blank')&quot;&gt;
+      &lt;div class=&quot;news-time&quot;&gt;&lt;b&gt;${relTime(n.datetime)}&lt;/b&gt;${new Date(n.datetime*1000).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}&lt;/div&gt;
+      &lt;div class=&quot;news-main&quot;&gt;
+        &lt;div class=&quot;news-head&quot;&gt;${n.headline}&lt;/div&gt;
+        ${n.summary?`&lt;div class=&quot;news-sum&quot;&gt;${n.summary}&lt;/div&gt;`:''}
+        &lt;div class=&quot;news-foot&quot;&gt;
+          &lt;span class=&quot;news-src&quot;&gt;${(n.source||'').toUpperCase()}&lt;/span&gt;
+          ${n._tags.map(t=&gt;`&lt;span class=&quot;news-ccy&quot;&gt;${t}&lt;/span&gt;`).join('')}
+        &lt;/div&gt;
+      &lt;/div&gt;
+      ${n.image?`&lt;img class=&quot;news-thumb&quot; src=&quot;${n.image}&quot; loading=&quot;lazy&quot; onerror=&quot;this.style.display='none'&quot;&gt;`:''}
+    &lt;/div&gt;`).join('');
 }
 function buildTicker(){
   const inner=document.getElementById('ticker-inner');
   const head=allNews.slice(0,18);
-  if(!head.length){inner.innerHTML='<div class=&quot;ticker-item&quot;>En attente du flux…</div>';return;}
-  const make=n=>{
+  if(!head.length){inner.innerHTML='&lt;div class=&quot;ticker-item&quot;&gt;En attente du flux…&lt;/div&gt;';return;}
+  const make=n=&gt;{
     const tag=n._tags[0]||'FX';
-    return `<div class=&quot;ticker-item&quot;><b class=&quot;flat&quot;>${tag}</b>${n.headline}</div>`;
+    return `&lt;div class=&quot;ticker-item&quot;&gt;&lt;b class=&quot;flat&quot;&gt;${tag}&lt;/b&gt;${n.headline}&lt;/div&gt;`;
   };
   inner.innerHTML=(head.map(make).join('')).repeat(2);
 }
@@ -3224,25 +3166,25 @@ function buildTicker(){
 ═══════════════════════════════════════════════════════════════ */
 function renderRateExpectations(){
   const grid=document.getElementById('rate-grid');
-  grid.innerHTML=Object.entries(RATE_EXPECTATIONS).map(([code,r])=>{
-    const seg=(cls,v,lbl)=>v>0?`<div class=&quot;rate-seg ${cls}&quot; style=&quot;width:${v}%&quot; title=&quot;${lbl} ${v}%&quot;>${v>=12?v+'%':''}</div>`:'';
-    return `<div class=&quot;rate-card&quot;>
-      <div class=&quot;rate-hd&quot;>
-        <div class=&quot;rate-cb&quot;><span class=&quot;rate-flag&quot;>${r.flag}</span><span class=&quot;rate-bank&quot;>${r.bank} · ${code}</span></div>
-        <span class=&quot;rate-now&quot;>${r.rate}</span>
-      </div>
-      <div class=&quot;rate-meet&quot;>Prochaine réunion : <b>${r.meeting}</b></div>
-      <div class=&quot;rate-bars&quot;>
+  grid.innerHTML=Object.entries(RATE_EXPECTATIONS).map(([code,r])=&gt;{
+    const seg=(cls,v,lbl)=&gt;v&gt;0?`&lt;div class=&quot;rate-seg ${cls}&quot; style=&quot;width:${v}%&quot; title=&quot;${lbl} ${v}%&quot;&gt;${v&gt;=12?v+'%':''}&lt;/div&gt;`:'';
+    return `&lt;div class=&quot;rate-card&quot;&gt;
+      &lt;div class=&quot;rate-hd&quot;&gt;
+        &lt;div class=&quot;rate-cb&quot;&gt;&lt;span class=&quot;rate-flag&quot;&gt;${r.flag}&lt;/span&gt;&lt;span class=&quot;rate-bank&quot;&gt;${r.bank} · ${code}&lt;/span&gt;&lt;/div&gt;
+        &lt;span class=&quot;rate-now&quot;&gt;${r.rate}&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;rate-meet&quot;&gt;Prochaine réunion : &lt;b&gt;${r.meeting}&lt;/b&gt;&lt;/div&gt;
+      &lt;div class=&quot;rate-bars&quot;&gt;
         ${seg('seg-hike',r.hike,'Hausse')}
         ${seg('seg-hold',r.hold,'Statu quo')}
         ${seg('seg-cut',r.cut,'Baisse')}
-      </div>
-      <div class=&quot;rate-legend&quot;>
-        <span><i style=&quot;background:var(--buy)&quot;></i>Hausse ${r.hike}%</span>
-        <span><i style=&quot;background:var(--amber)&quot;></i>Statu quo ${r.hold}%</span>
-        <span><i style=&quot;background:var(--sell)&quot;></i>Baisse ${r.cut}%</span>
-      </div>
-    </div>`;
+      &lt;/div&gt;
+      &lt;div class=&quot;rate-legend&quot;&gt;
+        &lt;span&gt;&lt;i style=&quot;background:var(--buy)&quot;&gt;&lt;/i&gt;Hausse ${r.hike}%&lt;/span&gt;
+        &lt;span&gt;&lt;i style=&quot;background:var(--amber)&quot;&gt;&lt;/i&gt;Statu quo ${r.hold}%&lt;/span&gt;
+        &lt;span&gt;&lt;i style=&quot;background:var(--sell)&quot;&gt;&lt;/i&gt;Baisse ${r.cut}%&lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;`;
   }).join('');
 }
 
@@ -3250,9 +3192,9 @@ function renderRateExpectations(){
    NAV / THEME / CLOCK / INIT
 ═══════════════════════════════════════════════════════════════ */
 function switchTab(t){
-  document.querySelectorAll('.cmd-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.cmd-tab').forEach(b=&gt;b.classList.remove('active'));
   document.getElementById('tab-btn-'+t).classList.add('active');
-  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=&gt;p.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
   window.scrollTo(0,0);
 }
@@ -3267,7 +3209,7 @@ function tickClock(){
   document.getElementById('clock').textContent=d.toLocaleTimeString('fr-FR',{hour12:false})+' '+Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop();
 }
 async function refreshAll(){
-  Object.keys(localStorage).filter(k=>k.startsWith('fxmt_')&amp;&amp;k!=='fxmt_theme').forEach(k=>localStorage.removeItem(k));
+  Object.keys(localStorage).filter(k=&gt;k.startsWith('fxmt_')&amp;&amp;k!=='fxmt_theme').forEach(k=&gt;localStorage.removeItem(k));
   toast('Rafraîchissement des données…');
   CCY_DATA={};renderGrid();
   await loadAllCurrencies();
@@ -3276,169 +3218,6 @@ async function refreshAll(){
   toast('Données à jour ✅');
 }
 
-/* ══════════════════════════════════════════════════════════════
-   ANALYSE IA QUOTIDIENNE (Gemini) — contexte macro complet par devise.
-   Cache 24h : une seule requête par devise par jour max.
-═══════════════════════════════════════════════════════════════ */
-function newsForCcy(code){
-  return (allNews||[]).filter(n=>n._tags&amp;&amp;n._tags.includes(code)).slice(0,12);
-}
-function aiCacheKey(code){return 'fxmt_gemini_'+code;}
-function geminiConfigured(){const k=CONFIG.GEMINI_KEY;return k&amp;&amp;k.indexOf('__')!==0&amp;&amp;k.length>15;}
-
-async function callGemini(prompt){
-  const url='https://generativelanguage.googleapis.com/v1beta/models/'+CONFIG.GEMINI_MODEL+':generateContent?key='+CONFIG.GEMINI_KEY;
-  const res=await fetch(url,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      contents:[{parts:[{text:prompt}]}],
-      generationConfig:{temperature:0.25,maxOutputTokens:900,responseMimeType:'application/json'}
-    })
-  });
-  if(!res.ok){let t='';try{t=await res.text();}catch(e){}throw{status:res.status,msg:t.slice(0,200)};}
-  const j=await res.json();
-  return j&amp;&amp;j.candidates&amp;&amp;j.candidates[0]&amp;&amp;j.candidates[0].content&amp;&amp;j.candidates[0].content.parts
-    ?j.candidates[0].content.parts[0].text:'';
-}
-
-async function getGeminiAnalysis(code,force){
-  const ck=aiCacheKey(code);
-  const news=newsForCcy(code);
-  const sig=news.map(n=>n.id).join(',');
-  if(!force){
-    try{const r=JSON.parse(localStorage.getItem(ck));
-      if(r&amp;&amp;Date.now()-r.t&lt;CONFIG.GEMINI_TTL_MS&amp;&amp;r.sig===sig)return r.v;}catch(e){}
-  }
-  if(!geminiConfigured())throw{nokey:true};
-  const c=CURRENCIES.find(x=>x.code===code)||{};
-  const d=CCY_DATA[code]||{dims:{}};
-  const m=MONETARY[code]||{},ge=GEO[code]||{};
-  const ctx=[
-    `Devise analysée : ${code} (${c.name||''}, ${c.country||''}).`,
-    `Score composite macro actuel : ${d.score!=null?d.score+'/100':'non calculé'}.`,
-    `\n--- CROISSANCE ---`,
-    d.growth?`PIB annuel a/a : ${d.growth.value}% (${d.growth.period}).`:'PIB : donnée indisponible.',
-    d.cli?`Indicateur avancé CLI OCDE : ${d.cli.value} (100 = tendance LT ; au-dessus = expansion).`:'CLI : indisponible.',
-    `\n--- MARCHÉ DU TRAVAIL ---`,
-    d.unemp?`Taux de chômage : ${d.unemp.value}% (${d.unemp.period}).`:'Chômage : indisponible.',
-    d.nfp?`NFP mensuel (US) : ${d.nfp.value>0?'+':''}${d.nfp.value}k postes (${d.nfp.period}).`:'',
-    d.ahe?`Salaires horaires moyens AHE a/a (US) : +${d.ahe.value}% (${d.ahe.period}).`:'',
-    d.lfp?`Taux de participation (US) : ${d.lfp.value}% (${d.lfp.period}).`:'',
-    d.empRate?`Taux d\'emploi (OCDE) : ${d.empRate.value}% (${d.empRate.period}).`:'',
-    `\n--- INFLATION ---`,
-    d.inflation?`CPI a/a : ${d.inflation.value>0?'+':''}${d.inflation.value}% (${d.inflation.period}).`:'CPI : indisponible.',
-    d.coreCpi?`Core CPI a/a (hors alim/énergie) : +${d.coreCpi.value}%.`:'',
-    `\n--- POLITIQUE MONÉTAIRE ---`,
-    `Taux directeur : ${m.rate||'?'}. Orientation : ${m.stance||'?'}.`,
-    m.note||'',
-    `\n--- GÉOPOLITIQUE ---`,
-    `Score géopolitique : ${ge.score!=null?ge.score+'/100':'?'}. ${ge.note||''}`
-  ].filter(x=>x!==undefined&amp;&amp;x!=='').join('\n');
-  const newsTxt=news.length
-    ?news.map((n,i)=>`${i+1}. [${new Date(n.datetime*1000).toLocaleDateString('fr-FR')}] ${n.headline}${n.summary?' — '+n.summary.slice(0,180):''}`).join('\n')
-    :'(aucune actualité spécifique récente — base-toi UNIQUEMENT sur les données macro structurelles fournies pour livrer une analyse contextuelle complète)';
-  const prompt=`Tu es un analyste macro FX senior. Tu dois produire une ANALYSE CONTEXTUELLE COMPLÈTE de la devise ${code}, pas un simple résumé de news. Objectif : expliquer OÙ EN EST L\'ÉCONOMIE DANS SON CYCLE, les vrais drivers structurels, la situation réelle du marché du travail, et le biais de marché actuel. Si des news récentes sont disponibles, intègre-les. Si non, base-toi entièrement sur les données macro fournies pour donner un contexte riche. Réponds UNIQUEMENT par un objet JSON valide, en français, sans markdown autour.\n\n${ctx}\n\nACTUALITÉS RÉCENTES taguées ${code} (plus récentes en premier) :\n${newsTxt}\n\nRéponds avec EXACTEMENT ce schéma JSON :\n{"bias":"Acheteur|Neutre|Vendeur","titre":"phrase de 6 à 12 mots sur la situation","analyse":"3 à 5 phrases : contexte du cycle économique, drivers structurels, où en est la croissance/emploi/inflation RÉELLEMENT, implications pour la devise — NE PAS juste résumer les headlines","refuge":"1 phrase sur le statut refuge ou cyclique RÉEL de cette devise dans le régime actuel","drivers":["driver 1","driver 2","driver 3"]}`;
-  const raw=await callGemini(prompt);
-  let parsed;
-  try{parsed=JSON.parse(raw);}catch(e){parsed={titre:'Analyse contextuelle',analyse:raw||'Réponse vide.',bias:'Neutre',refuge:'',drivers:[]};}
-  parsed._n=news.length;
-  localStorage.setItem(ck,JSON.stringify({t:Date.now(),sig:sig,v:parsed}));
-  return parsed;
-}
-function biasClass(b){b=(b||'').toLowerCase();return b.indexOf('ach')>=0?'pos':b.indexOf('vend')>=0?'neg':'neu';}
-function aiCardHtml(a){
-  const cl=biasClass(a.bias);
-  const col=cl==='pos'?'var(--buy)':cl==='neg'?'var(--sell)':'var(--amber)';
-  const updatedAt=a._t?new Date(a._t).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
-  return `
-    <div class=&quot;ai-hd&quot;>
-      <span class=&quot;ai-badge&quot;><span class=&quot;ai-dot&quot;></span>ANALYSE IA · Gemini</span>
-      <span class=&quot;ai-bias&quot; style=&quot;color:${col};border-color:${col}&quot;>${a.bias||'Neutre'}</span>
-      <span class=&quot;ai-meta&quot;>${a._n||0} actu(s)${updatedAt?' · '+updatedAt:''}</span>
-    </div>
-    ${a.titre?`<div class=&quot;ai-title&quot;>${a.titre}</div>`:''}
-    ${a.analyse?`<div class=&quot;ai-txt&quot;>${a.analyse}</div>`:''}
-    ${a.refuge?`<div class=&quot;ai-refuge&quot;><i class=&quot;ti ti-shield-half&quot;></i><span>${a.refuge}</span></div>`:''}
-    ${(a.drivers&amp;&amp;a.drivers.length)?`<div class=&quot;ai-drivers&quot;>${a.drivers.map(x=>`<span class=&quot;ai-driver&quot;>${x}</span>`).join('')}</div>`:''}
-    <button class=&quot;ai-refresh&quot; onclick=&quot;regenGemini('${activeCcy}')&quot;><i class=&quot;ti ti-refresh&quot;></i> Régénérer (use quota)</button>`;
-}
-async function renderGemini(code){
-  const mount=document.getElementById('ai-live-mount');
-  if(!mount||activeCcy!==code)return;
-  try{const r=JSON.parse(localStorage.getItem(aiCacheKey(code)));
-    const sig=newsForCcy(code).map(n=>n.id).join(',');
-    if(r&amp;&amp;Date.now()-r.t&lt;CONFIG.GEMINI_TTL_MS&amp;&amp;r.sig===sig){mount.innerHTML=aiCardHtml(r.v);return;}
-  }catch(e){}
-  if(!geminiConfigured()){
-    mount.innerHTML=`<div class=&quot;ai-hd&quot;><span class=&quot;ai-badge&quot;><span class=&quot;ai-dot&quot;></span>ANALYSE IA</span></div><div class=&quot;ai-err&quot;>Clé Gemini non configurée — ajoute-la dans <code>CONFIG.GEMINI_KEY</code>.</div>`;
-    return;
-  }
-  mount.innerHTML=`<div class=&quot;ai-loading&quot;><div class=&quot;spinner&quot;></div> Analyse contextuelle ${code} en cours (Gemini)…</div>`;
-  try{
-    const a=await getGeminiAnalysis(code,false);
-    if(activeCcy!==code)return;
-    mount.innerHTML=aiCardHtml(a);
-  }catch(e){
-    if(activeCcy!==code)return;
-    const msg=e&amp;&amp;e.nokey?'Clé Gemini non configurée.':e&amp;&amp;e.status===400?'Clé Gemini invalide (400).':e&amp;&amp;e.status===429?'Quota Gemini atteint — réessaie demain.':('Analyse indisponible'+(e&amp;&amp;e.msg?' — '+e.msg:''));
-    mount.innerHTML=`<div class=&quot;ai-hd&quot;><span class=&quot;ai-badge&quot;><span class=&quot;ai-dot&quot;></span>ANALYSE IA</span></div><div class=&quot;ai-err&quot;>${msg}</div><button class=&quot;ai-refresh&quot; onclick=&quot;regenGemini('${code}')&quot;><i class=&quot;ti ti-refresh&quot;></i> Réessayer</button>`;
-  }
-}
-function regenGemini(code){try{localStorage.removeItem(aiCacheKey(code));}catch(e){}renderGemini(code);}
-
-/* ── Estimation IA du biais de politique monétaire (qualitatif, ≠ probas marché) ── */
-async function getGeminiMonetary(code,force){
-  const ck='fxmt_geminimon_'+code;
-  const news=newsForCcy(code);
-  const sig=news.map(n=>n.id).join(',');
-  if(!force){try{const r=JSON.parse(localStorage.getItem(ck));if(r&amp;&amp;Date.now()-r.t&lt;CONFIG.GEMINI_TTL_MS&amp;&amp;r.sig===sig)return r.v;}catch(e){}}
-  if(!geminiConfigured())throw{nokey:true};
-  const c=CURRENCIES.find(x=>x.code===code)||{};
-  const m=MONETARY[code]||{},re=RATE_EXPECTATIONS[code]||{};
-  const d=CCY_DATA[code]||{};
-  const ctx=[
-    `Devise : ${code} (${c.name||''}). Banque centrale : ${re.bank||'?'}.`,
-    `Taux directeur actuel : ${m.rate||re.rate||'?'}.`,
-    `Prochaine réunion : ${re.meeting||'?'}.`,
-    `Orientation structurelle : ${m.stance||'?'} — ${m.note||''}`,
-    d.inflation?`Inflation CPI a/a : ${d.inflation.value}%.`:'',
-    d.unemp?`Chômage : ${d.unemp.value}%.`:'',
-    d.nfp?`NFP dernier : ${d.nfp.value>0?'+':''}${d.nfp.value}k.`:'',
-    d.ahe?`AHE a/a : +${d.ahe.value}%.`:''
-  ].filter(Boolean).join('\n');
-  const newsTxt=news.length?news.map((n,i)=>`${i+1}. [${new Date(n.datetime*1000).toLocaleDateString('fr-FR')}] ${n.headline}${n.summary?' — '+n.summary.slice(0,160):''}`).join('\n'):'(pas d\'actualité récente — base-toi sur le contexte structurel et les données macro fournies)';
-  const prompt=`Tu es un stratégiste taux. À partir du contexte macro et des actualités, estime le biais de politique monétaire pour la prochaine réunion de ${re.bank||'la banque centrale'}. Ne donne JAMAIS de probabilités chiffrées (elles viennent du marché des futures) — donne un biais qualitatif. Réponds UNIQUEMENT par un objet JSON valide, en français, sans markdown.\n\n${ctx}\n\nACTUALITÉS RÉCENTES taguées ${code} :\n${newsTxt}\n\nRéponds avec EXACTEMENT ce JSON :\n{"lean":"Hausse|Statu quo|Baisse","stance":"Hawkish|Neutre|Dovish","confiance":"faible|modérée|élevée","rationnel":"2 à 3 phrases sur les éléments déterminants (inflation, emploi, croissance, discours récents)","surveiller":["donnée 1","donnée 2","donnée 3"]}`;
-  const raw=await callGemini(prompt);
-  let parsed;try{parsed=JSON.parse(raw);}catch(e){parsed={lean:'Statu quo',stance:'Neutre',confiance:'faible',rationnel:raw||'Réponse vide.',surveiller:[]};}
-  parsed._n=news.length;
-  localStorage.setItem(ck,JSON.stringify({t:Date.now(),sig:sig,v:parsed}));
-  return parsed;
-}
-function leanColor(l){l=(l||'').toLowerCase();return l.indexOf('hauss')>=0?'var(--buy)':l.indexOf('baiss')>=0?'var(--sell)':'var(--amber)';}
-function monCardHtml(a){
-  const col=leanColor(a.lean);
-  return `
-    <div class=&quot;ai-hd&quot;>
-      <span class=&quot;ai-badge&quot;><span class=&quot;ai-dot&quot;></span>ESTIMATION IA · Gemini</span>
-      <span class=&quot;ai-bias&quot; style=&quot;color:${col};border-color:${col}&quot;>${a.lean||'Statu quo'}</span>
-      <span class=&quot;ai-meta&quot;>${a.stance||''} · conf. ${a.confiance||'—'} · ${a._n||0} actu(s)</span>
-    </div>
-    ${a.rationnel?`<div class=&quot;ai-txt&quot;>${a.rationnel}</div>`:''}
-    <div class=&quot;ai-refuge&quot; style=&quot;color:var(--t2);background:var(--panel2);border:1px solid var(--bd)&quot;><i class=&quot;ti ti-info-circle&quot;></i><span>Biais <b>qualitatif</b> estimé par IA — ce ne sont <b>pas</b> des probabilités de marché (celles-ci viennent du pricing des futures de taux courts).</span></div>
-    ${(a.surveiller&amp;&amp;a.surveiller.length)?`<div class=&quot;ai-drivers&quot;>${a.surveiller.map(x=>`<span class=&quot;ai-driver&quot;>${x}</span>`).join('')}</div>`:''}
-    <button class=&quot;ai-refresh&quot; onclick=&quot;regenGeminiMon('${activeCcy}')&quot;><i class=&quot;ti ti-refresh&quot;></i> Régénérer (use quota)</button>`;
-}
-async function renderGeminiMon(code){
-  const mount=document.getElementById('ai-mon-mount');
-  if(!mount||activeCcy!==code||activeSection!=='monetaire')return;
-  try{const r=JSON.parse(localStorage.getItem('fxmt_geminimon_'+code));const sig=newsForCcy(code).map(n=>n.id).join(',');if(r&amp;&amp;Date.now()-r.t&lt;CONFIG.GEMINI_TTL_MS&amp;&amp;r.sig===sig){mount.innerHTML=monCardHtml(r.v);return;}}catch(e){}
-  if(!geminiConfigured()){mount.innerHTML=`<div class=&quot;ai-hd&quot;><span class=&quot;ai-badge&quot;><span class=&quot;ai-dot&quot;></span>ESTIMATION IA</span></div><div class=&quot;ai-err&quot;>Clé Gemini non configurée.</div>`;return;}
-  mount.innerHTML=`<div class=&quot;ai-loading&quot;><div class=&quot;spinner&quot;></div> Estimation biais monétaire ${code} (Gemini)…</div>`;
-  try{const a=await getGeminiMonetary(code,false);if(activeCcy!==code||activeSection!=='monetaire')return;mount.innerHTML=monCardHtml(a);}
-  catch(e){if(activeCcy!==code)return;const msg=e&amp;&amp;e.nokey?'Clé Gemini non configurée.':e&amp;&amp;e.status===400?'Clé Gemini invalide.':e&amp;&amp;e.status===429?'Quota Gemini atteint — réessaie demain.':('Estimation indisponible'+(e&amp;&amp;e.msg?' — '+e.msg:''));mount.innerHTML=`<div class=&quot;ai-hd&quot;><span class=&quot;ai-badge&quot;><span class=&quot;ai-dot&quot;></span>ESTIMATION IA</span></div><div class=&quot;ai-err&quot;>${msg}</div><button class=&quot;ai-refresh&quot; onclick=&quot;regenGeminiMon('${code}')&quot;><i class=&quot;ti ti-refresh&quot;></i> Réessayer</button>`;}
-}
-function regenGeminiMon(code){try{localStorage.removeItem('fxmt_geminimon_'+code);}catch(e){}renderGeminiMon(code);}
 
 function init(){
   if(localStorage.getItem('fxmt_theme')==='light'){document.body.classList.add('light');document.getElementById('theme-icon').className='ti ti-moon';}
@@ -3449,7 +3228,7 @@ function init(){
   loadNews();
 }
 window.addEventListener('load',init);
-</script>
+&lt;/script&gt;
 "></iframe>
     </div>
 
@@ -3466,18 +3245,6 @@ window.addEventListener('load',init);
         </div>
     </div>
 
-    <div class="modal-wrap" id="analysisModal">
-        <div class="modal-overlay" onclick="closeAnalysisModal()"></div>
-        <div class="modal-box">
-            <div style="font-size:15px;font-weight:600;color:var(--fx-vl);margin-bottom:4px">📥 Mes analyses de trades</div>
-            <div style="font-size:12px;color:var(--fx-muted);margin-bottom:14px">Colle ici tes notes / analyses sur l'ensemble de tes trades. L'IA les combinera avec tes statistiques pour générer Forces, Faiblesses et Recommandations. <span style="color:var(--fx-muted2)">(Stocké localement sur cet appareil.)</span></div>
-            <textarea id="analysisText" class="fx-fc" style="width:100%;min-height:220px;resize:vertical;font-family:inherit;line-height:1.6" placeholder="Ex : Je coupe mes gains trop tôt en session NY. Je surtrade après une perte. Mes meilleurs setups sont les pullbacks H4 sur EURUSD…"></textarea>
-            <div style="display:flex;gap:8px;margin-top:14px">
-                <button class="fx-submit" onclick="saveAnalysisNotes()" style="flex:1">Enregistrer &amp; analyser</button>
-                <button class="btn-close-modal" onclick="closeAnalysisModal()" style="flex:1;margin-top:0">Fermer</button>
-            </div>
-        </div>
-    </div>
 
     <script>
     // ── THEME ─────────────────────────────────────────────────────
@@ -4160,8 +3927,6 @@ window.addEventListener('load',init);
         document.getElementById('fx-empty-analyse').style.display = has ? 'none' : 'block';
         document.getElementById('fx-analyse-content').style.display = has ? 'block' : 'none';
         if (!has) {
-            document.getElementById('fx-empty-bilan').style.display = 'block';
-            document.getElementById('fx-bilan-content').style.display = 'none';
             applyFilters();
             return;
         }
@@ -4173,7 +3938,6 @@ window.addEventListener('load',init);
         renderGroupBreakdown('sentiment', 'sent-breakdown');
         renderPsycho();
         renderCalendar();
-        renderBilan(st);
         renderAnalysePairDetail();
         renderAnalyseRiskSentiment();
         renderAnalyseGeopo();
@@ -4676,374 +4440,6 @@ window.addEventListener('load',init);
             el.innerHTML = html;
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  BILAN — FORCES, FAIBLESSES, PRÉCONISATIONS (VERSION ENRICHIE)
-    // ══════════════════════════════════════════════════════════════
-    function renderBilan(st) {
-        if (allTrades.length < 5) {
-            document.getElementById('fx-empty-bilan').style.display = 'block';
-            document.getElementById('fx-bilan-content').style.display = 'none';
-            return;
-        }
-        document.getElementById('fx-empty-bilan').style.display = 'none';
-        document.getElementById('fx-bilan-content').style.display = 'block';
-
-        const wr = Math.round(st.wr * 100);
-        const gPairs = groupBy(allTrades, 'pair'),
-            gSess = groupBy(allTrades, 'session'),
-            gCond = groupBy(allTrades, 'entryCondition'),
-            gOrder = groupBy(allTrades, 'orderType');
-        const getBest = g => Object.entries(g).filter(([, v]) => v.n >= 2).sort((a, b) => b[1].pnl - a[1].pnl)[0];
-        const getWorst = g => Object.entries(g).filter(([, v]) => v.n >= 2).sort((a, b) => a[1].pnl - b[1].pnl)[0];
-
-        const bp = getBest(gPairs),
-            wp = getWorst(gPairs);
-        const bs = getBest(gSess),
-            ws = getWorst(gSess);
-        const bc = getBest(gCond),
-            bo = getBest(gOrder);
-
-        const pOn = allTrades.filter(t => t.psychology === 'ON'),
-            pOff = allTrades.filter(t => t.psychology === 'OFF');
-        const pOnWR = pOn.length ? pOn.filter(t => t.outcome === 'WIN').length / Math.max(1, pOn.filter(t => t.outcome !== 'BE').length) : 0;
-        const pOffWR = pOff.length ? pOff.filter(t => t.outcome === 'WIN').length / Math.max(1, pOff.filter(t => t.outcome !== 'BE').length) : 0;
-        const pOnPnl = pOn.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0);
-        const pOffPnl = pOff.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0);
-
-        const avgWinAmt = st.wins.length ? st.tg / st.wins.length : 0;
-        const avgLossAmt = st.losses.length ? st.tl / st.losses.length : 0;
-
-        const str = [],
-            wk = [],
-            tips = [];
-
-        // ─── FORCES ────────────────────────────────────────────────
-        if (wr >= 60) {
-            str.push({
-                i: '🎯',
-                t: `Précision de tir excellente — Winrate ${wr}%`,
-                txt: `Sur ${allTrades.length} trades, vous avez raison <strong>${st.wins.length} fois</strong> pour <strong>${st.losses.length} pertes</strong>. Un winrate de ${wr}% vous place au-dessus de la majorité des traders retail. Ce niveau de précision reflète une excellente lecture de la structure de marché et une sélectivité rigoureuse dans vos entrées. <strong>Implication pratique :</strong> vous pouvez vous permettre de prendre des R:R légèrement inférieurs à 1.5 car votre fréquence de wins compense mathématiquement. Continuez à appliquer strictement vos critères d'entrée sans relâchement.`
-            });
-        } else if (wr >= 52) {
-            str.push({
-                i: '📈',
-                t: `Winrate positif — ${wr}%`,
-                txt: `Avec <strong>${st.wins.length}W / ${st.losses.length}L</strong>, vous avez un avantage statistique réel. Chaque trade joué génère une espérance positive sur la durée. Pour franchir le cap des 55%, concentrez-vous sur l'élimination des trades impulsifs (psychologie ON) et sur une meilleure qualité de setup — privilégiez les confluences HTF + structure claire + momentum aligné.`
-            });
-        }
-
-        if (st.pf >= 2) {
-            str.push({
-                i: '💰',
-                t: `Profit Factor exceptionnel — ${st.pf.toFixed(2)}x`,
-                txt: `Pour chaque dollar perdu, vous en gagnez <strong>${st.pf.toFixed(2)}$</strong>. C'est un indicateur de niveau institutionnel (objectif pro : PF > 2). Cela signifie que votre gestion des TP est excellente — vous laissez courir vos gains, ou que vos stop-loss sont très précisément placés. <strong>Maintenez cette asymétrie coûte que coûte</strong> — c'est le fondement de votre profitabilité à long terme. Ne réduisez jamais vos TP sous la pression du marché.`
-            });
-        } else if (st.pf >= 1.5) {
-            str.push({
-                i: '⚖️',
-                t: `Profit Factor solide — ${st.pf.toFixed(2)}`,
-                txt: `Vos gains moyens (<strong>${fmtPnl(avgWinAmt)}</strong> par WIN) surpassent vos pertes moyennes (<strong>${fmtPnl(-avgLossAmt)}</strong> par LOSS). Cette asymétrie positive est la colonne vertébrale d'une stratégie durable. <strong>Objectif :</strong> maintenir ce ratio en période de drawdown — c'est là que la discipline paie le plus.`
-            });
-        }
-
-        if (bp && bp[1].pnl > 30) {
-            const bpWR = bp[1].w + bp[1].l > 0 ? Math.round(bp[1].w / (bp[1].w + bp[1].l) * 100) : 0;
-            str.push({
-                i: '🔑',
-                t: `Edge dominant : ${bp[0]} (${fmtPnl(bp[1].pnl)} nets, WR ${bpWR}%)`,
-                txt: `<strong>${bp[0]}</strong> est votre paire de prédilection avec <strong>${bp[1].n} trades</strong> et un winrate de <strong>${bpWR}%</strong>. Vous en connaissez le comportement, les corrélations macro, et ses niveaux de liquidité. <strong>Action :</strong> lors de vos setups les mieux notés (score ≥ 8/10) sur ${bp[0]}, envisagez progressivement d'augmenter votre exposition de 20-25% par rapport à votre taille standard.`
-            });
-        }
-
-        if (bs && bs[1].pnl > 30) {
-            const bsWR = bs[1].w + bs[1].l > 0 ? Math.round(bs[1].w / (bs[1].w + bs[1].l) * 100) : 0;
-            str.push({
-                i: '⏰',
-                t: `Maîtrise de la session ${bs[0]} — WR ${bsWR}%`,
-                txt: `La session <strong>${bs[0]}</strong> est votre terrain de chasse naturel : <strong>${fmtPnl(bs[1].pnl)}</strong> sur <strong>${bs[1].n} trades</strong>. Votre rythme et votre concentration sont optimaux sur ce créneau. Les conditions de marché (liquidité, volatilité, contexte macro) coïncident avec votre style de trading. <strong>Recommandation :</strong> réduisez votre activité sur les autres sessions et concentrez toute votre énergie analytique sur la session ${bs[0]}.`
-            });
-        }
-
-        if (pOff.length > 0 && pOffWR > 0.5 && pOffPnl > 0) {
-            str.push({
-                i: '🧠',
-                t: `Discipline robotique = résultats (WR OFF : ${Math.round(pOffWR * 100)}%)`,
-                txt: `En mode <strong>"OFF" (robotique)</strong> — ${pOff.length} trades — vous atteignez un winrate de <strong>${Math.round(pOffWR * 100)}%</strong> pour <strong>${fmtPnl(pOffPnl)}</strong> de gains nets. La comparaison avec vos trades "ON" confirme que <strong>votre edge réside dans l'exécution mécanique</strong>. Votre système fonctionne — le problème n'est jamais la stratégie, c'est l'exécution émotionnelle qui la sabote.`
-            });
-        }
-
-        if (bc && bc[1].pnl > 30) {
-            str.push({
-                i: '🔍',
-                t: `Setup signature : ${bc[0]} — ${fmtPnl(bc[1].pnl)} nets`,
-                txt: `Votre condition d'entrée "<strong>${bc[0]}</strong>" est clairement votre configuration la plus fiable avec <strong>${bc[1].n} trades</strong>. C'est là que votre analyse confluente est la plus précise. <strong>Action :</strong> documentez dans un "playbook" les critères exacts de ce setup (timeframe, structure, momentum, news) et référencez-y à chaque prise de décision.`
-            });
-        }
-
-        if (st.avgLR > 0 && st.avgLR <= 1.0) {
-            str.push({
-                i: '🛡️',
-                t: `Stop-loss maîtrisé — perte moyenne ${st.avgLR.toFixed(2)}R`,
-                txt: `Votre perte moyenne de <strong>${st.avgLR.toFixed(2)}R</strong> démontre que vous placez vos stops derrière des zones de structure significatives et que vous ne les déplacez pas dans le mauvais sens. Cette discipline sur les pertes est le fondement de votre survie à long terme. Sans elle, même le meilleur système finit par exploser le compte.`
-            });
-        }
-
-        if (!str.length) {
-            str.push({
-                i: '📝',
-                t: 'Base de données trop courte pour identifier des forces',
-                txt: `Continuez à journaliser — vos forces structurelles n'apparaîtront qu'à partir de <strong>20-30 trades</strong>. La journalisation elle-même est déjà votre premier avantage sur 80% des traders.`
-            });
-        }
-
-        // ─── FAIBLESSES ────────────────────────────────────────────
-        if (wr < 40) {
-            wk.push({
-                i: '📉',
-                t: `Winrate critique — ${wr}% (seuil danger < 40%)`,
-                txt: `Sur ${allTrades.length} trades, vous avez subi <strong>${st.losses.length} pertes</strong> pour seulement <strong>${st.wins.length} gains</strong>. Causes probables :<ul><li>Entrées trop précoces — pas assez de confirmation de la structure</li><li>Trading à contre-tendance HTF sans catalyseur fondamental</li><li>Mauvaise qualification des setups (confusion entre "possible" et "probable")</li><li>Sessions inadaptées à votre style (faible liquidité, spreads larges)</li></ul><strong>Action immédiate :</strong> passez en "trade replay" vos 10 dernières pertes pour identifier le pattern commun à toutes.`
-            });
-        } else if (wr < 47) {
-            wk.push({
-                i: '📊',
-                t: `Winrate sous le seuil de profitabilité — ${wr}%`,
-                txt: `Avec ${wr}% de winrate et votre R:R actuel de <strong>${st.avgWR.toFixed(2)}R</strong>, votre espérance mathématique est ${(wr / 100 * st.avgWR - (1 - wr / 100) * st.avgLR).toFixed(2) > 0 ? 'légèrement positive' : 'négative'}. Pour être structurellement profitable sous 50%, vous devez maintenir un R:R moyen supérieur à <strong>${st.losses.length && st.wins.length ? (st.avgLR * (1 - wr / 100) / (wr / 100)).toFixed(1) : '1.5'}R par WIN</strong>. Chaque trade avec un TP inférieur à ce seuil détruit votre edge.`
-            });
-        }
-
-        if (st.pf < 1) {
-            wk.push({
-                i: '🔴',
-                t: `Espérance négative — Profit Factor ${st.pf.toFixed(2)}`,
-                txt: `Pour chaque dollar gagné, vous en perdez <strong>${(1 / st.pf).toFixed(2)}$</strong>. À ce rythme, la perte de capital est certaine sur le long terme. L'origine est mathématique :<ul><li>Vos pertes moyennes (<strong>${fmtPnl(avgLossAmt)}</strong>) dépassent vos gains (<strong>${fmtPnl(avgWinAmt)}</strong>)</li><li>Et/ou la fréquence de vos pertes est trop élevée pour être compensée</li></ul><strong>Solution immédiate :</strong> réduire toutes les tailles de position à 0.25% du capital pendant 30 trades pour reconstruire la confiance sans pression financière.`
-            });
-        } else if (st.pf < 1.3) {
-            wk.push({
-                i: '⚠️',
-                t: `Profit Factor fragile — ${st.pf.toFixed(2)} (objectif > 1.5)`,
-                txt: `Votre PF est positif mais trop proche de 1. Quelques pertes consécutives suffiraient à le faire passer sous le seuil de rentabilité. La fragilité vient souvent des trades pris hors de vos meilleures configurations, ou en mode émotionnel. <strong>Objectif :</strong> atteindre 1.5 en éliminant les 20% de trades les moins bien notés (score < 6/10) — ne prenez que vos meilleures opportunités.`
-            });
-        }
-
-        if (wp && wp[1].pnl < -30) {
-            const wpWR = wp[1].w + wp[1].l > 0 ? Math.round(wp[1].w / (wp[1].w + wp[1].l) * 100) : 0;
-            wk.push({
-                i: '🩸',
-                t: `Hémorragie sur ${wp[0]} — ${fmtPnl(wp[1].pnl)} perdus (WR ${wpWR}%)`,
-                txt: `<strong>${wp[0]}</strong> est votre paire la plus destructrice : <strong>${fmtPnl(wp[1].pnl)}</strong> perdus sur <strong>${wp[1].n} trades</strong>. C'est souvent le signe d'une incompréhension du comportement spécifique de cette paire : spread, niveaux de liquidité, heures de manipulation, corrélations macro. <strong>Décision à prendre :</strong> blacklistez ${wp[0]} pour minimum 60 jours et redirigez cette énergie vers vos paires gagnantes.`
-            });
-        }
-
-        if (ws && ws[1].pnl < -20) {
-            wk.push({
-                i: '🕐',
-                t: `Piège de la session ${ws[0]} — ${fmtPnl(ws[1].pnl)}`,
-                txt: `Vos trades sur la session <strong>${ws[0]}</strong> sont structurellement perdants. Causes fréquentes :<ul><li>Faible liquidité créant de faux mouvements et des spreads larges</li><li>Volatilité erratique (overlap de sessions ou absence d'acteurs institutionnels)</li><li>Fatigue ou manque de concentration à ces horaires</li><li>Absence d'événements macro justifiant un mouvement directionnel clair</li></ul><strong>Solution :</strong> suspendez complètement cette session pendant 30 jours et mesurez l'impact sur votre P&L mensuel.`
-            });
-        }
-
-        if (pOn.length > 0 && pOn.length / allTrades.length > 0.25) {
-            const emoPct = Math.round(pOn.length / allTrades.length * 100);
-            wk.push({
-                i: '😤',
-                t: `Trading émotionnel — ${emoPct}% de vos trades`,
-                txt: `<strong>${pOn.length} trades</strong> (${emoPct}% du total) ont été pris en mode <strong>"ON" (émotionnel)</strong>. Ces trades génèrent <strong style="color:${pOnPnl >= 0 ? '#3b82f6' : '#ef4444'}">${fmtPnl(pOnPnl)}</strong> vs <strong>${fmtPnl(pOffPnl)}</strong> en mode robotique — soit un écart de <strong>${fmtPnl(pOffPnl - pOnPnl)}</strong>. Le trading émotionnel est déclenché par : FOMO (peur de rater un mouvement), revenge trading après une perte, ou overconfidence après un gros win. <strong>Règle non-négociable :</strong> 2 SL consécutifs = fermeture immédiate des plateformes pour la journée.`
-            });
-        }
-
-        if (st.avgWR > 0 && st.avgLR > 0 && st.avgWR < st.avgLR * 0.85) {
-            wk.push({
-                i: '✂️',
-                t: `Gains coupés trop tôt — ${st.avgWR.toFixed(2)}R (gains) vs ${st.avgLR.toFixed(2)}R (pertes)`,
-                txt: `Votre ratio est inversé : vos gains moyens sont <strong>inférieurs</strong> à vos pertes moyennes. Vous êtes forcé d'avoir un winrate très élevé juste pour survivre. Causes :<ul><li>Déplacement manuel du TP vers le bas par peur de reperdre les gains flottants</li><li>Clôture anticipée au premier signe de retournement (impatience)</li><li>TP initial trop proche de l'entrée (pas de respect des niveaux HTF)</li></ul><strong>Règle absolue :</strong> une fois votre TP posé, il est INTERDIT de le rapprocher. La seule exception autorisée est de le décaler dans le sens du profit via un trailing stop.`
-            });
-        }
-
-        if (!wk.length) {
-            wk.push({
-                i: '✅',
-                t: 'Aucune faiblesse critique détectée',
-                txt: `Vos statistiques actuelles ne révèlent pas de faiblesse structurelle majeure. À mesure que votre base de trades grandira (objectif : 50+ trades), des patterns plus précis émergeront. Continuez à journaliser avec rigueur.`
-            });
-        }
-
-        // ─── PRÉCONISATIONS ────────────────────────────────────────
-        if (wp && wp[1].pnl < -20) {
-            tips.push({
-                i: '🚫',
-                t: `PRIORITÉ 1 — Blacklist ${wp[0]} (60 jours minimum)`,
-                txt: `Cette paire vous a coûté <strong>${fmtPnl(wp[1].pnl)}</strong>. Continuer à la trader est de la capitulation face à l'ego. <strong>Plan d'action :</strong><ul><li>Retirez ${wp[0]} de votre watchlist aujourd'hui</li><li>Notez dans votre journal la date de blacklist et la raison précise</li><li>Dans 60 jours, faites un backtest de 3 mois pour identifier si le problème vient de la paire ou de votre approche</li><li>Ne revenez sur ${wp[0]} que si vous avez une thèse fondamentale claire ET un edge prouvé</li></ul>`
-            });
-        }
-
-        if (pOn.length / Math.max(1, allTrades.length) > 0.2) {
-            tips.push({
-                i: '🧘',
-                t: 'PRIORITÉ 2 — Protocole anti-émotions (règles non-négociables)',
-                txt: `Implémentez ces règles dès demain :<ul><li><strong>Règle des 2 pertes :</strong> 2 SL consécutifs → fin de session, PC éteint, pas de retour avant le lendemain</li><li><strong>Pause de 15 minutes</strong> obligatoire après tout SL avant de regarder le marché</li><li><strong>Score psychologique</strong> noté AVANT chaque trade (1-10). Sous 7 → pas de trade</li><li><strong>Journal audio :</strong> enregistrez vocalement votre état émotionnel avant chaque trade (15 secondes suffit)</li><li><strong>Limite journalière :</strong> fixez un plafond de pertes en dollar au-delà duquel vous arrêtez automatiquement</li></ul>`
-            });
-        }
-
-        if (st.avgWR < st.avgLR || st.avgWR < 1.5) {
-            tips.push({
-                i: '📐',
-                t: 'PRIORITÉ 3 — Protocole de discipline sur les TP',
-                txt: `Vos gains sont structurellement trop courts. Règles à appliquer immédiatement :<ul><li><strong>TP minimum :</strong> jamais inférieur à 1.5R — si le marché n'offre pas 1.5R, le trade n'est pas pris</li><li><strong>Interdiction de modification :</strong> une fois le TP posé, il ne bouge plus vers le bas. Jamais.</li><li><strong>Stratégie des partiels :</strong> fermez 50% de la position à 1R, puis laissez courir les 50% restants vers 2-3R avec un trailing stop à 0.5R derrière le prix</li><li><strong>Test sur 20 trades :</strong> appliquez ces règles sans exception et mesurez l'évolution de votre PF</li></ul>`
-            });
-        }
-
-        if (ws && ws[1].pnl < -15) {
-            tips.push({
-                i: '⏰',
-                t: `PRIORITÉ 4 — Suspension de la session ${ws[0]}`,
-                txt: `Plan d'action pour les 30 prochains jours :<ul><li>Zéro trade sur la session <strong>${ws[0]}</strong></li><li>Remplacez ce temps par de l'analyse HTF ou du backtesting</li><li>À J+30, calculez l'impact sur votre P&L mensuel</li><li>Ne reprenez ${ws[0]} que si vous identifiez un setup spécifique avec un edge statistiquement prouvé (minimum 10 trades en replay)</li></ul>`
-            });
-        }
-
-        if (wr < 50 || st.pf < 1.5) {
-            tips.push({
-                i: '📋',
-                t: 'PRIORITÉ 5 — Checklist de validation systématique',
-                txt: `Avant chaque trade, validez <strong>au minimum 7/10 critères</strong> de votre checklist personnalisée :<ul><li>✅ Tendance alignée sur 3 timeframes (LTF + MTF + HTF)</li><li>✅ Zone de liquidité ou POI clairement identifiée</li><li>✅ R:R ≥ 1.5R calculé AVANT l'entrée</li><li>✅ Aucun événement économique majeur dans les 2h suivantes</li><li>✅ Score psychologique ≥ 7/10</li><li>✅ Volume et spread normaux pour la paire</li><li>✅ Pas en mode revenge trading (pas de perte dans les 2 dernières heures)</li></ul>En dessous de 7/10 → trade refusé, pas de compromis.`
-            });
-        }
-
-        if (!tips.length) {
-            tips.push({
-                i: '🔬',
-                t: 'Affiner votre edge statistique',
-                txt: `Vos statistiques sont positives. Pour progresser :<ul><li><strong>Augmentation progressive :</strong> sur vos setups les mieux notés (score 9-10/10), augmentez progressivement la taille à 1.25% de risque</li><li><strong>Spécialisation :</strong> limitez-vous à vos 3 meilleures paires et 2 meilleures sessions</li><li><strong>Backtesting hebdomadaire :</strong> minimum 1h/semaine de replay pour identifier de nouveaux setups</li><li><strong>Élimination des trades faibles :</strong> supprimez mentalement les 25% de trades les moins bien scorés et calculez l'impact sur votre PF</li></ul>`
-            });
-            tips.push({
-                i: '📊',
-                t: 'Tracking avancé à mettre en place',
-                txt: `Pour enrichir votre analyse future :<ul><li>Notez le <strong>contexte macro du jour</strong> (CPI, NFP, FOMC, discours de banquier central)</li><li>Enregistrez <strong>l'état du DXY et du VIX</strong> au moment de chaque trade</li><li>Documentez si le trade était <strong>avec ou contre la tendance de la semaine</strong></li><li>Mesurez le <strong>spread à l'ouverture</strong> pour détecter des problèmes d'exécution</li><li>Notez l'<strong>heure exacte</strong> d'entrée pour identifier des patterns horaires</li></ul>`
-            });
-        }
-
-        const card = (c, cls) => `<div class="fx-ic ${cls}"><div class="fx-ic-head"><span style="font-size:18px">${c.i}</span><span class="fx-ic-title" style="color:${cls === 'str' ? '#3b82f6' : cls === 'wk' ? '#ef4444' : '#f59e0b'}">${c.t}</span></div><div class="fx-ic-body">${c.txt}</div></div>`;
-
-        document.getElementById('bilan-strengths').innerHTML = str.map(c => card(c, 'str')).join('');
-        document.getElementById('bilan-weaknesses').innerHTML = wk.map(c => card(c, 'wk')).join('');
-        document.getElementById('tipsGrid').innerHTML = tips.map(c => card(c, 'tip')).join('');
-        hydrateBilanAI(st);
-    }
-
-    // ── ANALYSE IA DU BILAN (Gemini) ──────────────────────────────
-    // Les 3 blocs (Forces / Faiblesses / Recommandations) sont gérés par l'IA,
-    // à partir des stats calculées + des notes perso importées. Repli : règles.
-    const JOURNAL_GEMINI = {
-        KEY:   'AQ.Ab8RN6Ifg1zGbECBJY_fVCl5Ag5Ky_bripuLqE9oZxC8RzvXsA',
-        MODEL: 'gemini-2.0-flash'
-    };
-    let bilanAIBusy = false;
-    function jgConfigured() { const k = JOURNAL_GEMINI.KEY; return k && k.indexOf('__') !== 0 && k.length > 15; }
-    function bilanUid() { return auth && auth.currentUser ? auth.currentUser.uid : 'anon'; }
-    function bilanNotesKey() { return 'fx_bilan_notes_' + bilanUid(); }
-    function bilanCacheKey() { return 'fx_bilan_ai_' + bilanUid(); }
-    function getBilanNotes() { try { return localStorage.getItem(bilanNotesKey()) || ''; } catch (e) { return ''; } }
-    function bilanSig() {
-        const net = allTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0);
-        return allTrades.length + ':' + net.toFixed(2) + ':' + getBilanNotes().length;
-    }
-    function bilanVisible() { const p = document.getElementById('fx-bilan'); return p && p.classList.contains('active'); }
-
-    function openAnalysisModal() {
-        const ta = document.getElementById('analysisText');
-        if (ta) ta.value = getBilanNotes();
-        document.getElementById('analysisModal').classList.add('open');
-    }
-    function closeAnalysisModal() { document.getElementById('analysisModal').classList.remove('open'); }
-    function saveAnalysisNotes() {
-        const ta = document.getElementById('analysisText');
-        try { localStorage.setItem(bilanNotesKey(), ta ? ta.value : ''); } catch (e) {}
-        closeAnalysisModal();
-        showToast('Analyses enregistrées ✅');
-        generateBilanAI(true);
-    }
-
-    function buildBilanPayload(st) {
-        const wr = Math.round(st.wr * 100);
-        const gP = groupBy(allTrades, 'pair'), gS = groupBy(allTrades, 'session'),
-            gC = groupBy(allTrades, 'entryCondition'), gO = groupBy(allTrades, 'orderType');
-        const fmtGroup = g => Object.entries(g).filter(([, v]) => v.n >= 1).sort((a, b) => b[1].pnl - a[1].pnl)
-            .map(([k, v]) => `${k}: ${v.n} trades, P&L ${v.pnl.toFixed(0)}$, ${v.w}W/${v.l}L`).join(' | ');
-        const pOn = allTrades.filter(t => t.psychology === 'ON'), pOff = allTrades.filter(t => t.psychology === 'OFF');
-        const sum = arr => arr.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0);
-        return [
-            `Nombre de trades: ${allTrades.length}`,
-            `Winrate: ${wr}% (${st.wins.length}W / ${st.losses.length}L / ${st.bes.length}BE)`,
-            `P&L net: ${st.net.toFixed(2)}$`,
-            `Profit Factor: ${st.pf.toFixed(2)}`,
-            `R:R moyen gagnants: ${st.avgWR.toFixed(2)} · R:R moyen perdants: ${st.avgLR.toFixed(2)}`,
-            `Max Drawdown: ${st.maxDD.toFixed(2)}$`,
-            `Gain moyen: ${(st.wins.length ? st.tg / st.wins.length : 0).toFixed(2)}$ · Perte moyenne: ${(st.losses.length ? st.tl / st.losses.length : 0).toFixed(2)}$`,
-            `Par paire — ${fmtGroup(gP)}`,
-            `Par session — ${fmtGroup(gS)}`,
-            `Par type d'ordre — ${fmtGroup(gO)}`,
-            `Par condition d'entrée — ${fmtGroup(gC)}`,
-            `Psychologie ON (impulsif): ${pOn.length} trades, P&L ${sum(pOn).toFixed(0)}$ · Psychologie OFF (discipliné): ${pOff.length} trades, P&L ${sum(pOff).toFixed(0)}$`
-        ].join('\n');
-    }
-
-    function bilanAICard(c, cls) {
-        const col = cls === 'str' ? '#3b82f6' : cls === 'wk' ? '#ef4444' : '#f59e0b';
-        return `<div class="fx-ic ${cls}"><div class="fx-ic-head"><span style="font-size:18px">${c.emoji || '•'}</span><span class="fx-ic-title" style="color:${col}">${c.titre || ''}</span></div><div class="fx-ic-body">${c.texte || ''}</div></div>`;
-    }
-    function renderBilanAI(data) {
-        const F = data.forces || [], W = data.faiblesses || [], R = data.recommandations || [];
-        if (F.length) document.getElementById('bilan-strengths').innerHTML = F.map(c => bilanAICard(c, 'str')).join('');
-        if (W.length) document.getElementById('bilan-weaknesses').innerHTML = W.map(c => bilanAICard(c, 'wk')).join('');
-        if (R.length) document.getElementById('tipsGrid').innerHTML = R.map(c => bilanAICard(c, 'tip')).join('');
-    }
-
-    function hydrateBilanAI(st) {
-        const status = document.getElementById('bilan-ai-status');
-        const sig = bilanSig();
-        try {
-            const r = JSON.parse(localStorage.getItem(bilanCacheKey()));
-            if (r && r.sig === sig) { renderBilanAI(r.v); if (status) status.innerHTML = '<span style="color:#16d39a">✓ Analyse IA · à jour</span>'; return; }
-        } catch (e) {}
-        if (jgConfigured() && bilanVisible()) generateBilanAI(false);
-        else if (status) status.textContent = jgConfigured() ? 'Ouvre cet onglet pour générer l\'analyse IA' : 'Analyse par règles (clé Gemini non configurée)';
-    }
-
-    async function generateBilanAI(force) {
-        if (allTrades.length < 5) return;
-        const st = calcStats(allTrades); if (!st) return;
-        const status = document.getElementById('bilan-ai-status');
-        const sig = bilanSig();
-        if (!force) {
-            try {
-                const r = JSON.parse(localStorage.getItem(bilanCacheKey()));
-                if (r && r.sig === sig) { renderBilanAI(r.v); if (status) status.innerHTML = '<span style="color:#16d39a">✓ Analyse IA · à jour</span>'; return; }
-            } catch (e) {}
-        }
-        if (!jgConfigured()) { if (status) status.textContent = 'Clé Gemini non configurée (analyse par règles affichée).'; return; }
-        if (bilanAIBusy) return; bilanAIBusy = true;
-        if (status) status.innerHTML = '<span style="color:var(--fx-vl)">⏳ Génération de l\'analyse IA (Gemini)…</span>';
-        try {
-            const payload = buildBilanPayload(st);
-            const notes = getBilanNotes();
-            const prompt = `Tu es un coach de trading professionnel et exigeant. À partir des statistiques de trading fournies (et des notes personnelles du trader si présentes), tu produis une analyse structurée, concrète et actionnable. Tu cites systématiquement les chiffres. Tu es franc et précis sur les faiblesses. Tu réponds UNIQUEMENT par un objet JSON valide, en français, sans markdown.\n\nSTATISTIQUES DU TRADER:\n${payload}\n\n${notes ? ('NOTES / ANALYSES PERSONNELLES DU TRADER (à intégrer en priorité):\n' + notes + '\n\n') : ''}Génère une analyse. Réponds avec EXACTEMENT ce JSON (3 à 5 éléments par catégorie, le champ "texte" en HTML simple autorisé avec <strong> et <ul><li>):\n{"forces":[{"emoji":"🎯","titre":"titre court","texte":"2 à 4 phrases citant les chiffres"}],"faiblesses":[{"emoji":"⚠️","titre":"titre court","texte":"2 à 4 phrases citant les chiffres"}],"recommandations":[{"emoji":"🔧","titre":"titre court","texte":"plan d'action concret et étapé"}]}`;
-            const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + JOURNAL_GEMINI.MODEL + ':generateContent?key=' + JOURNAL_GEMINI.KEY;
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 2000, responseMimeType: 'application/json' } })
-            });
-            if (!res.ok) { let t = ''; try { t = await res.text(); } catch (e) {} throw { status: res.status, msg: t.slice(0, 160) }; }
-            const j = await res.json();
-            const raw = j && j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts ? j.candidates[0].content.parts[0].text : '';
-            const data = JSON.parse(raw);
-            localStorage.setItem(bilanCacheKey(), JSON.stringify({ sig: sig, v: data }));
-            renderBilanAI(data);
-            if (status) status.innerHTML = '<span style="color:#16d39a">✓ Analyse IA générée (Gemini)</span>' + (notes ? ' · avec tes notes' : '');
-        } catch (e) {
-            const msg = e && e.status === 400 ? 'Clé Gemini invalide' : e && e.status === 429 ? 'Quota Gemini atteint — réessaie demain' : ('Erreur' + (e && e.msg ? ' (' + e.msg + ')' : ''));
-            if (status) status.innerHTML = '<span style="color:#ef4444">' + msg + ' — analyse par règles conservée</span>';
-        } finally { bilanAIBusy = false; }
-    }
 
     // ── TRADE FORM ────────────────────────────────────────────────
     async function submitTrade(e) {
@@ -5232,7 +4628,7 @@ window.addEventListener('load',init);
         const pane = document.getElementById('fx-' + id);
         if (pane)
             pane.classList.add('active');
-        if (id === 'dashboard' || id === 'analyse' || id === 'bilan')
+        if (id === 'dashboard' || id === 'analyse')
             setTimeout(() => renderAll(), 50);
     }
 

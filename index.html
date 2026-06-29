@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Sphinx Alliance - Hub Central</title>
+    <title>Sphinx Alliance — Plateforme de trading FX</title>
+    <meta name="description" content="Sphinx Alliance : terminal macro forex 9 devises et journal de performance de trading. Intelligence, discipline, edge.">
+    <meta name="theme-color" content="#000000">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Sphinx Alliance">
+    <meta property="og:description" content="Plateforme de trading FX : terminal macro 9 devises (croissance, inflation, politique monétaire, géopolitique) & journal de performance.">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000000'/%3E%3Ctext x='50' y='73' font-size='62' text-anchor='middle' fill='%23a78bfa'%3E%E2%9A%9C%3C/text%3E%3C/svg%3E">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -403,7 +410,92 @@
         font-size: 11px;
         color: var(--h-t3);
         letter-spacing: 0.06em
-    }/* AUTH */
+    }/* LANDING / PORTAIL */
+    .landing-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: #000;
+        position: relative;
+        overflow: hidden;
+    }
+    .landing-wrap::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 60% 50% at 50% 38%, rgba(124, 58, 237, 0.13), transparent 70%);
+        pointer-events: none;
+    }
+    .landing-intro {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        animation: landingFade 0.6s ease;
+    }
+    .landing-emblem {
+        font-size: 64px;
+        line-height: 1;
+        color: #a78bfa;
+        text-shadow: 0 0 40px rgba(124, 58, 237, 0.65);
+        margin-bottom: 18px;
+    }
+    .landing-brand {
+        font-family: 'Cinzel', Georgia, serif;
+        font-size: clamp(34px, 7vw, 58px);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #fff;
+        margin: 0;
+    }
+    .landing-tag {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 13px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: #8b8fa3;
+        margin: 14px 0 42px;
+    }
+    .landing-cta {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: #fff;
+        background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        border: none;
+        border-radius: 12px;
+        padding: 16px 52px;
+        cursor: pointer;
+        box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+        transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .landing-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(124, 58, 237, 0.6);
+    }
+    .landing-back {
+        display: block;
+        width: 100%;
+        margin-top: 18px;
+        background: none;
+        border: none;
+        color: var(--fx-t3, #8b8fa3);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 13px;
+        cursor: pointer;
+        transition: color 0.15s;
+    }
+    .landing-back:hover { color: var(--fx-vl, #a78bfa); }
+    @keyframes landingFade {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    /* AUTH */
     .fx-auth-wrap {
         min-height: calc(100vh - 52px);
         display: flex;
@@ -438,8 +530,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: 'Space Mono', monospace;
-        font-size: 14px;
+        font-size: 22px;
+        line-height: 1;
         font-weight: 700;
         color: #fff;
         box-shadow: 0 0 24px rgba(124, 58, 237, 0.4)
@@ -1574,7 +1666,68 @@
     </div>
 
     <!-- ══════ HUB ══════ -->
-    <div id="hub" class="screen active">
+    <!-- ══════ PORTAIL / PAGE D'ACCUEIL ══════ -->
+    <div id="landing" class="screen active">
+        <div class="landing-wrap">
+            <!-- Intro -->
+            <div class="landing-intro" id="landing-intro">
+                <span class="landing-emblem">⚜</span>
+                <h1 class="landing-brand">Sphinx Alliance</h1>
+                <p class="landing-tag">Intelligence · Discipline · Edge</p>
+                <button class="landing-cta" onclick="showAuthCard()">Se connecter</button>
+            </div>
+            <!-- AUTH (masquée jusqu'au clic) -->
+            <div id="fx-auth" class="fx-auth-wrap" style="display:none">
+                <div class="fx-auth-card">
+                    <div class="fx-auth-logo">
+                        <div class="fx-auth-mark">⚜</div>
+                        <div class="fx-auth-title">SPHINX ALLIANCE</div>
+                    </div>
+                    <div class="fx-auth-tabs">
+                        <div class="fx-auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Se connecter</div>
+                        <div class="fx-auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Créer un compte</div>
+                    </div>
+                    <div id="form-login">
+                        <div class="fx-grp">
+                            <label class="fx-lbl">Email</label>
+                            <input type="email" id="loginEmailInp" class="fx-inp" placeholder="votre@email.com">
+                        </div>
+                        <div class="fx-grp">
+                            <label class="fx-lbl">Mot de passe</label>
+                            <input type="password" id="loginPwdInp" class="fx-inp" placeholder="••••••••">
+                        </div>
+                        <button class="fx-btn-primary" onclick="doLoginEmail()">Se connecter →</button>
+                    </div>
+                    <div id="form-signup" style="display:none">
+                        <div class="fx-grp">
+                            <label class="fx-lbl">Email</label>
+                            <input type="email" id="signupEmailInp" class="fx-inp" placeholder="votre@email.com">
+                        </div>
+                        <div class="fx-grp">
+                            <label class="fx-lbl">Mot de passe</label>
+                            <input type="password" id="signupPwdInp" class="fx-inp" placeholder="Minimum 6 caractères">
+                        </div>
+                        <button class="fx-btn-primary" onclick="doSignupEmail()">Créer mon compte →</button>
+                    </div>
+                    <div class="fx-divider">ou</div>
+                    <button class="fx-google-btn" onclick="loginGoogle()">
+                        <svg width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continuer avec Google
+                    </button>
+                    <div class="fx-auth-err" id="authErr"></div>
+                    <button class="landing-back" onclick="hideAuthCard()">← Retour</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ HUB SPHINX ALLIANCE ══════ -->
+    <div id="hub" class="screen">
         <div style="padding:64px 24px 48px;text-align:center;background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(120,80,0,0.1),transparent)">
             <div style="position:absolute;top:24px;right:24px">
                 <button class="theme-toggle-btn" onclick="toggleThemeGlobal()" title="Thème Clair/Sombre">
@@ -1608,7 +1761,7 @@
                     </div>
                     <div class="mod-icon">📈</div>
                     <div class="mod-name">Performance Tracker</div>
-                    <div class="mod-desc">Journal de trading complet avec authentification Firebase. Statistiques et analyses avancées.</div>
+                    <div class="mod-desc">Journal de trading complet : statistiques, courbe de capital, analyses avancées et historique détaillé.</div>
                     <div class="mod-arr">→</div>
                 </div>
 
@@ -1631,55 +1784,6 @@
             <div class="topbar-sep"></div>
             <span class="topbar-mod" style="color:var(--fx-vl)">Performance Tracker</span>
         </nav>
-
-        <!-- AUTH -->
-        <div id="fx-auth" class="fx-auth-wrap">
-            <div class="fx-auth-card">
-                <div class="fx-auth-logo">
-                    <div class="fx-auth-mark">PT</div>
-                    <div class="fx-auth-title">PERFORMANCE TRACKER</div>
-                </div>
-                <div class="fx-auth-tabs">
-                    <div class="fx-auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Se connecter</div>
-                    <div class="fx-auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Créer un compte</div>
-                </div>
-                <div id="form-login">
-                    <div class="fx-grp">
-                        <label class="fx-lbl">Email</label>
-                        <input type="email" id="loginEmailInp" class="fx-inp" placeholder="votre@email.com">
-                    </div>
-                    <div class="fx-grp">
-                        <label class="fx-lbl">Mot de passe</label>
-                        <input type="password" id="loginPwdInp" class="fx-inp" placeholder="••••••••">
-                    </div>
-                    <button class="fx-btn-primary" onclick="doLoginEmail()">Se connecter →</button>
-                </div>
-                <div id="form-signup" style="display:none">
-                    <div class="fx-grp">
-                        <label class="fx-lbl">Email</label>
-                        <input type="email" id="signupEmailInp" class="fx-inp" placeholder="votre@email.com">
-                    </div>
-                    <div class="fx-grp">
-                        <label class="fx-lbl">Mot de passe</label>
-                        <input type="password" id="signupPwdInp" class="fx-inp" placeholder="Minimum 6 caractères">
-                    </div>
-                    <button class="fx-btn-primary" onclick="doSignupEmail()">Créer mon compte →</button>
-                </div>
-                <div class="fx-divider">ou</div>
-                <button class="fx-google-btn" onclick="loginGoogle()">
-                    <svg width="18" height="18" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-
-                            Continuer avec Google
-                          
-                </button>
-                <div class="fx-auth-err" id="authErr"></div>
-            </div>
-        </div>
 
         <!-- APP -->
         <div id="fx-main" class="fx-app">
@@ -2155,16 +2259,18 @@
     }
 
     // ── NAVIGATION ────────────────────────────────────────────────
+    // Tout le site est derrière la connexion : ces écrans exigent un user authentifié.
+    const PROTECTED_SCREENS = ['hub', 'fxdesk', 'fxmacro'];
     function openScreen(id) {
+        if (PROTECTED_SCREENS.includes(id) && !(auth && auth.currentUser))
+            id = 'landing';
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         window.scrollTo(0, 0);
-        if (id === 'fxdesk') {
-            if (auth && auth.currentUser)
-                showFxApp(auth.currentUser);
-            else
-                showFxAuth();
-        }
+        if (id === 'fxdesk' && auth && auth.currentUser)
+            showFxApp(auth.currentUser);
+        if (id === 'landing')
+            resetAuthCard();
     }
 
     // ── FIREBASE ──────────────────────────────────────────────────
@@ -2198,21 +2304,36 @@
         auth = firebase.auth();
         db = firebase.firestore();
         auth.onAuthStateChanged(function(user) {
-            if (document.getElementById('fxdesk').classList.contains('active')) {
-                if (user)
-                    showFxApp(user);
-                else
-                    showFxAuth();
+            if (user) {
+                // Connexion réussie depuis le portail → on entre dans le hub.
+                if (document.getElementById('landing').classList.contains('active')) {
+                    resetAuthCard();
+                    openScreen('hub');
+                }
+            } else {
+                // Déconnecté (ou session expirée) → retour au portail.
+                openScreen('landing');
             }
         });
     });
 
-    function showFxAuth() {
+    // ── PORTAIL : bascule intro ↔ carte de connexion ──────────────
+    function showAuthCard() {
+        document.getElementById('landing-intro').style.display = 'none';
         document.getElementById('fx-auth').style.display = 'flex';
-        document.getElementById('fx-main').classList.remove('active');
+    }
+    function hideAuthCard() {
+        document.getElementById('fx-auth').style.display = 'none';
+        document.getElementById('landing-intro').style.display = 'flex';
+        hideAuthErr();
+    }
+    function resetAuthCard() {
+        document.getElementById('fx-auth').style.display = 'none';
+        document.getElementById('landing-intro').style.display = 'flex';
+        switchAuthTab('login');
+        hideAuthErr();
     }
     function showFxApp(user) {
-        document.getElementById('fx-auth').style.display = 'none';
         document.getElementById('fx-main').classList.add('active');
         const initials = (user.displayName || user.email || '?')[0].toUpperCase();
         document.getElementById('userAvatar').textContent = initials;
@@ -2294,8 +2415,9 @@
             unsubTrades = null;
         }
         allTrades = [];
+        document.getElementById('fx-main').classList.remove('active');
         await auth.signOut();
-        showFxAuth();
+        // onAuthStateChanged(null) ramène automatiquement au portail.
     }
 
     // ── FIRESTORE CRUD ────────────────────────────────────────────

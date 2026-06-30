@@ -1326,6 +1326,144 @@
         font-weight: 600;
         color: var(--fx-muted2);
         margin-bottom: 7px
+    }/* ══ MACRO PREP — Journal de Synthèse Macro ══ */
+    .mp-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        flex-wrap: wrap
+    }
+
+    .mp-count {
+        font-size: 11px;
+        color: var(--fx-muted);
+        white-space: nowrap
+    }
+
+    .mp-search {
+        flex: 1;
+        min-width: 180px
+    }
+
+    .mp-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px
+    }
+
+    .mp-card {
+        background: var(--fx-card);
+        border: 1px solid var(--fx-bd);
+        border-left: 3px solid var(--fx-violet);
+        border-radius: 10px;
+        padding: 16px 18px
+    }
+
+    .mp-card-head {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 10px
+    }
+
+    .mp-evt {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fx-text);
+        margin: 0
+    }
+
+    .mp-date {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--fx-vl);
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bd);
+        border-radius: 6px;
+        padding: 3px 8px;
+        white-space: nowrap
+    }
+
+    .mp-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0
+    }
+
+    .mp-edit,
+    .mp-del {
+        background: none;
+        border: 1px solid var(--fx-bd);
+        color: var(--fx-muted);
+        border-radius: 6px;
+        font-size: 11px;
+        padding: 4px 9px;
+        cursor: pointer
+    }
+
+    .mp-edit:hover {
+        color: var(--fx-vl);
+        border-color: var(--fx-vl)
+    }
+
+    .mp-del:hover {
+        color: var(--fx-red);
+        border-color: var(--fx-red)
+    }
+
+    .fx-form-card.mp-editing {
+        border-color: var(--fx-vl);
+        box-shadow: 0 0 0 1px var(--fx-vl)
+    }
+
+    .mp-fig.mp-up b {
+        color: #10b981
+    }
+
+    .mp-fig.mp-down b {
+        color: var(--fx-red)
+    }
+
+    .mp-fig .mp-arrow {
+        font-size: 10px;
+        margin-left: 3px
+    }
+
+    .mp-figs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 10px
+    }
+
+    .mp-fig {
+        font-size: 11px;
+        color: var(--fx-muted2);
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bd);
+        border-radius: 6px;
+        padding: 4px 9px
+    }
+
+    .mp-fig b {
+        color: var(--fx-text);
+        font-weight: 600
+    }
+
+    .mp-analysis {
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--fx-text);
+        white-space: pre-wrap;
+        margin: 0
     }/* BILAN */
     .fx-ic {
         background: var(--fx-card);
@@ -1762,6 +1900,18 @@
                     <div class="mod-icon">📈</div>
                     <div class="mod-name">Performance Tracker</div>
                     <div class="mod-desc">Journal de trading complet : statistiques, courbe de capital, analyses avancées et historique détaillé.</div>
+                    <div class="mod-arr">→</div>
+                </div>
+
+                <!-- Journal de Synthèse Macro — ACTIF -->
+                <div class="mod-card live" onclick="openScreen('macroprep')">
+                    <div class="mod-status">
+                        <span class="dot"></span>
+                        Actif
+                    </div>
+                    <div class="mod-icon">🧠</div>
+                    <div class="mod-name">Macro Prep</div>
+                    <div class="mod-desc">Journal de synthèse macro : rédigez vos analyses post-annonces (NFP, CPI, FOMC) pour construire votre propre edge et garder une mémoire de la réaction des marchés.</div>
                     <div class="mod-arr">→</div>
                 </div>
 
@@ -2219,6 +2369,101 @@
         <iframe id="fxMacroFrame" title="FX Macro Terminal" style="width:100%;height:calc(100vh - 52px);border:0;display:block;background:#05050c" src="fx-terminal.html"></iframe>
     </div>
 
+    <!-- ══════ JOURNAL DE SYNTHÈSE MACRO (Macro Prep) ══════ -->
+    <div id="macroprep" class="screen">
+        <nav class="fx-topbar">
+            <button class="fx-topbar-back" onclick="openScreen('hub')">← Hub</button>
+            <div class="topbar-sep"></div>
+            <span class="topbar-emb">⚜</span>
+            <span class="topbar-brand">Sphinx Alliance</span>
+            <div class="topbar-sep"></div>
+            <span class="topbar-mod" style="color:var(--fx-vl)">Macro Prep</span>
+        </nav>
+
+        <main class="fx-app">
+            <header class="fx-header">
+                <div class="fx-header-top">
+                    <div class="fx-logo">MP</div>
+                    <div class="fx-header-title">JOURNAL DE SYNTHÈSE MACRO — PRÉPARATION &amp; EDGE</div>
+                    <button class="theme-toggle-btn" onclick="toggleThemeGlobal()" title="Thème Clair/Sombre">
+                        <i class="ti ti-sun" id="global-theme-icon-macro"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="fx-content">
+
+                <!-- ── PARTIE 1 : FORMULAIRE D'ENTRÉE ── -->
+                <section class="fx-form-card" aria-labelledby="mp-form-title">
+                    <h2 id="mp-form-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0 0 18px">🧠 Nouvelle synthèse</h2>
+                    <form id="macroForm" onsubmit="submitMacroNote(event)">
+                        <fieldset style="border:none;margin:0;padding:0;min-width:0">
+                            <legend class="fx-fst" style="width:100%">📅 Événement économique</legend>
+                            <div class="fx-fg">
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl" for="mp-date">Date de l'événement *</label>
+                                    <input type="date" id="mp-date" name="date" class="fx-fc" required>
+                                </div>
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl" for="mp-event">Nom de l'événement *</label>
+                                    <input type="text" id="mp-event" name="event" class="fx-fc" required
+                                        placeholder="ex : US CPI m/m" autocomplete="off">
+                                </div>
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl" for="mp-consensus">Consensus</label>
+                                    <input type="text" id="mp-consensus" name="consensus" class="fx-fc"
+                                        placeholder="ex : 0.3%" autocomplete="off">
+                                </div>
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl" for="mp-actual">Chiffre réel</label>
+                                    <input type="text" id="mp-actual" name="actual" class="fx-fc"
+                                        placeholder="ex : 0.5%" autocomplete="off">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset style="border:none;margin:0;padding:0;min-width:0">
+                            <legend class="fx-fst" style="width:100%">✍️ Mon analyse</legend>
+                            <div class="fx-fgrp" style="margin-bottom:14px">
+                                <label class="fx-flbl" for="mp-analysis">Réaction du marché &amp; mon biais *</label>
+                                <textarea id="mp-analysis" name="analysis" class="fx-fc" rows="6" required
+                                    placeholder="Comment le marché a-t-il réagi vs le consensus ? Quel est mon biais directionnel et pourquoi ? Quels niveaux / paires surveiller ?"
+                                    style="resize:vertical;line-height:1.5"></textarea>
+                            </div>
+                        </fieldset>
+
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                            <button type="submit" class="fx-submit" id="mp-submit-btn">💾 Enregistrer l'analyse</button>
+                            <button type="button" class="fx-submit" id="mp-cancel-btn" onclick="cancelMacroEdit()"
+                                style="display:none;background:var(--fx-card2);color:var(--fx-muted2)">Annuler la modification</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- ── PARTIE 2 : HISTORIQUE ── -->
+                <section aria-labelledby="mp-hist-title">
+                    <div class="mp-toolbar">
+                        <h2 id="mp-hist-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0">📚 Historique des synthèses</h2>
+                        <span class="mp-count" id="mp-count" aria-live="polite"></span>
+                        <input type="search" id="mp-filter" class="fx-fc mp-search" placeholder="🔍 Filtrer par événement ou mot-clé…"
+                            oninput="renderMacroNotes()" aria-label="Filtrer les synthèses">
+                    </div>
+
+                    <div id="mp-empty" class="fx-empty">
+                        <div class="fx-empty-icon">📭</div>
+                        <div class="fx-empty-title">Aucune synthèse pour l'instant</div>
+                        <div style="font-size:12px;color:var(--fx-muted)">
+                            Rédigez votre première analyse post-annonce ci-dessus pour bâtir votre edge.
+                        </div>
+                    </div>
+
+                    <ul class="mp-list" id="mp-list"></ul>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
     <div class="fx-toast" id="fx-toast"></div>
 
     <div class="modal-wrap" id="checklistModal">
@@ -2238,7 +2483,7 @@
     function toggleThemeGlobal() {
         document.body.classList.toggle('light-mode');
         const isLight = document.body.classList.contains('light-mode');
-        ['global-theme-icon-hub', 'global-theme-icon-tracker'].forEach(id => {
+        ['global-theme-icon-hub', 'global-theme-icon-tracker', 'global-theme-icon-macro'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.className = isLight ? 'ti ti-moon' : 'ti ti-sun';
@@ -2250,7 +2495,7 @@
         const isLight = localStorage.getItem('sphinx_theme') === 'light';
         if (isLight) {
             document.body.classList.add('light-mode');
-            ['global-theme-icon-hub', 'global-theme-icon-tracker'].forEach(id => {
+            ['global-theme-icon-hub', 'global-theme-icon-tracker', 'global-theme-icon-macro'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el)
                     el.className = 'ti ti-moon';
@@ -2260,7 +2505,7 @@
 
     // ── NAVIGATION ────────────────────────────────────────────────
     // Tout le site est derrière la connexion : ces écrans exigent un user authentifié.
-    const PROTECTED_SCREENS = ['hub', 'fxdesk', 'fxmacro'];
+    const PROTECTED_SCREENS = ['hub', 'fxdesk', 'fxmacro', 'macroprep'];
     function openScreen(id) {
         if (PROTECTED_SCREENS.includes(id) && !(auth && auth.currentUser))
             id = 'landing';
@@ -2269,6 +2514,8 @@
         window.scrollTo(0, 0);
         if (id === 'fxdesk' && auth && auth.currentUser)
             showFxApp(auth.currentUser);
+        if (id === 'macroprep' && auth && auth.currentUser)
+            loadMacroNotes(auth.currentUser.uid);
         if (id === 'landing')
             resetAuthCard();
     }
@@ -2580,6 +2827,237 @@
             checked = document.querySelectorAll('.check-item.checked').length;
         const pct = Math.round((checked / total) * 100);
         document.getElementById('checklistScore').innerHTML = `<span style="font-size:18px;font-weight:700;color:${pct === 100 ? '#3b82f6' : '#f59e0b'}">${pct}%</span><br><span style="font-size:11px;color:var(--fx-muted)">Score de préparation</span>`;
+    }
+
+    // ── MACRO PREP — Journal de Synthèse Macro ────────────────────
+    // Persistance : Firestore users/{uid}/macroNotes (même schéma que les trades).
+    let allMacroNotes = [],
+        unsubMacroNotes = null,
+        editingMacroId = null;
+
+    function loadMacroNotes(uid) {
+        if (unsubMacroNotes)
+            unsubMacroNotes();
+        unsubMacroNotes = db.collection('users').doc(uid).collection('macroNotes')
+        .orderBy('date', 'desc')
+        .onSnapshot(snap => {
+            allMacroNotes = snap.docs.map(d => ({
+                firestoreId: d.id,
+                ...d.data()
+            }));
+            renderMacroNotes();
+        }, err => showToast('Erreur: ' + err.message));
+    }
+
+    async function submitMacroNote(e) {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (!user) {
+            showToast('Connexion requise');
+            return;
+        }
+        const f = e.target;
+        const note = {
+            date: f.date.value,
+            event: f.event.value.trim(),
+            consensus: f.consensus.value.trim(),
+            actual: f.actual.value.trim(),
+            analysis: f.analysis.value.trim(),
+            createdAt: new Date().toISOString()
+        };
+        if (!note.date || !note.event || !note.analysis) {
+            showToast('Date, événement et analyse sont requis');
+            return;
+        }
+        try {
+            const col = db.collection('users').doc(user.uid).collection('macroNotes');
+            if (editingMacroId) {
+                delete note.createdAt; // ne pas écraser la date de création
+                note.updatedAt = new Date().toISOString();
+                await col.doc(editingMacroId).update(note);
+                showToast('Synthèse mise à jour ✅');
+            } else {
+                await col.add(note);
+                showToast('Synthèse enregistrée ✅');
+            }
+            cancelMacroEdit(); // reset formulaire + sortie du mode édition
+            f.date.focus();
+        } catch (err) {
+            showToast('Erreur: ' + err.message);
+        }
+    }
+
+    function editMacroNote(fid) {
+        const n = allMacroNotes.find(x => x.firestoreId === fid);
+        if (!n)
+            return;
+        const f = document.getElementById('macroForm');
+        f.date.value = n.date || '';
+        f.event.value = n.event || '';
+        f.consensus.value = n.consensus || '';
+        f.actual.value = n.actual || '';
+        f.analysis.value = n.analysis || '';
+        editingMacroId = fid;
+        setMacroEditUI(true);
+        f.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        f.event.focus();
+    }
+
+    function cancelMacroEdit() {
+        editingMacroId = null;
+        document.getElementById('macroForm').reset();
+        setMacroEditUI(false);
+    }
+
+    function setMacroEditUI(on) {
+        document.getElementById('mp-form-title').textContent = on ? '✏️ Modifier la synthèse' : '🧠 Nouvelle synthèse';
+        document.getElementById('mp-submit-btn').textContent = on ? '✅ Mettre à jour' : '💾 Enregistrer l\'analyse';
+        document.getElementById('mp-cancel-btn').style.display = on ? '' : 'none';
+        document.querySelector('#macroprep .fx-form-card').classList.toggle('mp-editing', on);
+    }
+
+    // Extrait le 1er nombre d'une chaîne ("0.5%", "+1,2", "250K") → float ou NaN
+    function macroNum(s) {
+        if (!s)
+            return NaN;
+        const m = String(s).replace(',', '.').match(/-?\d+(?:\.\d+)?/);
+        return m ? parseFloat(m[0]) : NaN;
+    }
+
+    async function deleteMacroNote(fid) {
+        const user = auth.currentUser;
+        if (!user || !confirm('Supprimer définitivement cette synthèse ?'))
+            return;
+        try {
+            await db.collection('users').doc(user.uid).collection('macroNotes').doc(fid).delete();
+            if (editingMacroId === fid)
+                cancelMacroEdit();
+            showToast('Synthèse supprimée');
+        } catch (err) {
+            showToast('Erreur: ' + err.message);
+        }
+    }
+
+    function fmtMacroDate(iso) {
+        if (!iso)
+            return '—';
+        const d = new Date(iso + 'T00:00:00');
+        if (isNaN(d))
+            return iso;
+        return d.toLocaleDateString('fr-FR', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
+
+    function renderMacroNotes() {
+        const list = document.getElementById('mp-list');
+        const empty = document.getElementById('mp-empty');
+        const count = document.getElementById('mp-count');
+        if (!list)
+            return;
+        const q = (document.getElementById('mp-filter').value || '').toLowerCase().trim();
+        const notes = q
+            ? allMacroNotes.filter(n =>
+                (n.event || '').toLowerCase().includes(q) ||
+                (n.analysis || '').toLowerCase().includes(q))
+            : allMacroNotes;
+
+        list.innerHTML = '';
+        count.textContent = allMacroNotes.length
+            ? (q ? notes.length + ' / ' + allMacroNotes.length : allMacroNotes.length) +
+                ' synthèse' + (allMacroNotes.length > 1 ? 's' : '')
+            : '';
+
+        if (!allMacroNotes.length) {
+            empty.style.display = '';
+            empty.querySelector('.fx-empty-title').textContent = 'Aucune synthèse pour l\'instant';
+            return;
+        }
+        if (!notes.length) {
+            empty.style.display = '';
+            empty.querySelector('.fx-empty-title').textContent = 'Aucun résultat pour ce filtre';
+            return;
+        }
+        empty.style.display = 'none';
+
+        notes.forEach(n => {
+            const li = document.createElement('li');
+            li.className = 'mp-card';
+
+            const head = document.createElement('div');
+            head.className = 'mp-card-head';
+
+            const time = document.createElement('time');
+            time.className = 'mp-date';
+            time.dateTime = n.date || '';
+            time.textContent = fmtMacroDate(n.date);
+
+            const evt = document.createElement('h3');
+            evt.className = 'mp-evt';
+            evt.textContent = n.event || 'Sans titre';
+
+            const actions = document.createElement('div');
+            actions.className = 'mp-actions';
+
+            const edit = document.createElement('button');
+            edit.className = 'mp-edit';
+            edit.type = 'button';
+            edit.textContent = '✏️ Éditer';
+            edit.setAttribute('aria-label', 'Éditer la synthèse ' + (n.event || ''));
+            edit.onclick = () => editMacroNote(n.firestoreId);
+
+            const del = document.createElement('button');
+            del.className = 'mp-del';
+            del.type = 'button';
+            del.textContent = '🗑 Supprimer';
+            del.setAttribute('aria-label', 'Supprimer la synthèse ' + (n.event || ''));
+            del.onclick = () => deleteMacroNote(n.firestoreId);
+
+            actions.append(edit, del);
+            head.append(time, evt, actions);
+            li.appendChild(head);
+
+            if (n.consensus || n.actual) {
+                const figs = document.createElement('div');
+                figs.className = 'mp-figs';
+                if (n.consensus) {
+                    const c = document.createElement('span');
+                    c.className = 'mp-fig';
+                    c.innerHTML = 'Consensus : <b></b>';
+                    c.querySelector('b').textContent = n.consensus;
+                    figs.appendChild(c);
+                }
+                if (n.actual) {
+                    const a = document.createElement('span');
+                    a.className = 'mp-fig';
+                    a.innerHTML = 'Réel : <b></b>';
+                    a.querySelector('b').textContent = n.actual;
+                    // Coloration vs consensus : ↑ vert si au-dessus, ↓ rouge si en-dessous
+                    const cv = macroNum(n.consensus),
+                        av = macroNum(n.actual);
+                    if (!isNaN(cv) && !isNaN(av) && av !== cv) {
+                        const up = av > cv;
+                        a.classList.add(up ? 'mp-up' : 'mp-down');
+                        const arr = document.createElement('span');
+                        arr.className = 'mp-arrow';
+                        arr.textContent = up ? '▲' : '▼';
+                        arr.setAttribute('aria-label', up ? 'au-dessus du consensus' : 'en-dessous du consensus');
+                        a.querySelector('b').appendChild(arr);
+                    }
+                    figs.appendChild(a);
+                }
+                li.appendChild(figs);
+            }
+
+            const p = document.createElement('p');
+            p.className = 'mp-analysis';
+            p.textContent = n.analysis || '';
+            li.appendChild(p);
+
+            list.appendChild(li);
+        });
     }
 
     // ── UTILS ─────────────────────────────────────────────────────

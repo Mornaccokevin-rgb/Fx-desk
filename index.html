@@ -30,6 +30,7 @@
            --acc / --acc-l = hex ; --acc-rgb = triplet pour les rgba(). */
         --acc: #7c3aed;
         --acc-l: #a78bfa;
+        --acc-d: #6d28d9;
         --acc-rgb: 124, 58, 237;
         --gold: #C8900A;
         --gold-l: #F0C040;
@@ -92,12 +93,12 @@
 
     /* ── PRÉRÉGLAGES D'ACCENT (couleur du site) ──────────────────
        S'appliquent par-dessus le clair/sombre, qui restent séparés. */
-    :root[data-accent="violet"]    { --acc:#7c3aed; --acc-l:#a78bfa; --acc-rgb:124, 58, 237; }
-    :root[data-accent="orange"]    { --acc:#ea580c; --acc-l:#fb923c; --acc-rgb:234, 88, 12; }
-    :root[data-accent="green"]     { --acc:#16a34a; --acc-l:#4ade80; --acc-rgb:22, 163, 74; }
-    :root[data-accent="red"]       { --acc:#dc2626; --acc-l:#f87171; --acc-rgb:220, 38, 38; }
-    :root[data-accent="turquoise"] { --acc:#0d9488; --acc-l:#2dd4bf; --acc-rgb:13, 148, 136; }
-    :root[data-accent="blue"]      { --acc:#2563eb; --acc-l:#60a5fa; --acc-rgb:37, 99, 235; }
+    :root[data-accent="violet"]    { --acc:#7c3aed; --acc-l:#a78bfa; --acc-d:#6d28d9; --acc-rgb:124, 58, 237; }
+    :root[data-accent="orange"]    { --acc:#ea580c; --acc-l:#fb923c; --acc-d:#c2410c; --acc-rgb:234, 88, 12; }
+    :root[data-accent="green"]     { --acc:#16a34a; --acc-l:#4ade80; --acc-d:#15803d; --acc-rgb:22, 163, 74; }
+    :root[data-accent="red"]       { --acc:#dc2626; --acc-l:#f87171; --acc-d:#b91c1c; --acc-rgb:220, 38, 38; }
+    :root[data-accent="turquoise"] { --acc:#0d9488; --acc-l:#2dd4bf; --acc-d:#0f766e; --acc-rgb:13, 148, 136; }
+    :root[data-accent="blue"]      { --acc:#2563eb; --acc-l:#60a5fa; --acc-d:#1d4ed8; --acc-rgb:37, 99, 235; }
 
     html, body {
         min-height: 100vh;
@@ -480,7 +481,7 @@
         font-weight: 600;
         letter-spacing: 0.04em;
         color: #fff;
-        background: linear-gradient(135deg, var(--acc), #4f46e5);
+        background: linear-gradient(135deg, var(--acc), var(--acc-d));
         border: none;
         border-radius: 12px;
         padding: 16px 52px;
@@ -539,7 +540,7 @@
     .fx-auth-mark {
         width: 44px;
         height: 44px;
-        background: linear-gradient(135deg, var(--fx-violet), #4f46e5);
+        background: linear-gradient(135deg, var(--fx-violet), var(--acc-d));
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -616,7 +617,7 @@
 
     .fx-btn-primary {
         width: 100%;
-        background: linear-gradient(135deg, var(--fx-violet), #4f46e5);
+        background: linear-gradient(135deg, var(--fx-violet), var(--acc-d));
         color: #fff;
         border: none;
         border-radius: 8px;
@@ -702,7 +703,7 @@
     .fx-logo {
         width: 34px;
         height: 34px;
-        background: linear-gradient(135deg, var(--fx-violet), #4f46e5);
+        background: linear-gradient(135deg, var(--fx-violet), var(--acc-d));
         border-radius: 9px;
         display: flex;
         align-items: center;
@@ -737,7 +738,7 @@
     .fx-user-av {
         width: 22px;
         height: 22px;
-        background: linear-gradient(135deg, var(--fx-violet), #4f46e5);
+        background: linear-gradient(135deg, var(--fx-violet), var(--acc-d));
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -1151,7 +1152,7 @@
     }
 
     .fx-submit {
-        background: linear-gradient(135deg, var(--fx-violet), #4f46e5);
+        background: linear-gradient(135deg, var(--fx-violet), var(--acc-d));
         color: #fff;
         border: none;
         border-radius: 8px;
@@ -1481,6 +1482,131 @@
         overflow-wrap: anywhere;
         word-break: break-word;
         margin: 0
+    }
+
+    /* ── Formulaire : sous-composantes ── */
+    .mp-subs {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px
+    }
+    .mp-sub-row {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr 1fr 1fr auto;
+        gap: 8px;
+        align-items: center
+    }
+    .mp-sub-row input {
+        font-size: 12px;
+        padding: 8px 10px
+    }
+    .mp-sub-del {
+        background: var(--fx-rd);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: var(--fx-red);
+        border-radius: 6px;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        font-size: 13px;
+        flex-shrink: 0
+    }
+    .mp-add-sub {
+        background: var(--fx-vd);
+        border: 1px dashed var(--fx-bb);
+        color: var(--fx-vl);
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif;
+        transition: all 0.15s
+    }
+    .mp-add-sub:hover {
+        background: rgba(var(--acc-rgb), 0.18)
+    }
+    @media (max-width: 640px) {
+        .mp-sub-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    /* ── Formulaire : image ── */
+    .mp-img-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap
+    }
+    .mp-img-btn {
+        background: var(--fx-vd);
+        border: 1px solid var(--fx-bd);
+        color: var(--fx-vl);
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s
+    }
+    .mp-img-btn:hover {
+        background: rgba(var(--acc-rgb), 0.18)
+    }
+    .mp-img-clear {
+        background: var(--fx-rd);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: var(--fx-red);
+        border-radius: 8px;
+        padding: 7px 12px;
+        font-size: 12px;
+        cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif
+    }
+    .mp-img-hint {
+        font-size: 11px;
+        color: var(--fx-muted)
+    }
+    .mp-img-preview {
+        display: block;
+        max-width: 100%;
+        max-height: 280px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--fx-bd)
+    }
+
+    /* ── Historique : sous-composantes + image ── */
+    .mp-sub-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 4px 0 10px;
+        font-size: 12px
+    }
+    .mp-sub-table th, .mp-sub-table td {
+        text-align: left;
+        padding: 5px 8px;
+        border-bottom: 1px solid var(--fx-bd)
+    }
+    .mp-sub-table th {
+        color: var(--fx-muted);
+        font-weight: 600;
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em
+    }
+    .mp-sub-table td b {
+        color: var(--fx-text)
+    }
+    .mp-card-img {
+        display: block;
+        max-width: 100%;
+        max-height: 360px;
+        margin: 10px 0 0;
+        border-radius: 8px;
+        border: 1px solid var(--fx-bd);
+        cursor: zoom-in
     }
 
     .mp-author {
@@ -2490,7 +2616,18 @@
                                     <input type="text" id="mp-actual" name="actual" class="fx-fc"
                                         placeholder="ex : 0.5%" autocomplete="off">
                                 </div>
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl" for="mp-previous">Précédent</label>
+                                    <input type="text" id="mp-previous" name="previous" class="fx-fc"
+                                        placeholder="ex : 0.2%" autocomplete="off">
+                                </div>
                             </div>
+                        </fieldset>
+
+                        <fieldset style="border:none;margin:0;padding:0;min-width:0">
+                            <legend class="fx-fst" style="width:100%">🧩 Sous-composantes <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(optionnel — ex : sous-indices ISM)</span></legend>
+                            <div id="mp-subs" class="mp-subs"></div>
+                            <button type="button" class="mp-add-sub" id="mp-add-sub" onclick="addMacroSub()">＋ Ajouter une sous-composante</button>
                         </fieldset>
 
                         <fieldset style="border:none;margin:0;padding:0;min-width:0">
@@ -2500,6 +2637,16 @@
                                 <textarea id="mp-analysis" name="analysis" class="fx-fc" rows="6" required
                                     placeholder="Comment le marché a-t-il réagi vs le consensus ? Quel est mon biais directionnel et pourquoi ? Quels niveaux / paires surveiller ?"
                                     style="resize:vertical;line-height:1.5"></textarea>
+                            </div>
+                            <div class="fx-fgrp">
+                                <label class="fx-flbl">Image (optionnel — graphique, capture…)</label>
+                                <div class="mp-img-row">
+                                    <label class="mp-img-btn" for="mp-image-input">🖼️ Choisir une image</label>
+                                    <input type="file" id="mp-image-input" accept="image/*" style="display:none" onchange="handleMacroImage(event)">
+                                    <button type="button" class="mp-img-clear" id="mp-img-clear" onclick="clearMacroImage()" style="display:none">✕ Retirer</button>
+                                    <span class="mp-img-hint" id="mp-img-hint">Aucune image</span>
+                                </div>
+                                <img id="mp-img-preview" class="mp-img-preview" alt="" style="display:none">
                             </div>
                         </fieldset>
 
@@ -2611,6 +2758,9 @@
         document.querySelectorAll('.acc-sw').forEach(b => {
             b.classList.toggle('active', b.getAttribute('data-acc') === name);
         });
+        // Redessine les graphiques pour qu'ils suivent la nouvelle couleur
+        if (typeof redrawCharts === 'function')
+            redrawCharts();
     }
     function openSettings() {
         applyAccent(localStorage.getItem('sphinx_accent') || 'violet'); // resync pastille active
@@ -2979,7 +3129,113 @@
 
     let allMacroNotes = [],
         unsubMacroNotes = null,
-        editingMacroId = null;
+        editingMacroId = null,
+        currentMacroImage = null; // image en base64 de la synthèse en cours d'édition
+
+    // ── Sous-composantes (formulaire) ─────────────────────────────
+    function addMacroSub(data) {
+        const wrap = document.getElementById('mp-subs');
+        if (!wrap)
+            return;
+        const d = data || {};
+        const row = document.createElement('div');
+        row.className = 'mp-sub-row';
+        row.innerHTML =
+            '<input type="text" class="fx-fc mp-sub-name" placeholder="Sous-composante (ex : Prices Paid)" autocomplete="off">' +
+            '<input type="text" class="fx-fc mp-sub-cons" placeholder="Consensus" autocomplete="off">' +
+            '<input type="text" class="fx-fc mp-sub-act" placeholder="Réel" autocomplete="off">' +
+            '<input type="text" class="fx-fc mp-sub-prev" placeholder="Précédent" autocomplete="off">' +
+            '<button type="button" class="mp-sub-del" title="Retirer" onclick="this.parentElement.remove()">✕</button>';
+        row.querySelector('.mp-sub-name').value = d.name || '';
+        row.querySelector('.mp-sub-cons').value = d.consensus || '';
+        row.querySelector('.mp-sub-act').value = d.actual || '';
+        row.querySelector('.mp-sub-prev').value = d.previous || '';
+        wrap.appendChild(row);
+    }
+    function getMacroSubs() {
+        return Array.from(document.querySelectorAll('#mp-subs .mp-sub-row')).map(r => ({
+            name: r.querySelector('.mp-sub-name').value.trim(),
+            consensus: r.querySelector('.mp-sub-cons').value.trim(),
+            actual: r.querySelector('.mp-sub-act').value.trim(),
+            previous: r.querySelector('.mp-sub-prev').value.trim()
+        })).filter(s => s.name || s.consensus || s.actual || s.previous);
+    }
+
+    // ── Image (compression + base64, stockée dans la note) ────────
+    function handleMacroImage(ev) {
+        const file = ev.target.files && ev.target.files[0];
+        if (!file)
+            return;
+        if (!file.type.startsWith('image/')) {
+            showToast('Fichier image invalide');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                const MAX = 1280;
+                let { width: w, height: h } = img;
+                if (w > MAX || h > MAX) {
+                    const r = Math.min(MAX / w, MAX / h);
+                    w = Math.round(w * r);
+                    h = Math.round(h * r);
+                }
+                const cv = document.createElement('canvas');
+                cv.width = w;
+                cv.height = h;
+                cv.getContext('2d').drawImage(img, 0, 0, w, h);
+                currentMacroImage = cv.toDataURL('image/jpeg', 0.72);
+                // Garde-fou : Firestore limite un document à ~1 Mo
+                if (currentMacroImage.length > 950000) {
+                    currentMacroImage = cv.toDataURL('image/jpeg', 0.5);
+                }
+                if (currentMacroImage.length > 950000) {
+                    showToast('Image trop lourde même compressée — choisis-en une plus petite');
+                    currentMacroImage = null;
+                    setMacroImagePreview(null);
+                    return;
+                }
+                setMacroImagePreview(currentMacroImage);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+    function setMacroImagePreview(src) {
+        const prev = document.getElementById('mp-img-preview');
+        const clr = document.getElementById('mp-img-clear');
+        const hint = document.getElementById('mp-img-hint');
+        if (src) {
+            prev.src = src;
+            prev.style.display = '';
+            clr.style.display = '';
+            hint.textContent = 'Image prête';
+        } else {
+            prev.removeAttribute('src');
+            prev.style.display = 'none';
+            clr.style.display = 'none';
+            hint.textContent = 'Aucune image';
+        }
+    }
+    function clearMacroImage() {
+        currentMacroImage = null;
+        const inp = document.getElementById('mp-image-input');
+        if (inp)
+            inp.value = '';
+        setMacroImagePreview(null);
+    }
+    // Agrandit une image de synthèse en plein écran (clic pour fermer)
+    function openImgLightbox(src) {
+        const ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:24px';
+        const im = document.createElement('img');
+        im.src = src;
+        im.style.cssText = 'max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 12px 48px rgba(0,0,0,.6)';
+        ov.appendChild(im);
+        ov.onclick = () => ov.remove();
+        document.body.appendChild(ov);
+    }
 
     function isMacroEditor() {
         const u = auth.currentUser;
@@ -3043,6 +3299,9 @@
             event: f.event.value.trim(),
             consensus: f.consensus.value.trim(),
             actual: f.actual.value.trim(),
+            previous: f.previous.value.trim(),
+            subs: getMacroSubs(),
+            image: currentMacroImage || '',
             analysis: f.analysis.value.trim()
         };
         if (!note.date || !note.event || !note.analysis) {
@@ -3081,7 +3340,14 @@
         f.event.value = n.event || '';
         f.consensus.value = n.consensus || '';
         f.actual.value = n.actual || '';
+        f.previous.value = n.previous || '';
         f.analysis.value = n.analysis || '';
+        // Sous-composantes
+        document.getElementById('mp-subs').innerHTML = '';
+        (n.subs || []).forEach(s => addMacroSub(s));
+        // Image existante
+        currentMacroImage = n.image || null;
+        setMacroImagePreview(currentMacroImage);
         editingMacroId = fid;
         setMacroEditUI(true);
         f.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3091,6 +3357,10 @@
     function cancelMacroEdit() {
         editingMacroId = null;
         document.getElementById('macroForm').reset();
+        const subs = document.getElementById('mp-subs');
+        if (subs)
+            subs.innerHTML = '';
+        clearMacroImage();
         setMacroEditUI(false);
     }
 
@@ -3220,7 +3490,7 @@
                 li.appendChild(who);
             }
 
-            if (n.consensus || n.actual) {
+            if (n.consensus || n.actual || n.previous) {
                 const figs = document.createElement('div');
                 figs.className = 'mp-figs';
                 if (n.consensus) {
@@ -3249,13 +3519,62 @@
                     }
                     figs.appendChild(a);
                 }
+                if (n.previous) {
+                    const pv = document.createElement('span');
+                    pv.className = 'mp-fig';
+                    pv.innerHTML = 'Précédent : <b></b>';
+                    pv.querySelector('b').textContent = n.previous;
+                    figs.appendChild(pv);
+                }
                 li.appendChild(figs);
+            }
+
+            // Tableau des sous-composantes
+            if (Array.isArray(n.subs) && n.subs.length) {
+                const tbl = document.createElement('table');
+                tbl.className = 'mp-sub-table';
+                tbl.innerHTML = '<thead><tr><th>Sous-composante</th><th>Cons.</th><th>Réel</th><th>Préc.</th></tr></thead>';
+                const tb = document.createElement('tbody');
+                n.subs.forEach(s => {
+                    const tr = document.createElement('tr');
+                    [s.name, s.consensus, s.actual, s.previous].forEach((val, i) => {
+                        const td = document.createElement('td');
+                        if (i === 0) {
+                            td.textContent = val || '—';
+                        } else {
+                            const b = document.createElement('b');
+                            b.textContent = val || '—';
+                            // Coloration réel vs consensus
+                            if (i === 2) {
+                                const cv = macroNum(s.consensus), av = macroNum(s.actual);
+                                if (!isNaN(cv) && !isNaN(av) && av !== cv)
+                                    b.style.color = av > cv ? 'var(--fx-blue)' : 'var(--fx-red)';
+                            }
+                            td.appendChild(b);
+                        }
+                        tr.appendChild(td);
+                    });
+                    tb.appendChild(tr);
+                });
+                tbl.appendChild(tb);
+                li.appendChild(tbl);
             }
 
             const p = document.createElement('p');
             p.className = 'mp-analysis';
             p.textContent = n.analysis || '';
             li.appendChild(p);
+
+            // Image éventuelle
+            if (n.image) {
+                const im = document.createElement('img');
+                im.className = 'mp-card-img';
+                im.src = n.image;
+                im.alt = 'Illustration — ' + (n.event || '');
+                im.loading = 'lazy';
+                im.onclick = () => openImgLightbox(n.image);
+                li.appendChild(im);
+            }
 
             list.appendChild(li);
         });
@@ -3341,8 +3660,34 @@
 
     // ── CHARTS ────────────────────────────────────────────────────
     Chart.defaults.color = '#64748b';
-    Chart.defaults.borderColor = 'rgba(109,40,217,0.12)';
+    Chart.defaults.borderColor = 'rgba(124,58,237,0.12)';
     Chart.defaults.font.family = "'Space Grotesk',sans-serif";
+    // Lit la palette d'accent active (pour que les graphiques la suivent)
+    function accVars() {
+        const s = getComputedStyle(document.documentElement);
+        return {
+            acc: (s.getPropertyValue('--acc') || '#7c3aed').trim(),
+            accL: (s.getPropertyValue('--acc-l') || '#a78bfa').trim(),
+            accRGB: (s.getPropertyValue('--acc-rgb') || '124,58,237').trim()
+        };
+    }
+    // Redessine tous les graphiques (appelé au changement de palette)
+    function redrawCharts() {
+        if (!allTrades || !allTrades.length)
+            return;
+        try {
+            Chart.defaults.borderColor = 'rgba(' + accVars().accRGB + ',0.12)';
+            const st = calcStats(allTrades);
+            drawEquityChart(allTrades, st);
+            drawOutcomeChart(allTrades);
+            drawRRChart(allTrades);
+            drawMonthlyChart(allTrades);
+            drawQuarterChart(allTrades);
+            drawYearChart(allTrades);
+        } catch (e) {
+            console.error('redrawCharts', e);
+        }
+    }
     function dc(id) {
         if (chartsData[id]) {
             chartsData[id].destroy();
@@ -3352,6 +3697,7 @@
 
     function drawEquityChart(trades, st) {
         dc('equityChart');
+        const A = accVars();
         const base = userCapital > 0 ? userCapital : 0;
         const series = st.eq.map(v => v + base);
         const fmtAxis = v => base > 0 ? '$' + Math.round(v).toLocaleString() : (v >= 0 ? '+' : '') + Math.round(v);
@@ -3361,11 +3707,11 @@
                 labels: [base > 0 ? 'Capital' : 'Start', ...trades.map((_, i) => `#${i + 1}`)],
                 datasets: [{
                     data: series,
-                    borderColor: '#a78bfa',
+                    borderColor: A.accL,
                     borderWidth: 2,
                     pointRadius: 0,
                     fill: true,
-                    backgroundColor: 'rgba(124,58,237,0.1)',
+                    backgroundColor: 'rgba(' + A.accRGB + ',0.1)',
                     tension: 0.3
                 }]
             },
@@ -3388,7 +3734,7 @@
                     },
                     y: {
                         grid: {
-                            color: 'rgba(109,40,217,0.08)'
+                            color: 'rgba(' + A.accRGB + ',0.08)'
                         },
                         ticks: {
                             callback: v => fmtAxis(v)
@@ -3400,6 +3746,7 @@
     }
     function drawOutcomeChart(trades) {
         dc('outcomeChart');
+        const A = accVars();
         const w = trades.filter(t => t.outcome === 'WIN').length,
             l = trades.filter(t => t.outcome === 'LOSS').length,
             b = trades.filter(t => t.outcome === 'BE').length;
@@ -3409,7 +3756,7 @@
                 labels: ['WIN', 'LOSS', 'BE'],
                 datasets: [{
                     data: [w, l, b],
-                    backgroundColor: ['#3b82f6', '#ef4444', '#a78bfa'],
+                    backgroundColor: ['#3b82f6', '#ef4444', A.accL],
                     borderWidth: 0
                 }]
             },
@@ -3427,6 +3774,7 @@
     }
     function drawRRChart(trades) {
         dc('rrChart');
+        const A = accVars();
         const b = {
             '<-1': 0,
             '-1': 0,
@@ -3462,7 +3810,7 @@
                 labels: Object.keys(b),
                 datasets: [{
                     data: Object.values(b),
-                    backgroundColor: ['#ef4444', '#ef4444', '#f87171', '#a78bfa', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8'],
+                    backgroundColor: ['#ef4444', '#ef4444', '#f87171', A.accL, '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8'],
                     borderRadius: 4
                 }]
             },
@@ -3630,6 +3978,7 @@
         applyFilters();
 
         try {
+            Chart.defaults.borderColor = 'rgba(' + accVars().accRGB + ',0.12)';
             drawEquityChart(allTrades, st);
             drawOutcomeChart(allTrades);
             drawRRChart(allTrades);

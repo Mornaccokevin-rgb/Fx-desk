@@ -2531,14 +2531,32 @@
     function openScreen(id) {
         if (PROTECTED_SCREENS.includes(id) && !(auth && auth.currentUser))
             id = 'landing';
+        // ⚠️ Garde-fou anti-écran-noir : on vérifie que l'écran cible existe
+        // AVANT de masquer les autres. Sinon, un id introuvable masquerait
+        // tous les écrans et n'afficherait que le fond noir du body.
+        let target = document.getElementById(id);
+        if (!target) {
+            console.error('openScreen : écran introuvable →', id, '(retour au hub)');
+            target = document.getElementById('hub') || document.getElementById('landing');
+            id = target ? target.id : null;
+            if (!target)
+                return;
+        }
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+        target.classList.add('active');
         window.scrollTo(0, 0);
         if (id === 'fxdesk' && auth && auth.currentUser)
             showFxApp(auth.currentUser);
         if (id === 'macroprep' && auth && auth.currentUser) {
-            loadMacroNotes();
-            applyMacroEditorUI();
+            // Une erreur d'init (Firestore, etc.) ne doit jamais laisser
+            // l'écran vide : on l'isole pour que le formulaire reste visible.
+            try {
+                loadMacroNotes();
+                applyMacroEditorUI();
+            } catch (e) {
+                console.error('Macro Prep — erreur init :', e);
+                showToast('Macro Prep : ' + (e && e.message ? e.message : 'erreur de chargement'));
+            }
         }
         if (id === 'landing')
             resetAuthCard();
@@ -2896,7 +2914,21 @@
                 ...d.data()
             }));
             renderMacroNotes();
-        }, err => showToast('Erreur: ' + err.message));
+        }, err => {
+            // Erreur fréquente : règles Firestore non configurées (permission-denied).
+            // On l'affiche DANS l'écran pour qu'il ne reste jamais vide.
+            console.error('Macro Prep — Firestore :', err);
+            const empty = document.getElementById('mp-empty');
+            if (empty) {
+                empty.style.display = '';
+                const t = empty.querySelector('.fx-empty-title');
+                if (t)
+                    t.textContent = (err.code === 'permission-denied')
+                        ? 'Accès refusé : règles Firestore à configurer'
+                        : 'Impossible de charger les synthèses';
+            }
+            showToast('Erreur: ' + err.message);
+        });
     }
 
     async function submitMacroNote(e) {

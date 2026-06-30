@@ -1464,6 +1464,23 @@
         color: var(--fx-text);
         white-space: pre-wrap;
         margin: 0
+    }
+
+    .mp-author {
+        font-size: 11px;
+        color: var(--fx-muted);
+        margin-bottom: 10px
+    }
+
+    .mp-readonly {
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bd);
+        border-left: 3px solid var(--fx-gold);
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 12px;
+        color: var(--fx-muted2);
+        margin: 0 0 18px
     }/* BILAN */
     .fx-ic {
         background: var(--fx-card);
@@ -2393,8 +2410,13 @@
 
             <div class="fx-content">
 
-                <!-- ── PARTIE 1 : FORMULAIRE D'ENTRÉE ── -->
-                <section class="fx-form-card" aria-labelledby="mp-form-title">
+                <!-- Bannière lecture seule (non-rédacteurs) -->
+                <p id="mp-readonly" class="mp-readonly" style="display:none" role="status">
+                    🔒 Flux en lecture seule — seuls les rédacteurs autorisés peuvent publier des analyses ici.
+                </p>
+
+                <!-- ── PARTIE 1 : FORMULAIRE D'ENTRÉE (rédacteurs) ── -->
+                <section id="mp-form-section" class="fx-form-card" aria-labelledby="mp-form-title">
                     <h2 id="mp-form-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0 0 18px">🧠 Nouvelle synthèse</h2>
                     <form id="macroForm" onsubmit="submitMacroNote(event)">
                         <fieldset style="border:none;margin:0;padding:0;min-width:0">
@@ -2514,8 +2536,10 @@
         window.scrollTo(0, 0);
         if (id === 'fxdesk' && auth && auth.currentUser)
             showFxApp(auth.currentUser);
-        if (id === 'macroprep' && auth && auth.currentUser)
-            loadMacroNotes(auth.currentUser.uid);
+        if (id === 'macroprep' && auth && auth.currentUser) {
+            loadMacroNotes();
+            applyMacroEditorUI();
+        }
         if (id === 'landing')
             resetAuthCard();
     }
@@ -2829,16 +2853,42 @@
         document.getElementById('checklistScore').innerHTML = `<span style="font-size:18px;font-weight:700;color:${pct === 100 ? '#3b82f6' : '#f59e0b'}">${pct}%</span><br><span style="font-size:11px;color:var(--fx-muted)">Score de préparation</span>`;
     }
 
-    // ── MACRO PREP — Journal de Synthèse Macro ────────────────────
-    // Persistance : Firestore users/{uid}/macroNotes (même schéma que les trades).
+    // ── MACRO PREP — Journal de Synthèse Macro (FLUX PARTAGÉ) ─────
+    // Persistance : Firestore collection RACINE `macroNotes` (partagée par tous).
+    // Lecture : tous les utilisateurs connectés. Écriture : rédacteurs autorisés.
+    // ⚠️ Cette liste ne sert QU'À L'AFFICHAGE (afficher/cacher le formulaire).
+    //    La vraie sécurité est dans les RÈGLES Firestore — garder les 2 listes IDENTIQUES.
+    const MACRO_EDITORS = [
+        'mornaccokevin@gmail.com'
+        // , 'redacteur2@exemple.com'
+        // , 'redacteur3@exemple.com'
+    ].map(s => s.toLowerCase());
+
     let allMacroNotes = [],
         unsubMacroNotes = null,
         editingMacroId = null;
 
-    function loadMacroNotes(uid) {
+    function isMacroEditor() {
+        const u = auth.currentUser;
+        return !!(u && u.email && MACRO_EDITORS.includes(u.email.toLowerCase()));
+    }
+
+    function applyMacroEditorUI() {
+        const editor = isMacroEditor();
+        const formSec = document.getElementById('mp-form-section');
+        const ro = document.getElementById('mp-readonly');
+        if (formSec)
+            formSec.style.display = editor ? '' : 'none';
+        if (ro)
+            ro.style.display = editor ? 'none' : '';
+        if (!editor)
+            cancelMacroEdit();
+    }
+
+    function loadMacroNotes() {
         if (unsubMacroNotes)
             unsubMacroNotes();
-        unsubMacroNotes = db.collection('users').doc(uid).collection('macroNotes')
+        unsubMacroNotes = db.collection('macroNotes')
         .orderBy('date', 'desc')
         .onSnapshot(snap => {
             allMacroNotes = snap.docs.map(d => ({
@@ -2856,29 +2906,35 @@
             showToast('Connexion requise');
             return;
         }
+        if (!isMacroEditor()) {
+            showToast('Publication réservée aux rédacteurs autorisés');
+            return;
+        }
         const f = e.target;
         const note = {
             date: f.date.value,
             event: f.event.value.trim(),
             consensus: f.consensus.value.trim(),
             actual: f.actual.value.trim(),
-            analysis: f.analysis.value.trim(),
-            createdAt: new Date().toISOString()
+            analysis: f.analysis.value.trim()
         };
         if (!note.date || !note.event || !note.analysis) {
             showToast('Date, événement et analyse sont requis');
             return;
         }
         try {
-            const col = db.collection('users').doc(user.uid).collection('macroNotes');
+            const col = db.collection('macroNotes');
             if (editingMacroId) {
-                delete note.createdAt; // ne pas écraser la date de création
                 note.updatedAt = new Date().toISOString();
+                note.updatedByEmail = user.email || '';
                 await col.doc(editingMacroId).update(note);
                 showToast('Synthèse mise à jour ✅');
             } else {
+                note.createdAt = new Date().toISOString();
+                note.authorEmail = user.email || '';
+                note.authorUid = user.uid;
                 await col.add(note);
-                showToast('Synthèse enregistrée ✅');
+                showToast('Synthèse publiée ✅');
             }
             cancelMacroEdit(); // reset formulaire + sortie du mode édition
             f.date.focus();
@@ -2888,6 +2944,8 @@
     }
 
     function editMacroNote(fid) {
+        if (!isMacroEditor())
+            return;
         const n = allMacroNotes.find(x => x.firestoreId === fid);
         if (!n)
             return;
@@ -2925,11 +2983,14 @@
     }
 
     async function deleteMacroNote(fid) {
-        const user = auth.currentUser;
-        if (!user || !confirm('Supprimer définitivement cette synthèse ?'))
+        if (!isMacroEditor()) {
+            showToast('Suppression réservée aux rédacteurs autorisés');
+            return;
+        }
+        if (!confirm('Supprimer définitivement cette synthèse ?'))
             return;
         try {
-            await db.collection('users').doc(user.uid).collection('macroNotes').doc(fid).delete();
+            await db.collection('macroNotes').doc(fid).delete();
             if (editingMacroId === fid)
                 cancelMacroEdit();
             showToast('Synthèse supprimée');
@@ -2998,26 +3059,39 @@
             evt.className = 'mp-evt';
             evt.textContent = n.event || 'Sans titre';
 
-            const actions = document.createElement('div');
-            actions.className = 'mp-actions';
+            head.append(time, evt);
 
-            const edit = document.createElement('button');
-            edit.className = 'mp-edit';
-            edit.type = 'button';
-            edit.textContent = '✏️ Éditer';
-            edit.setAttribute('aria-label', 'Éditer la synthèse ' + (n.event || ''));
-            edit.onclick = () => editMacroNote(n.firestoreId);
+            // Boutons Éditer/Supprimer : rédacteurs autorisés uniquement
+            if (isMacroEditor()) {
+                const actions = document.createElement('div');
+                actions.className = 'mp-actions';
 
-            const del = document.createElement('button');
-            del.className = 'mp-del';
-            del.type = 'button';
-            del.textContent = '🗑 Supprimer';
-            del.setAttribute('aria-label', 'Supprimer la synthèse ' + (n.event || ''));
-            del.onclick = () => deleteMacroNote(n.firestoreId);
+                const edit = document.createElement('button');
+                edit.className = 'mp-edit';
+                edit.type = 'button';
+                edit.textContent = '✏️ Éditer';
+                edit.setAttribute('aria-label', 'Éditer la synthèse ' + (n.event || ''));
+                edit.onclick = () => editMacroNote(n.firestoreId);
 
-            actions.append(edit, del);
-            head.append(time, evt, actions);
+                const del = document.createElement('button');
+                del.className = 'mp-del';
+                del.type = 'button';
+                del.textContent = '🗑 Supprimer';
+                del.setAttribute('aria-label', 'Supprimer la synthèse ' + (n.event || ''));
+                del.onclick = () => deleteMacroNote(n.firestoreId);
+
+                actions.append(edit, del);
+                head.appendChild(actions);
+            }
             li.appendChild(head);
+
+            // Auteur (flux partagé)
+            if (n.authorEmail) {
+                const who = document.createElement('div');
+                who.className = 'mp-author';
+                who.textContent = '✍️ ' + n.authorEmail.split('@')[0];
+                li.appendChild(who);
+            }
 
             if (n.consensus || n.actual) {
                 const figs = document.createElement('div');

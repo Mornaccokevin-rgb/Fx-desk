@@ -62,43 +62,43 @@ a{color:inherit;text-decoration:none}
 .icon-btn:hover{color:var(--accent);border-color:var(--accent)}
 
 /* ─── DASHBOARD : 2 colonnes (contenu + sessions) ─── */
-.dash-grid{display:grid;grid-template-columns:1fr 250px;gap:20px;align-items:start}
+.dash-grid{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
 .dash-main{min-width:0}
 .dash-side{position:sticky;top:14px}
-@media (max-width:900px){
+@media (max-width:1000px){
   .dash-grid{grid-template-columns:1fr}
   .dash-side{position:static;order:-1}
 }
 
 /* ─── PANNEAU SESSIONS (vertical) ─── */
-.sess-panel{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:16px}
-.sess-panel-hdr{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.7px;color:var(--t3);font-weight:700;margin-bottom:14px}
-.sess-active-name{font-size:18px;font-weight:700;color:var(--t);letter-spacing:.3px}
-.sess-active-state{font-size:11px;color:var(--buy);font-weight:600;margin-top:2px;margin-bottom:14px}
+.sess-panel{background:var(--panel);border:1px solid var(--bd);border-radius:14px;padding:22px}
+.sess-panel-hdr{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.7px;color:var(--t3);font-weight:700;margin-bottom:18px}
+.sess-active-name{font-size:26px;font-weight:700;color:var(--t);letter-spacing:.3px}
+.sess-active-state{font-size:12.5px;color:var(--buy);font-weight:600;margin-top:4px;margin-bottom:20px}
 .sess-active-state.closed{color:var(--t3)}
 
 /* Courbe verticale */
-.sess-track{display:grid;grid-template-columns:1fr;gap:0;margin:6px 0 14px}
-.sess-track-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
-.sess-end-time{font-family:var(--mono);font-size:12px;color:var(--t2);font-weight:700}
-.sess-next-name{font-size:10.5px;color:var(--accent);font-weight:600;text-align:right}
-.sess-rail{position:relative;height:120px;width:10px;margin:0 auto;background:var(--panel3);border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+.sess-track{display:grid;grid-template-columns:1fr;gap:0;margin:6px 0 18px}
+.sess-track-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.sess-end-time{font-family:var(--mono);font-size:13px;color:var(--t2);font-weight:700}
+.sess-next-name{font-size:12px;color:var(--accent);font-weight:600;text-align:right}
+.sess-rail{position:relative;height:200px;width:14px;margin:0 auto;background:var(--panel3);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
 .sess-rail-fill{position:absolute;left:0;right:0;bottom:0;height:0%;background:linear-gradient(180deg,var(--buy),var(--accent));transition:height .8s linear}
-.sess-track-bot{font-size:10px;color:var(--t3);text-align:center;margin-top:5px;font-family:var(--mono)}
+.sess-track-bot{font-size:11px;color:var(--t3);text-align:center;margin-top:7px;font-family:var(--mono)}
 
 /* Chronomètre */
-.sess-timer{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--t);text-align:center;letter-spacing:1px;margin-top:6px}
-.sess-timer-lbl{font-size:10px;color:var(--t3);text-align:center;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.sess-timer{font-family:var(--mono);font-size:40px;font-weight:700;color:var(--t);text-align:center;letter-spacing:1.5px;margin-top:8px}
+.sess-timer-lbl{font-size:11px;color:var(--t3);text-align:center;text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px}
 
 /* Liste des 4 sessions */
-.sess-list{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--bd);padding-top:12px}
-.sess-row{display:flex;align-items:center;gap:8px;font-size:11.5px}
-.sess-row .dot{width:8px;height:8px;border-radius:50%;background:var(--t4);flex-shrink:0;transition:all .2s}
+.sess-list{display:flex;flex-direction:column;gap:11px;border-top:1px solid var(--bd);padding-top:16px}
+.sess-row{display:flex;align-items:center;gap:9px;font-size:13px}
+.sess-row .dot{width:9px;height:9px;border-radius:50%;background:var(--t4);flex-shrink:0;transition:all .2s}
 .sess-row.open .dot{background:var(--buy);box-shadow:0 0 7px var(--buy-glow)}
 .sess-row .nm{font-weight:600;color:var(--t2)}
 .sess-row.open .nm{color:var(--buy)}
 .sess-row.active .nm{color:var(--t)}
-.sess-row .tm{margin-left:auto;font-family:var(--mono);color:var(--t3);font-size:11px}
+.sess-row .tm{margin-left:auto;font-family:var(--mono);color:var(--t3);font-size:12.5px}
 .sess-row.closed{opacity:.55}
 
 /* ─── TICKER ─── */
@@ -112,7 +112,7 @@ a{color:inherit;text-decoration:none}
 .up{color:var(--buy)}.down{color:var(--sell)}.flat{color:var(--amber)}
 
 /* ─── LAYOUT ─── */
-.wrap{max-width:1280px;margin:0 auto;padding:20px 18px 80px}
+.wrap{max-width:1700px;margin:0 auto;padding:20px 26px 80px}
 .tab-pane{display:none;animation:fadeIn .3s ease}
 .tab-pane.active{display:block}
 

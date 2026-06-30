@@ -36,6 +36,19 @@ service cloud.firestore {
       allow delete: if isMacroEditor();
     }
 
+    // ── CHAT DE L'ALLIANCE ───────────────────────────────────────
+    //  Lecture + écriture : tout utilisateur connecté.
+    //  Suppression autorisée aux connectés (purge auto des anciens
+    //  messages côté client + modération).
+    match /macroChat/{msgId} {
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn()
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() <= 500;
+      allow delete: if isSignedIn();
+      allow update: if false;
+    }
+
     // ── DONNÉES PRIVÉES — Performance Tracker ────────────────────
     //  Chaque utilisateur n'accède qu'à ses propres trades / capital.
     match /users/{uid}/{document=**} {

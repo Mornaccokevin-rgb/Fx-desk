@@ -523,10 +523,10 @@
     .fx-auth-card {
         background: var(--fx-card);
         border: 1px solid var(--fx-bd);
-        border-radius: 16px;
-        padding: 40px;
+        border-radius: 18px;
+        padding: 52px 48px;
         width: 100%;
-        max-width: 420px
+        max-width: 540px
     }
 
     .fx-auth-logo {
@@ -538,14 +538,14 @@
     }
 
     .fx-auth-mark {
-        width: 44px;
-        height: 44px;
+        width: 58px;
+        height: 58px;
         background: linear-gradient(135deg, var(--fx-violet), var(--acc-d));
-        border-radius: 12px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 28px;
         line-height: 1;
         font-weight: 700;
         color: #fff;
@@ -554,7 +554,7 @@
 
     .fx-auth-title {
         font-family: 'Cinzel', Georgia, serif;
-        font-size: 14px;
+        font-size: 19px;
         font-weight: 600;
         color: var(--fx-vl);
         letter-spacing: 0.08em
@@ -570,9 +570,9 @@
 
     .fx-auth-tab {
         flex: 1;
-        padding: 9px;
+        padding: 12px;
         text-align: center;
-        font-size: 12.5px;
+        font-size: 14px;
         font-weight: 500;
         color: var(--fx-muted);
         cursor: pointer;
@@ -586,15 +586,15 @@
     }
 
     .fx-grp {
-        margin-bottom: 14px
+        margin-bottom: 18px
     }
 
     .fx-lbl {
-        font-size: 10px;
+        font-size: 11.5px;
         color: var(--fx-muted2);
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
         display: block
     }
 
@@ -602,11 +602,11 @@
         width: 100%;
         background: var(--fx-card2);
         border: 1px solid var(--fx-bd);
-        border-radius: 8px;
+        border-radius: 9px;
         color: var(--fx-text);
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 13px;
-        padding: 11px 14px;
+        font-size: 15.5px;
+        padding: 14px 16px;
         outline: none;
         transition: border-color 0.2s
     }
@@ -620,14 +620,14 @@
         background: linear-gradient(135deg, var(--fx-violet), var(--acc-d));
         color: #fff;
         border: none;
-        border-radius: 8px;
-        padding: 12px;
+        border-radius: 9px;
+        padding: 15px;
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 13px;
+        font-size: 16px;
         font-weight: 600;
         cursor: pointer;
         transition: opacity 0.2s;
-        margin-top: 4px;
+        margin-top: 6px;
         letter-spacing: 0.02em
     }
 
@@ -651,10 +651,10 @@
         width: 100%;
         background: var(--fx-card2);
         border: 1px solid var(--fx-bd);
-        border-radius: 8px;
-        padding: 11px;
+        border-radius: 9px;
+        padding: 14px;
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 500;
         color: var(--fx-text);
         cursor: pointer;
@@ -805,8 +805,30 @@
 
     .fx-content {
         padding: 22px 24px;
-        max-width: 960px;
+        max-width: 1280px;
         margin: 0 auto
+    }
+
+    /* Analyse : 2 colonnes côte à côte sur grand écran */
+    .an-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+        align-items: start
+    }
+    .an-block {
+        min-width: 0
+    }
+    .an-block .fx-st {
+        margin-top: 0
+    }
+    .an-block.an-wide {
+        grid-column: 1 / -1
+    }
+    @media (max-width: 900px) {
+        .an-grid {
+            grid-template-columns: 1fr
+        }
     }
 
     .fx-pane {
@@ -1609,6 +1631,141 @@
         cursor: zoom-in
     }
 
+    /* ── Macro Prep : 2 colonnes (contenu + chat) ── */
+    .mp-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+        align-items: start
+    }
+    .mp-col-main {
+        min-width: 0
+    }
+    .mp-col-chat {
+        position: sticky;
+        top: 14px
+    }
+    @media (max-width: 1000px) {
+        .mp-grid {
+            grid-template-columns: 1fr
+        }
+        .mp-col-chat {
+            position: static
+        }
+    }
+
+    /* ── Chat ── */
+    .mp-chat {
+        display: flex;
+        flex-direction: column;
+        background: var(--fx-card);
+        border: 1px solid var(--fx-bd);
+        border-radius: 12px;
+        height: calc(100vh - 200px);
+        min-height: 440px;
+        max-height: 780px;
+        overflow: hidden
+    }
+    .mp-chat-hdr {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--fx-bd);
+        display: flex;
+        flex-direction: column;
+        gap: 2px
+    }
+    .mp-chat-hdr > span:first-child {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fx-vl)
+    }
+    .mp-chat-sub {
+        font-size: 10.5px;
+        color: var(--fx-muted)
+    }
+    .mp-chat-msgs {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px
+    }
+    .mp-chat-empty {
+        color: var(--fx-muted);
+        font-size: 12px;
+        text-align: center;
+        margin: auto
+    }
+    .mp-msg {
+        display: flex;
+        flex-direction: column;
+        gap: 3px
+    }
+    .mp-msg-top {
+        display: flex;
+        align-items: baseline;
+        gap: 8px
+    }
+    .mp-msg-author {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--fx-vl)
+    }
+    .mp-msg-author.me {
+        color: var(--fx-gold)
+    }
+    .mp-msg-time {
+        font-size: 10px;
+        color: var(--fx-muted)
+    }
+    .mp-msg-del {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: var(--fx-muted);
+        cursor: pointer;
+        font-size: 12px;
+        opacity: 0.6;
+        padding: 0 2px
+    }
+    .mp-msg-del:hover {
+        color: var(--fx-red);
+        opacity: 1
+    }
+    .mp-msg-body {
+        font-size: 13px;
+        color: var(--fx-text);
+        line-height: 1.45;
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bd);
+        border-radius: 8px;
+        padding: 8px 11px;
+        overflow-wrap: anywhere;
+        word-break: break-word
+    }
+    .mp-chat-form {
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        border-top: 1px solid var(--fx-bd)
+    }
+    .mp-chat-form .fx-fc {
+        flex: 1
+    }
+    .mp-chat-send {
+        flex-shrink: 0;
+        width: 44px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--fx-violet), var(--acc-d));
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer
+    }
+    .mp-chat-send:hover {
+        opacity: 0.9
+    }
+
     .mp-author {
         font-size: 11px;
         color: var(--fx-muted);
@@ -2140,7 +2297,6 @@
                         <div class="fx-user-av" id="userAvatar">?</div>
                         <span class="fx-user-email" id="userEmail">—</span>
                     </div>
-                    <button class="fx-logout" onclick="logoutUser()">Déconnexion</button>
                 </div>
                 <div class="fx-tabs">
                     <button class="fx-tab active" onclick="fxTab('dashboard',this)">Dashboard</button>
@@ -2260,67 +2416,91 @@
                         <div style="font-size:12px;color:var(--fx-muted)">Ajoutez des trades pour voir l'analyse.</div>
                     </div>
                     <div id="fx-analyse-content" style="display:none">
+                      <div class="an-grid">
 
-                        <div class="fx-st">Performance mensuelle</div>
-                        <div class="fx-card">
-                            <div class="ct">P&amp;L par mois</div>
-                            <div style="position:relative;height:185px">
-                                <canvas id="monthlyChart">
-                                </canvas>
+                        <div class="an-block">
+                            <div class="fx-st">Performance mensuelle</div>
+                            <div class="fx-card">
+                                <div class="ct">P&amp;L par mois</div>
+                                <div style="position:relative;height:185px">
+                                    <canvas id="monthlyChart"></canvas>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="fx-st">Performance par trimestre</div>
-                        <div class="fx-card">
-                            <div class="ct">P&amp;L par trimestre</div>
-                            <div style="position:relative;height:185px">
-                                <canvas id="quarterChart">
-                                </canvas>
+                        <div class="an-block">
+                            <div class="fx-st">Performance par trimestre</div>
+                            <div class="fx-card">
+                                <div class="ct">P&amp;L par trimestre</div>
+                                <div style="position:relative;height:185px">
+                                    <canvas id="quarterChart"></canvas>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="fx-st">Performance par année</div>
-                        <div class="fx-card">
-                            <div class="ct">P&amp;L par année</div>
-                            <div style="position:relative;height:185px">
-                                <canvas id="yearChart">
-                                </canvas>
+                        <div class="an-block">
+                            <div class="fx-st">Performance par année</div>
+                            <div class="fx-card">
+                                <div class="ct">P&amp;L par année</div>
+                                <div style="position:relative;height:185px">
+                                    <canvas id="yearChart"></canvas>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="fx-st">Par session</div>
-                        <div class="fx-card" id="sess-breakdown"></div>
-                        <div class="fx-st">Par sentiment de marché</div>
-                        <div class="fx-card" id="sent-breakdown"></div>
-                        <div class="fx-st">Psychologie — OFF vs ON</div>
-                        <div class="fx-card" id="psycho-breakdown"></div>
-
-                        <div class="fx-st">Calendrier de trading</div>
-                        <div class="fx-card">
-                            <div class="fx-cal-header">
-                                <button class="fx-cal-nav" onclick="calPrev()">←</button>
-                                <span class="fx-cal-month" id="cal-month-label">—</span>
-                                <button class="fx-cal-nav" onclick="calNext()">→</button>
-                            </div>
-                            <div class="fx-cal-grid" id="cal-grid"></div>
+                        <div class="an-block">
+                            <div class="fx-st">Par session</div>
+                            <div class="fx-card" id="sess-breakdown"></div>
                         </div>
 
-                        <!-- NOUVELLES SECTIONS -->
-                        <div class="fx-st">Performance par paire</div>
-                        <div class="fx-card" id="analyse-pair-breakdown"></div>
+                        <div class="an-block">
+                            <div class="fx-st">Par sentiment de marché</div>
+                            <div class="fx-card" id="sent-breakdown"></div>
+                        </div>
 
-                        <div class="fx-st">Analyse du sentiment de risque (Risk-On / Risk-Off)</div>
-                        <div class="fx-card" id="analyse-risk-sentiment"></div>
+                        <div class="an-block">
+                            <div class="fx-st">Psychologie — OFF vs ON</div>
+                            <div class="fx-card" id="psycho-breakdown"></div>
+                        </div>
 
-                        <div class="fx-st">Impact géopolitique vs Macro pure</div>
-                        <div class="fx-card" id="analyse-geopo"></div>
+                        <div class="an-block an-wide">
+                            <div class="fx-st">Calendrier de trading</div>
+                            <div class="fx-card">
+                                <div class="fx-cal-header">
+                                    <button class="fx-cal-nav" onclick="calPrev()">←</button>
+                                    <span class="fx-cal-month" id="cal-month-label">—</span>
+                                    <button class="fx-cal-nav" onclick="calNext()">→</button>
+                                </div>
+                                <div class="fx-cal-grid" id="cal-grid"></div>
+                            </div>
+                        </div>
 
-                        <div class="fx-st">Performance par session</div>
-                        <div class="fx-card" id="analyse-session-detail"></div>
+                        <div class="an-block">
+                            <div class="fx-st">Performance par paire</div>
+                            <div class="fx-card" id="analyse-pair-breakdown"></div>
+                        </div>
 
-                        <div class="fx-st">Performance par type d'ordre</div>
-                        <div class="fx-card" id="analyse-order-type"></div>
+                        <div class="an-block">
+                            <div class="fx-st">Analyse du sentiment de risque (Risk-On / Risk-Off)</div>
+                            <div class="fx-card" id="analyse-risk-sentiment"></div>
+                        </div>
 
+                        <div class="an-block">
+                            <div class="fx-st">Impact géopolitique vs Macro pure</div>
+                            <div class="fx-card" id="analyse-geopo"></div>
+                        </div>
+
+                        <div class="an-block">
+                            <div class="fx-st">Performance par session</div>
+                            <div class="fx-card" id="analyse-session-detail"></div>
+                        </div>
+
+                        <div class="an-block">
+                            <div class="fx-st">Performance par type d'ordre</div>
+                            <div class="fx-card" id="analyse-order-type"></div>
+                        </div>
+
+                      </div>
                     </div>
                 </div>
 
@@ -2584,6 +2764,8 @@
             </header>
 
             <div class="fx-content">
+              <div class="mp-grid">
+               <div class="mp-col-main">
 
                 <!-- Bannière lecture seule (non-rédacteurs) -->
                 <p id="mp-readonly" class="mp-readonly" style="display:none" role="status">
@@ -2678,6 +2860,27 @@
                     <ul class="mp-list" id="mp-list"></ul>
                 </section>
 
+               </div><!-- /.mp-col-main -->
+
+               <!-- ══ CHAT DE L'ALLIANCE ══ -->
+               <aside class="mp-col-chat">
+                 <div class="mp-chat">
+                   <div class="mp-chat-hdr">
+                     <span>💬 Chat de l'Alliance</span>
+                     <span class="mp-chat-sub">Questions &amp; échanges · 40 derniers messages</span>
+                   </div>
+                   <div class="mp-chat-msgs" id="mp-chat-msgs">
+                     <div class="mp-chat-empty" id="mp-chat-empty">Aucun message — lance la discussion 👋</div>
+                   </div>
+                   <form class="mp-chat-form" id="mp-chat-form" onsubmit="sendChatMsg(event)">
+                     <input type="text" id="mp-chat-input" class="fx-fc" maxlength="500"
+                       placeholder="Écris un message…" autocomplete="off">
+                     <button type="submit" class="mp-chat-send" title="Envoyer">➤</button>
+                   </form>
+                 </div>
+               </aside>
+
+              </div><!-- /.mp-grid -->
             </div>
         </main>
     </div>
@@ -2798,6 +3001,7 @@
             try {
                 loadMacroNotes();
                 applyMacroEditorUI();
+                loadChat();
             } catch (e) {
                 console.error('Macro Prep — erreur init :', e);
                 showToast('Macro Prep : ' + (e && e.message ? e.message : 'erreur de chargement'));
@@ -3235,6 +3439,124 @@
         ov.appendChild(im);
         ov.onclick = () => ov.remove();
         document.body.appendChild(ov);
+    }
+
+    // ── CHAT DE L'ALLIANCE (collection `macroChat`) ───────────────
+    // Lecture + écriture : tout utilisateur connecté. On ne garde que les
+    // MAX_CHAT derniers messages (purge auto après envoi).
+    const MAX_CHAT = 40;
+    let allChatMsgs = [], unsubChat = null;
+
+    function chatDisplayName(user) {
+        if (!user) return '?';
+        return user.displayName || (user.email ? user.email.split('@')[0] : 'Anonyme');
+    }
+    function loadChat() {
+        if (unsubChat)
+            unsubChat();
+        unsubChat = db.collection('macroChat')
+        .orderBy('createdAt', 'desc')
+        .limit(MAX_CHAT)
+        .onSnapshot(snap => {
+            allChatMsgs = snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
+            renderChat();
+        }, err => {
+            console.error('Chat — Firestore :', err);
+        });
+    }
+    function renderChat() {
+        const box = document.getElementById('mp-chat-msgs');
+        const empty = document.getElementById('mp-chat-empty');
+        if (!box)
+            return;
+        const me = auth.currentUser;
+        box.querySelectorAll('.mp-msg').forEach(n => n.remove());
+        if (!allChatMsgs.length) {
+            if (empty) empty.style.display = '';
+            return;
+        }
+        if (empty) empty.style.display = 'none';
+        allChatMsgs.forEach(m => {
+            const row = document.createElement('div');
+            row.className = 'mp-msg';
+            const top = document.createElement('div');
+            top.className = 'mp-msg-top';
+            const au = document.createElement('span');
+            au.className = 'mp-msg-author' + (me && m.authorUid === me.uid ? ' me' : '');
+            au.textContent = m.authorName || 'Anonyme';
+            const tm = document.createElement('span');
+            tm.className = 'mp-msg-time';
+            tm.textContent = fmtChatTime(m.createdAt);
+            top.append(au, tm);
+            // Suppression : son propre message ou un rédacteur
+            if (me && (m.authorUid === me.uid || isMacroEditor())) {
+                const del = document.createElement('button');
+                del.className = 'mp-msg-del';
+                del.type = 'button';
+                del.textContent = '✕';
+                del.title = 'Supprimer';
+                del.onclick = () => deleteChatMsg(m.id);
+                top.appendChild(del);
+            }
+            const body = document.createElement('div');
+            body.className = 'mp-msg-body';
+            body.textContent = m.text || '';
+            row.append(top, body);
+            box.appendChild(row);
+        });
+        box.scrollTop = box.scrollHeight;
+    }
+    function fmtChatTime(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        if (isNaN(d)) return '';
+        const today = new Date();
+        const sameDay = d.toDateString() === today.toDateString();
+        return sameDay
+            ? d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+            : d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) + ' ' +
+              d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+    async function sendChatMsg(e) {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (!user) { showToast('Connexion requise'); return; }
+        const inp = document.getElementById('mp-chat-input');
+        const text = inp.value.trim();
+        if (!text) return;
+        inp.value = '';
+        try {
+            await db.collection('macroChat').add({
+                text: text,
+                authorUid: user.uid,
+                authorEmail: user.email || '',
+                authorName: chatDisplayName(user),
+                createdAt: new Date().toISOString()
+            });
+            pruneChat();
+        } catch (err) {
+            showToast('Chat : ' + err.message);
+            inp.value = text;
+        }
+    }
+    async function deleteChatMsg(id) {
+        try {
+            await db.collection('macroChat').doc(id).delete();
+        } catch (err) {
+            showToast('Suppression impossible : ' + err.message);
+        }
+    }
+    // Garde au maximum MAX_CHAT messages : supprime les plus anciens
+    async function pruneChat() {
+        try {
+            const snap = await db.collection('macroChat').orderBy('createdAt', 'desc').get();
+            if (snap.size > MAX_CHAT) {
+                const old = snap.docs.slice(MAX_CHAT);
+                await Promise.all(old.map(d => d.ref.delete().catch(() => {})));
+            }
+        } catch (err) {
+            // non bloquant
+        }
     }
 
     function isMacroEditor() {

@@ -26,6 +26,11 @@
     }
 
     :root {
+        /* ── ACCENT (couleur du site, modifiable via Paramètres) ──
+           --acc / --acc-l = hex ; --acc-rgb = triplet pour les rgba(). */
+        --acc: #7c3aed;
+        --acc-l: #a78bfa;
+        --acc-rgb: 124, 58, 237;
         --gold: #C8900A;
         --gold-l: #F0C040;
         --gold-ll: #FFE07A;
@@ -45,11 +50,11 @@
         --fx-bg2: #0a0a18;
         --fx-card: #0e0e1f;
         --fx-card2: #131327;
-        --fx-bd: rgba(109, 40, 217, 0.18);
-        --fx-bb: rgba(139, 92, 246, 0.4);
-        --fx-violet: #7c3aed;
-        --fx-vl: #a78bfa;
-        --fx-vd: rgba(124, 58, 237, 0.12);
+        --fx-bd: rgba(var(--acc-rgb), 0.18);
+        --fx-bb: rgba(var(--acc-rgb), 0.4);
+        --fx-violet: var(--acc);
+        --fx-vl: var(--acc-l);
+        --fx-vd: rgba(var(--acc-rgb), 0.12);
         --fx-blue: #3b82f6;
         --fx-red: #ef4444;
         --fx-rd: rgba(239, 68, 68, 0.12);
@@ -75,15 +80,24 @@
         --fx-bg2: #f1f5f9;
         --fx-card: #ffffff;
         --fx-card2: #f8fafc;
-        --fx-bd: rgba(109, 40, 217, 0.15);
-        --fx-bb: rgba(139, 92, 246, 0.5);
-        --fx-violet: #6d28d9;
-        --fx-vl: #5b21b6;
-        --fx-vd: rgba(124, 58, 237, 0.1);
+        --fx-bd: rgba(var(--acc-rgb), 0.15);
+        --fx-bb: rgba(var(--acc-rgb), 0.5);
+        --fx-violet: var(--acc);
+        --fx-vl: var(--acc-l);
+        --fx-vd: rgba(var(--acc-rgb), 0.1);
         --fx-text: #0f172a;
         --fx-muted: #64748b;
         --fx-muted2: #475569;
     }
+
+    /* ── PRÉRÉGLAGES D'ACCENT (couleur du site) ──────────────────
+       S'appliquent par-dessus le clair/sombre, qui restent séparés. */
+    :root[data-accent="violet"]    { --acc:#7c3aed; --acc-l:#a78bfa; --acc-rgb:124, 58, 237; }
+    :root[data-accent="orange"]    { --acc:#ea580c; --acc-l:#fb923c; --acc-rgb:234, 88, 12; }
+    :root[data-accent="green"]     { --acc:#16a34a; --acc-l:#4ade80; --acc-rgb:22, 163, 74; }
+    :root[data-accent="red"]       { --acc:#dc2626; --acc-l:#f87171; --acc-rgb:220, 38, 38; }
+    :root[data-accent="turquoise"] { --acc:#0d9488; --acc-l:#2dd4bf; --acc-rgb:13, 148, 136; }
+    :root[data-accent="blue"]      { --acc:#2563eb; --acc-l:#60a5fa; --acc-rgb:37, 99, 235; }
 
     html, body {
         min-height: 100vh;
@@ -425,7 +439,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: radial-gradient(ellipse 60% 50% at 50% 38%, rgba(124, 58, 237, 0.13), transparent 70%);
+        background: radial-gradient(ellipse 60% 50% at 50% 38%, rgba(var(--acc-rgb), 0.13), transparent 70%);
         pointer-events: none;
     }
     .landing-intro {
@@ -440,8 +454,8 @@
     .landing-emblem {
         font-size: 64px;
         line-height: 1;
-        color: #a78bfa;
-        text-shadow: 0 0 40px rgba(124, 58, 237, 0.65);
+        color: var(--acc-l);
+        text-shadow: 0 0 40px rgba(var(--acc-rgb), 0.65);
         margin-bottom: 18px;
     }
     .landing-brand {
@@ -466,17 +480,17 @@
         font-weight: 600;
         letter-spacing: 0.04em;
         color: #fff;
-        background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        background: linear-gradient(135deg, var(--acc), #4f46e5);
         border: none;
         border-radius: 12px;
         padding: 16px 52px;
         cursor: pointer;
-        box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+        box-shadow: 0 8px 32px rgba(var(--acc-rgb), 0.4);
         transition: transform 0.18s, box-shadow 0.18s;
     }
     .landing-cta:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(124, 58, 237, 0.6);
+        box-shadow: 0 12px 40px rgba(var(--acc-rgb), 0.6);
     }
     .landing-back {
         display: block;
@@ -502,7 +516,7 @@
         align-items: center;
         justify-content: center;
         padding: 24px;
-        background: radial-gradient(ellipse at 50% 0%, rgba(124, 58, 237, 0.08), transparent 70%)
+        background: radial-gradient(ellipse at 50% 0%, rgba(var(--acc-rgb), 0.08), transparent 70%)
     }
 
     .fx-auth-card {
@@ -534,7 +548,7 @@
         line-height: 1;
         font-weight: 700;
         color: #fff;
-        box-shadow: 0 0 24px rgba(124, 58, 237, 0.4)
+        box-shadow: 0 0 24px rgba(var(--acc-rgb), 0.4)
     }
 
     .fx-auth-title {
@@ -675,7 +689,7 @@
     .fx-header {
         padding: 16px 24px 0;
         border-bottom: 1px solid var(--fx-bd);
-        background: linear-gradient(180deg, rgba(124, 58, 237, 0.05), transparent)
+        background: linear-gradient(180deg, rgba(var(--acc-rgb), 0.05), transparent)
     }
 
     .fx-header-top {
@@ -697,7 +711,7 @@
         font-size: 11px;
         font-weight: 700;
         color: #fff;
-        box-shadow: 0 0 16px rgba(124, 58, 237, 0.4);
+        box-shadow: 0 0 16px rgba(var(--acc-rgb), 0.4);
         flex-shrink: 0
     }
 
@@ -1034,12 +1048,12 @@
     }
 
     .fx-cal-day.be {
-        background: rgba(124, 58, 237, 0.15);
+        background: rgba(var(--acc-rgb), 0.15);
         color: var(--fx-vl);
-        border: 1px solid rgba(124, 58, 237, 0.25)
+        border: 1px solid rgba(var(--acc-rgb), 0.25)
     }/* CAPITAL */
     .fx-capital-card {
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.07), rgba(59, 130, 246, 0.04));
+        background: linear-gradient(135deg, rgba(var(--acc-rgb), 0.07), rgba(59, 130, 246, 0.04));
         border: 1px solid var(--fx-bd);
         border-radius: 12px;
         padding: 18px;
@@ -1360,7 +1374,8 @@
         border: 1px solid var(--fx-bd);
         border-left: 3px solid var(--fx-violet);
         border-radius: 10px;
-        padding: 16px 18px
+        padding: 16px 18px;
+        overflow: hidden
     }
 
     .mp-card-head {
@@ -1463,6 +1478,8 @@
         line-height: 1.55;
         color: var(--fx-text);
         white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
         margin: 0
     }
 
@@ -1669,6 +1686,31 @@
         margin-top: 16px
     }
 
+    .acc-swatches {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap
+    }
+
+    .acc-sw {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--sw);
+        border: 2px solid transparent;
+        cursor: pointer;
+        padding: 0;
+        transition: transform 0.15s, box-shadow 0.15s
+    }
+
+    .acc-sw:hover {
+        transform: scale(1.12)
+    }
+
+    .acc-sw.active {
+        box-shadow: 0 0 0 2px var(--fx-bg), 0 0 0 4px var(--sw)
+    }
+
     #loadingScreen {
         position: fixed;
         inset: 0;
@@ -1716,7 +1758,7 @@
     }
 
     .analyse-table tr:hover td {
-        background: rgba(124, 58, 237, 0.04)
+        background: rgba(var(--acc-rgb), 0.04)
     }
 
     .a-badge {
@@ -1738,7 +1780,7 @@
     }
 
     .a-badge.neu {
-        background: rgba(124, 58, 237, 0.12);
+        background: rgba(var(--acc-rgb), 0.12);
         color: var(--fx-vl)
     }
 
@@ -1884,9 +1926,16 @@
     <!-- ══════ HUB SPHINX ALLIANCE ══════ -->
     <div id="hub" class="screen">
         <div style="padding:64px 24px 48px;text-align:center;background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(120,80,0,0.1),transparent)">
-            <div style="position:absolute;top:24px;right:24px">
+            <div style="position:absolute;top:24px;right:24px;display:flex;gap:8px;align-items:center">
+                <button class="theme-toggle-btn" onclick="openSettings()" title="Paramètres / Couleurs">
+                    <i class="ti ti-palette"></i>
+                </button>
                 <button class="theme-toggle-btn" onclick="toggleThemeGlobal()" title="Thème Clair/Sombre">
                     <i class="ti ti-sun" id="global-theme-icon-hub"></i>
+                </button>
+                <button class="theme-toggle-btn" onclick="logoutUser()" title="Déconnexion"
+                    style="border-color:rgba(239,68,68,0.35);color:var(--fx-red)">
+                    <i class="ti ti-logout"></i>
                 </button>
             </div>
             <span class="hub-emblem">⚜</span>
@@ -2488,6 +2537,30 @@
 
     <div class="fx-toast" id="fx-toast"></div>
 
+    <!-- ══════ PARAMÈTRES D'AFFICHAGE ══════ -->
+    <div class="modal-wrap" id="settingsModal">
+        <div class="modal-overlay" onclick="closeSettings()"></div>
+        <div class="modal-box">
+            <div style="font-size:15px;font-weight:600;color:var(--fx-vl);margin-bottom:4px">⚙️ Paramètres d'affichage</div>
+            <div style="font-size:12px;color:var(--fx-muted);margin-bottom:18px">Personnalise l'apparence de tout le site.</div>
+
+            <div style="font-size:12px;font-weight:600;color:var(--fx-text);margin-bottom:10px">Couleur d'accent</div>
+            <div class="acc-swatches" id="accSwatches">
+                <button class="acc-sw" data-acc="violet"    style="--sw:#7c3aed" onclick="applyAccent('violet')"    title="Violet"></button>
+                <button class="acc-sw" data-acc="orange"    style="--sw:#ea580c" onclick="applyAccent('orange')"    title="Orange"></button>
+                <button class="acc-sw" data-acc="green"     style="--sw:#16a34a" onclick="applyAccent('green')"     title="Vert"></button>
+                <button class="acc-sw" data-acc="red"       style="--sw:#dc2626" onclick="applyAccent('red')"       title="Rouge"></button>
+                <button class="acc-sw" data-acc="turquoise" style="--sw:#0d9488" onclick="applyAccent('turquoise')" title="Turquoise"></button>
+                <button class="acc-sw" data-acc="blue"      style="--sw:#2563eb" onclick="applyAccent('blue')"      title="Bleu"></button>
+            </div>
+
+            <div style="font-size:12px;font-weight:600;color:var(--fx-text);margin:20px 0 10px">Mode</div>
+            <button class="btn-close-modal" onclick="toggleThemeGlobal()" style="width:auto;padding:9px 18px;margin:0">🌗 Basculer clair / sombre</button>
+
+            <button class="btn-close-modal" onclick="closeSettings()" style="margin-top:18px">Fermer</button>
+        </div>
+    </div>
+
     <div class="modal-wrap" id="checklistModal">
         <div class="modal-overlay" onclick="closeChecklist()"></div>
         <div class="modal-box">
@@ -2523,6 +2596,28 @@
                     el.className = 'ti ti-moon';
             });
         }
+        // Accent de couleur sauvegardé (violet par défaut)
+        applyAccent(localStorage.getItem('sphinx_accent') || 'violet');
+    }
+
+    // ── PARAMÈTRES : couleur d'accent ─────────────────────────────
+    const ACCENTS = ['violet', 'orange', 'green', 'red', 'turquoise', 'blue'];
+    function applyAccent(name) {
+        if (!ACCENTS.includes(name))
+            name = 'violet';
+        document.documentElement.setAttribute('data-accent', name);
+        localStorage.setItem('sphinx_accent', name);
+        // Met à jour la pastille active dans le panneau
+        document.querySelectorAll('.acc-sw').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-acc') === name);
+        });
+    }
+    function openSettings() {
+        applyAccent(localStorage.getItem('sphinx_accent') || 'violet'); // resync pastille active
+        document.getElementById('settingsModal').classList.add('open');
+    }
+    function closeSettings() {
+        document.getElementById('settingsModal').classList.remove('open');
     }
 
     // ── NAVIGATION ────────────────────────────────────────────────

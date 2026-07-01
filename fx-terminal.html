@@ -456,7 +456,6 @@ a{color:inherit;text-decoration:none}
       <div class="sec-hdr-line"></div>
       <span class="badge-est" id="cot-date"></span>
     </div>
-    <div class="note-banner"><i class="ti ti-info-circle"></i><div>Positionnement des <b>gros spéculateurs</b> (non-commerciaux = fonds &amp; institutionnels) sur les futures de devises au CME. Longs vs shorts en % du positionnement spéculatif. Publié chaque vendredi par la CFTC (données arrêtées au mardi).</div></div>
     <div class="cot-grid" id="cot-grid"><div class="empty-mini">Chargement des données COT…</div></div>
 
     <div class="sec-hdr" style="margin-top:30px">
@@ -464,8 +463,11 @@ a{color:inherit;text-decoration:none}
       <div class="sec-hdr-line"></div>
       <span class="badge-est" style="color:var(--amber)">Contrarian</span>
     </div>
-    <div class="note-banner"><i class="ti ti-info-circle"></i><div>Positions <b>long/short des traders particuliers</b> en temps réel. Souvent lu comme un indicateur à <b>contre-courant</b> : quand le retail est massivement d'un côté, le marché va souvent dans l'autre.</div></div>
-    <iframe id="mfb-frame" title="Myfxbook Community Outlook" style="width:100%;border:1px solid var(--bd);background:#fff;border-radius:12px;min-height:470px;display:block"></iframe>
+    <div class="mfb-wrap" style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;overflow:auto">
+      <div style="width:100%;text-align:center">
+        <script type="text/javascript" src="https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1"></script>
+      </div>
+    </div>
   </div>
 
   <!-- ═══════ MARKET ANALYSIS TAB (maintenance) ═══════ -->
@@ -1411,22 +1413,23 @@ async function fetchPredictions(){
 }
 
 /* ══ COT / POSITIONNEMENT (CFTC) + RETAIL (Myfxbook) ══ */
+// Noms EXACTS des contrats CFTC (évite les mini-contrats "- SMALL" et "-dormant")
 const COT_CCY=[
+  ['🇺🇸','USD','USD INDEX'],
   ['🇪🇺','EUR','EURO FX'],
   ['🇬🇧','GBP','BRITISH POUND'],
   ['🇯🇵','JPY','JAPANESE YEN'],
   ['🇨🇭','CHF','SWISS FRANC'],
   ['🇨🇦','CAD','CANADIAN DOLLAR'],
   ['🇦🇺','AUD','AUSTRALIAN DOLLAR'],
-  ['🇳🇿','NZD','NEW ZEALAND DOLLAR'],
-  ['🇺🇸','USD','U.S. DOLLAR INDEX']
+  ['🇳🇿','NZD','NZ DOLLAR']
 ];
 async function fetchCOT(){
   const grid=document.getElementById('cot-grid'); if(!grid) return;
   try{
     const rows=await Promise.all(COT_CCY.map(async ([flag,code,name])=>{
       try{
-        const where=encodeURIComponent("contract_market_name like '"+name+"%'");
+        const where=encodeURIComponent("contract_market_name='"+name+"'");
         const url='https://publicreporting.cftc.gov/resource/6dca-aqww.json?$where='+where+'&$order=report_date_as_yyyy_mm_dd%20DESC&$limit=1';
         const r=await fetch(url); const j=await r.json();
         return [flag,code,(Array.isArray(j)&&j[0])||null];
@@ -1457,11 +1460,6 @@ async function fetchCOT(){
     grid.innerHTML='<div class="empty-mini">Données COT indisponibles (CFTC) pour le moment</div>';
     console.warn('COT',e.message);
   }
-}
-function loadRetailOutlook(){
-  const f=document.getElementById('mfb-frame'); if(!f||f.dataset.loaded) return;
-  f.dataset.loaded='1';
-  f.srcdoc='<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;font-family:Arial,sans-serif;font-size:13px}</style></head><body><div style="width:100%;text-align:center"><script type="text/javascript" src="https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1"><\/script></div></body></html>';
 }
 
 function renderRateExpectations(){
@@ -1711,7 +1709,6 @@ function init(){
   initRateSync();
   fetchPredictions(); setInterval(fetchPredictions, 10*60*1000);
   fetchCOT();
-  loadRetailOutlook();
 }
 window.addEventListener('load',init);
 </script>

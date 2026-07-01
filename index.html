@@ -3534,6 +3534,39 @@
         hideAuthErr();
     }
 
+    // ── ACTIONS / INDICES (Alpha Vantage) ────────────────────────
+    // Plan gratuit limité (25 req/jour, partagées par la clé) → cache 1×/jour
+    // par navigateur, et repli silencieux si le quota est atteint.
+    const AV_KEY = 'OQCHXGPGEY9FAAPB';
+    const AV_STOCKS = [['S&P 500', 'SPY'], ['Nasdaq', 'QQQ'], ['Dow', 'DIA'], ['Apple', 'AAPL'], ['Nvidia', 'NVDA']];
+    async function fetchStockQuote(sym) {
+        const key = 'av_q_' + sym, today = new Date().toISOString().slice(0, 10);
+        try {
+            const c = JSON.parse(localStorage.getItem(key) || 'null');
+            if (c && c.day === today) return c.data;
+        } catch (e) {}
+        try {
+            const r = await fetch('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=' + sym + '&apikey=' + AV_KEY);
+            const j = await r.json();
+            const q = j['Global Quote'];
+            if (!q || !q['05. price']) return null; // quota atteint ou symbole vide
+            const data = { price: parseFloat(q['05. price']), chg: parseFloat(q['10. change percent']) };
+            localStorage.setItem(key, JSON.stringify({ day: today, data: data }));
+            return data;
+        } catch (e) { return null; }
+    }
+    async function buildStockItems() {
+        try {
+            const res = await Promise.all(AV_STOCKS.map(([lbl, sym]) => fetchStockQuote(sym).then(d => [lbl, d])));
+            return res.map(([lbl, d]) => {
+                if (!d || isNaN(d.price)) return '';
+                const up = (d.chg || 0) >= 0, cls = up ? 'sa-up' : 'sa-down', arr = up ? ' ▲' : ' ▼';
+                const chg = isNaN(d.chg) ? '' : ' ' + (up ? '+' : '') + d.chg.toFixed(2) + '%';
+                return '<span class="sa-tk">' + lbl + ' <b class="' + cls + '">' + d.price.toFixed(2) + chg + arr + '</b></span>';
+            }).filter(Boolean).join('');
+        } catch (e) { return ''; }
+    }
+
     // ── BANDEAU MARCHÉS (landing) — cours FX via Frankfurter (gratuit, sans clé) ──
     async function fetchLandingTicker() {
         const track = document.getElementById('sa-ticker-track');
@@ -3563,7 +3596,7 @@
                 ['NZD/USD', 'NZD', true, 4], ['USD/CNH', 'CNH', false, 4],
                 ['XAU/USD', 'XAU', true, 1], ['XAG/USD', 'XAG', true, 2]
             ];
-            const items = pairs.map(([lbl, ccy, inv, dp]) => {
+            const fxItems = pairs.map(([lbl, ccy, inv, dp]) => {
                 const v = val(L, ccy, inv), pv = val(P, ccy, inv);
                 if (v == null) return '';
                 let cls = '', arr = '';
@@ -3574,7 +3607,10 @@
                 }
                 return '<span class="sa-tk">' + lbl + ' <b class="' + cls + '">' + v.toFixed(dp) + arr + '</b></span>';
             }).filter(Boolean).join('');
-            track.innerHTML = items ? (items + items) : 'Cours indisponibles';
+            // Actions/indices (Alpha Vantage) — n'empêche pas le FX si indisponible
+            const stockItems = await buildStockItems();
+            const all = fxItems + stockItems;
+            track.innerHTML = all ? (all + all) : 'Cours indisponibles';
         } catch (e) {
             track.textContent = 'Cours de marché momentanément indisponibles';
         }

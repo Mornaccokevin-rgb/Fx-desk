@@ -101,6 +101,44 @@ a{color:inherit;text-decoration:none}
 .sess-row .tm{margin-left:auto;font-family:var(--mono);color:var(--t3);font-size:12.5px}
 .sess-row.closed{opacity:.55}
 
+/* ─── ONGLET SESSIONS : timeline + cartes ─── */
+.sess-tab-grid{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
+@media(max-width:900px){.sess-tab-grid{grid-template-columns:1fr}}
+.sess-tl{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:18px}
+.sess-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
+@media(max-width:560px){.sess-cards{grid-template-columns:1fr}}
+.sess-c{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.sess-c.open{border-color:var(--buy-glow)}
+.sess-c-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sess-c-top .dot{width:9px;height:9px;border-radius:50%;background:var(--t4);flex-shrink:0}
+.sess-c.open .dot{background:var(--buy);box-shadow:0 0 7px var(--buy-glow)}
+.sess-c-name{font-weight:700;font-size:14px;color:var(--t)}
+.sess-c-badge{margin-left:auto;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:20px}
+.sess-c.open .sess-c-badge{color:var(--buy);background:var(--buy-dim)}
+.sess-c.closed .sess-c-badge{color:var(--t3);background:var(--panel3)}
+.sess-c-row{display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin-top:6px}
+.sess-c-row b{color:var(--t);font-family:var(--mono)}
+
+/* ─── MARCHÉS DE PRÉDICTION ─── */
+.pm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.pm-card{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:14px 16px}
+.pm-q{font-size:12.5px;color:var(--t);line-height:1.4;margin-bottom:10px;min-height:34px;font-weight:600}
+.pm-out{margin-bottom:8px}
+.pm-out-top{display:flex;align-items:center;gap:8px}
+.pm-lbl{font-size:11px;color:var(--t2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm-pct{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--t)}
+.pm-bar{height:5px;border-radius:3px;background:var(--panel3);overflow:hidden;margin-top:4px}
+.pm-bar>span{display:block;height:100%;background:var(--accent)}
+.pm-foot{display:flex;justify-content:space-between;font-size:9.5px;color:var(--t3);font-family:var(--mono);margin-top:8px;border-top:1px solid var(--bd);padding-top:7px}
+.rate-card{cursor:pointer;transition:border-color .15s}
+.rate-card:hover{border-color:var(--bd2)}
+.rx-bars-detail{display:flex;flex-direction:column;gap:12px;margin:6px 0 16px}
+.rx-bd-row{}
+.rx-bd-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;color:var(--t2)}
+.rx-bd-top b{color:var(--t);font-family:var(--mono)}
+.rx-bd-bar{height:12px;border-radius:6px;background:var(--panel3);overflow:hidden}
+.rx-bd-bar>span{display:block;height:100%}
+
 /* ─── TICKER ─── */
 .ticker{display:flex;align-items:stretch;background:var(--bg2);border-bottom:1px solid var(--bd);overflow:hidden;height:32px}
 .ticker-lbl{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:0 14px;background:var(--accent-dim);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.7px;border-right:1px solid var(--bd)}
@@ -301,6 +339,8 @@ a{color:inherit;text-decoration:none}
   </div>
   <div class="cmd-nav">
     <button class="cmd-tab active" id="tab-btn-dash" onclick="switchTab('dash')">Dashboard</button>
+    <button class="cmd-tab" id="tab-btn-sessions" onclick="switchTab('sessions')">Sessions</button>
+    <button class="cmd-tab" id="tab-btn-rates" onclick="switchTab('rates')">Attentes de taux</button>
     <button class="cmd-tab" id="tab-btn-market" onclick="switchTab('market')">Analyse Marché</button>
   </div>
   <div class="cmd-right">
@@ -326,17 +366,22 @@ a{color:inherit;text-decoration:none}
 
   <!-- ═══════ DASHBOARD TAB ═══════ -->
   <div id="tab-dash" class="tab-pane active">
-   <div class="dash-grid">
-    <div class="dash-main">
 
     <div class="sec-hdr">
       <i class="ti ti-world"></i><h2>Force des devises &mdash; Note macro /100</h2>
       <div class="sec-hdr-line"></div>
       <span id="dash-updated" style="font-size:10px;color:var(--t3);font-family:var(--mono)"></span>
     </div>
-
     <div class="ccy-grid" id="ccy-grid"></div>
     <div id="detail-mount"></div>
+
+    <!-- MARCHÉS DE PRÉDICTION (Polymarket) -->
+    <div class="sec-hdr">
+      <i class="ti ti-chart-arrows-vertical"></i><h2>Marchés de prédiction</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)">LIVE · Polymarket</span>
+    </div>
+    <div class="pm-grid" id="pm-grid"><div class="empty-mini">Chargement des marchés…</div></div>
 
     <!-- NEWS FEED -->
     <div class="sec-hdr">
@@ -348,45 +393,46 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="news-toolbar" id="news-toolbar"></div>
     <div class="news-feed" id="news-feed"><div class="news-loading"><div class="spinner"></div><div style="margin-top:12px">Chargement du flux…</div></div></div>
+  </div>
 
-    <!-- RATE EXPECTATIONS -->
+  <!-- ═══════ SESSIONS TAB ═══════ -->
+  <div id="tab-sessions" class="tab-pane">
+    <div class="sess-tab-grid">
+      <aside>
+        <div class="sess-panel">
+          <div class="sess-panel-hdr"><i class="ti ti-clock-hour-4"></i> SESSION EN COURS</div>
+          <div class="sess-active-name" id="sess-active-name">—</div>
+          <div class="sess-active-state" id="sess-active-state">—</div>
+          <div class="sess-track">
+            <div class="sess-track-top">
+              <span class="sess-end-time" id="sess-end-time">--:--</span>
+              <span class="sess-next-name" id="sess-next-name">—</span>
+            </div>
+            <div class="sess-rail"><div class="sess-rail-fill" id="sess-rail-fill"></div></div>
+            <div class="sess-track-bot" id="sess-track-bot">début</div>
+          </div>
+          <div class="sess-timer" id="sess-timer">--:--:--</div>
+          <div class="sess-timer-lbl" id="sess-timer-lbl">avant la fin</div>
+          <div class="sess-list" id="sess-list"></div>
+        </div>
+      </aside>
+      <div>
+        <div class="sec-hdr"><i class="ti ti-timeline"></i><h2>Journée de trading &mdash; 24h (heure locale)</h2><div class="sec-hdr-line"></div></div>
+        <div class="sess-tl" id="sess-tl"></div>
+        <div class="sess-cards" id="sess-cards"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ ATTENTES DE TAUX TAB ═══════ -->
+  <div id="tab-rates" class="tab-pane">
     <div class="sec-hdr">
       <i class="ti ti-building-bank"></i><h2>Attentes de politique monétaire</h2>
       <div class="sec-hdr-line"></div>
       <span class="badge-est" id="rate-updated">EST · à actualiser</span>
     </div>
+    <div class="note-banner"><i class="ti ti-info-circle"></i><div>La carte <b>Fed</b> est alimentée en direct par les marchés de prédiction (Polymarket). Les autres banques centrales sont maintenues à la main par les rédacteurs. Clique une carte pour le détail des probabilités.</div></div>
     <div class="rate-grid" id="rate-grid"></div>
-
-    </div><!-- /.dash-main -->
-
-    <!-- ══ PANNEAU SESSIONS (vertical) ══ -->
-    <aside class="dash-side">
-      <div class="sess-panel">
-        <div class="sess-panel-hdr"><i class="ti ti-clock-hour-4"></i> SESSIONS FX</div>
-
-        <div class="sess-active-name" id="sess-active-name">—</div>
-        <div class="sess-active-state" id="sess-active-state">—</div>
-
-        <!-- Courbe verticale de progression jusqu'à la fin de session -->
-        <div class="sess-track">
-          <div class="sess-track-top">
-            <span class="sess-end-time" id="sess-end-time">--:--</span>
-            <span class="sess-next-name" id="sess-next-name">—</span>
-          </div>
-          <div class="sess-rail"><div class="sess-rail-fill" id="sess-rail-fill"></div></div>
-          <div class="sess-track-bot" id="sess-track-bot">début</div>
-        </div>
-
-        <!-- Chronomètre précis -->
-        <div class="sess-timer" id="sess-timer">--:--:--</div>
-        <div class="sess-timer-lbl" id="sess-timer-lbl">avant la fin</div>
-
-        <!-- Les 4 sessions -->
-        <div class="sess-list" id="sess-list"></div>
-      </div>
-    </aside>
-
-   </div><!-- /.dash-grid -->
   </div>
 
   <!-- ═══════ MARKET ANALYSIS TAB (maintenance) ═══════ -->
@@ -1187,7 +1233,10 @@ function initRateSync(){
         const data=doc.data()||{};
         rateMeta.updatedAt=data.updatedAt||null; rateMeta.updatedBy=data.updatedBy||'';
         const banks=data.banks||{};
-        Object.keys(banks).forEach(code=>{ if(RATE_EXPECTATIONS[code]) Object.assign(RATE_EXPECTATIONS[code],banks[code]); });
+        Object.keys(banks).forEach(code=>{
+          if(code==='USD'&&fedLive) return; // le Fed live (Polymarket) prime sur le manuel
+          if(RATE_EXPECTATIONS[code]) Object.assign(RATE_EXPECTATIONS[code],banks[code]);
+        });
         renderRateExpectations(); updateRateBadge();
       }
     }, err=>console.warn('rateExpectations',err.message));
@@ -1239,15 +1288,104 @@ async function saveRateEdit(code,vals){
   }catch(e){toast('Erreur : '+e.message);}
 }
 
+/* ── Détail d'une carte d'attentes (clic) : graphique des probabilités ── */
+function openRateDetail(code){
+  const r=RATE_EXPECTATIONS[code]; if(!r) return;
+  const m=(typeof MONETARY!=='undefined'&&MONETARY[code])?MONETARY[code]:{};
+  const bar=(lbl,v,col)=>`<div class="rx-bd-row"><div class="rx-bd-top"><span>${lbl}</span><b>${v}%</b></div><div class="rx-bd-bar"><span style="width:${Math.max(0,Math.min(100,v))}%;background:${col}"></span></div></div>`;
+  const ov=document.createElement('div'); ov.className='rx-modal';
+  ov.innerHTML=`<div class="rx-box">
+    <h3>${r.flag} ${r.bank} · ${code}${code==='USD'?' <span style="font-size:10px;color:var(--accent)">· LIVE Polymarket</span>':''}</h3>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:2px">Taux directeur : <b style="color:var(--t)">${r.rate}</b></div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:16px">Prochaine réunion : <b style="color:var(--t)">${r.meeting}</b></div>
+    <div class="rx-bars-detail">
+      ${bar('Hausse',r.hike,'var(--buy)')}
+      ${bar('Statu quo',r.hold,'var(--amber)')}
+      ${bar('Baisse',r.cut,'var(--sell)')}
+    </div>
+    ${m.stance?`<div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:5px">Biais — ${m.stance}</div>`:''}
+    ${m.note?`<div style="font-size:12.5px;color:var(--t2);line-height:1.6">${m.note}</div>`:''}
+    <div class="rx-btns" style="margin-top:16px"><button class="rx-cancel" id="rd-close">Fermer</button></div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  ov.querySelector('#rd-close').onclick=()=>ov.remove();
+}
+
+/* ══ MARCHÉS DE PRÉDICTION (Polymarket) + Fed auto ══ */
+let fedLive=false;
+const PM_GAMMA='https://gamma-api.polymarket.com';
+function pmOutRow(lbl,pct,col){
+  return `<div class="pm-out"><div class="pm-out-top"><span class="pm-lbl">${lbl}</span><span class="pm-pct">${pct}%</span></div><div class="pm-bar"><span style="width:${Math.max(0,Math.min(100,pct))}%;background:${col||'var(--accent)'}"></span></div></div>`;
+}
+function fmtPmDate(iso){ try{return new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});}catch(e){return '';} }
+function parseFedEvent(ev){
+  if(!ev||!Array.isArray(ev.markets)) return null;
+  let hold=0,hike=0,cut=0;
+  ev.markets.forEach(mk=>{
+    let p; try{p=JSON.parse(mk.outcomePrices||'[]');}catch(e){p=[];}
+    const yes=parseFloat(p[0])||0;
+    const t=(mk.groupItemTitle||'').toLowerCase();
+    if(t.indexOf('no change')>-1) hold+=yes;
+    else if(t.indexOf('decrease')>-1) cut+=yes;
+    else if(t.indexOf('increase')>-1) hike+=yes;
+  });
+  return {hold:Math.round(hold*100),hike:Math.round(hike*100),cut:Math.round(cut*100),meeting:ev.endDate,title:ev.title};
+}
+function applyFedToRates(fed){
+  if(!fed||!RATE_EXPECTATIONS.USD) return;
+  RATE_EXPECTATIONS.USD.hike=fed.hike; RATE_EXPECTATIONS.USD.hold=fed.hold; RATE_EXPECTATIONS.USD.cut=fed.cut;
+  if(fed.meeting) RATE_EXPECTATIONS.USD.meeting=fmtPmDate(fed.meeting);
+  fedLive=true; renderRateExpectations();
+}
+async function fetchPredictions(){
+  const grid=document.getElementById('pm-grid');
+  try{
+    const [fedR,topR]=await Promise.all([
+      fetch(PM_GAMMA+'/events?closed=false&limit=1&order=volume24hr&ascending=false&tag_slug=fed-rates'),
+      fetch(PM_GAMMA+'/markets?closed=false&active=true&limit=40&order=volume24hr&ascending=false')
+    ]);
+    const fedEv=(await fedR.json())[0];
+    const fed=parseFedEvent(fedEv);
+    const cards=[];
+    if(fed){
+      applyFedToRates(fed);
+      cards.push(`<div class="pm-card"><div class="pm-q">🏦 ${fed.title}</div>${pmOutRow('Statu quo',fed.hold,'var(--amber)')}${pmOutRow('Baisse',fed.cut,'var(--buy)')}${pmOutRow('Hausse',fed.hike,'var(--sell)')}<div class="pm-foot"><span>FOMC</span><span>${fmtPmDate(fed.meeting)}</span></div></div>`);
+    }
+    const mk=await topR.json();
+    const ALLOW=/\b(fed|rate cut|rate hike|recession|inflation|cpi|jobs report|gdp|ecb|election|war|ceasefire|geopolit|tariff|oil|iran|ukraine|russia|china|taiwan|nuclear|shutdown|debt)\b/i;
+    const seen=new Set();
+    for(const m of (Array.isArray(mk)?mk:[])){
+      if(cards.length>=6) break;
+      let outs=[],prices=[];
+      try{outs=JSON.parse(m.outcomes||'[]');}catch(e){}
+      try{prices=JSON.parse(m.outcomePrices||'[]');}catch(e){}
+      if(outs.length!==2) continue;
+      const q=m.question||''; if(!ALLOW.test(q)||seen.has(q)) continue;
+      const yes=parseFloat(prices[0]); if(isNaN(yes)) continue;
+      seen.add(q);
+      const pct=Math.round(yes*100);
+      const chg=parseFloat(m.oneDayPriceChange);
+      const chTxt=isNaN(chg)||chg===0?'':(chg>0?'▲ +':'▼ ')+(chg*100).toFixed(1)+' pts';
+      const chCol=chg>=0?'var(--buy)':'var(--sell)';
+      cards.push(`<div class="pm-card"><div class="pm-q">${q}</div>${pmOutRow('Probabilité "Oui"',pct,'var(--accent)')}<div class="pm-foot"><span>Polymarket</span><span style="color:${chCol}">${chTxt?'24h '+chTxt:''}</span></div></div>`);
+    }
+    if(grid) grid.innerHTML = cards.length ? cards.join('') : '<div class="empty-mini">Aucun marché à afficher</div>';
+  }catch(e){
+    if(grid) grid.innerHTML='<div class="empty-mini">Marchés de prédiction indisponibles pour le moment</div>';
+    console.warn('Polymarket',e.message);
+  }
+}
+
 function renderRateExpectations(){
   const grid=document.getElementById('rate-grid');
   grid.innerHTML=Object.entries(RATE_EXPECTATIONS).map(([code,r])=>{
     const seg=(cls,v,lbl)=>v>0?`<div class="rate-seg ${cls}" style="width:${v}%" title="${lbl} ${v}%">${v>=12?v+'%':''}</div>`:'';
-    return `<div class="rate-card">
+    return `<div class="rate-card" onclick="openRateDetail('${code}')">
       <div class="rate-hd">
         <div class="rate-cb"><span class="rate-flag">${r.flag}</span><span class="rate-bank">${r.bank} · ${code}</span></div>
         <span class="rate-now">${r.rate}</span>
-        ${mpIsEditor()?`<button class="rate-edit" onclick="openRateEdit('${code}')" title="Modifier les attentes">✏️</button>`:''}
+        ${mpIsEditor()?`<button class="rate-edit" onclick="event.stopPropagation();openRateEdit('${code}')" title="Modifier les attentes">✏️</button>`:''}
       </div>
       <div class="rate-meet">Prochaine réunion : <b>${r.meeting}</b></div>
       <div class="rate-bars">
@@ -1387,7 +1525,50 @@ function renderSessionsWidget(now){
       return '<div class="sess-row '+cls+'"><span class="dot"></span><span class="nm">'+s.name+'</span><span class="tm">'+localHM(s.tz, now)+'</span></div>';
     }).join('');
   }
+  renderSessionsExtra(now, states, active);
 }
+
+/* ── Onglet Sessions : timeline 24h (heure locale) + cartes ── */
+const SESS_COLORS={'Sydney':'#a78bfa','Tokyo':'#f5a623','Londres':'#5b8cff','New York':'#16d39a'};
+function localOffsetMin(){ return -new Date().getTimezoneOffset(); }
+function toLocalMin(utcMin){ return ((utcMin+localOffsetMin())%1440+1440)%1440; }
+function renderSessionsExtra(now, states, active){
+  const tl=document.getElementById('sess-tl');
+  if(tl){
+    const W=1000,H=150,padT=24,rowH=20,gap=8,x=m=>m/1440*W;
+    let bands='';
+    states.forEach((s,i)=>{
+      const y=padT+i*(rowH+gap);
+      const col=SESS_COLORS[s.name]||'var(--accent)';
+      let lo=toLocalMin(s.open), lc=toLocalMin(s.close);
+      const seg=(a,b)=>`<rect x="${x(a)}" y="${y}" width="${Math.max(2,x(b)-x(a))}" height="${rowH}" rx="5" fill="${col}" opacity="${s.open_now?0.95:0.4}"/>`;
+      if(lc>lo){ bands+=seg(lo,lc); } else { bands+=seg(lo,1440)+seg(0,lc); }
+      bands+=`<text x="6" y="${y+rowH-5}" font-family="'Space Mono',monospace" font-size="11" fill="var(--t2)">${s.name}</text>`;
+    });
+    let ticks='';
+    for(let h=0;h<=24;h+=3){ ticks+=`<line x1="${x(h*60)}" y1="${padT-6}" x2="${x(h*60)}" y2="${padT+states.length*(rowH+gap)}" stroke="var(--bd)" stroke-width="1"/><text x="${x(h*60)+2}" y="${padT-10}" font-family="'Space Mono',monospace" font-size="9" fill="var(--t3)">${String(h).padStart(2,'0')}h</text>`; }
+    const nowMin=now.getHours()*60+now.getMinutes();
+    const nowLine=`<line x1="${x(nowMin)}" y1="${padT-8}" x2="${x(nowMin)}" y2="${padT+states.length*(rowH+gap)+2}" stroke="var(--sell)" stroke-width="2"/><text x="${x(nowMin)+3}" y="${padT+states.length*(rowH+gap)+14}" font-family="'Space Mono',monospace" font-size="9" fill="var(--sell)">maintenant</text>`;
+    const totalH=padT+states.length*(rowH+gap)+22;
+    tl.innerHTML=`<svg viewBox="0 0 ${W} ${totalH}" width="100%" style="display:block">${ticks}${bands}${nowLine}</svg>`;
+  }
+  const cards=document.getElementById('sess-cards');
+  if(cards){
+    cards.innerHTML=states.map(s=>{
+      const lo=toLocalMin(s.open), lc=toLocalMin(s.close);
+      const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+      const status=s.open_now?'OUVERT':'FERMÉ';
+      const info=s.open_now?('Ferme dans '+fmtHM(s.untilClose)):('Ouvre dans '+fmtHM(s.untilOpen));
+      return `<div class="sess-c ${s.open_now?'open':'closed'}">
+        <div class="sess-c-top"><span class="dot"></span><span class="sess-c-name">${s.name}</span><span class="sess-c-badge">${status}</span></div>
+        <div class="sess-c-row"><span>Heure locale (là-bas)</span><b>${localHM(s.tz, now)}</b></div>
+        <div class="sess-c-row"><span>Plage (ton heure)</span><b>${hm(lo)}–${hm(lc)}</b></div>
+        <div class="sess-c-row"><span>${s.open_now?'Fermeture':'Ouverture'}</span><b>${info}</b></div>
+      </div>`;
+    }).join('');
+  }
+}
+function fmtHM(min){ const h=Math.floor(min/60), m=min%60; return (h>0?h+'h':'')+String(m).padStart(2,'0')+(h>0?'':'min'); }
 function fmtCountdown(ms){
   let s=Math.max(0,Math.floor(ms/1000));
   const h=Math.floor(s/3600); s-=h*3600;
@@ -1441,6 +1622,7 @@ function init(){
   startNewsAutoRefresh();
   fetchFxTicker(); setInterval(fetchFxTicker, 15*60*1000);
   initRateSync();
+  fetchPredictions(); setInterval(fetchPredictions, 10*60*1000);
 }
 window.addEventListener('load',init);
 </script>

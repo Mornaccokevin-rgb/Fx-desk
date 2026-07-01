@@ -46,7 +46,8 @@ service cloud.firestore {
                     && request.resource.data.text is string
                     && request.resource.data.text.size() <= 500;
       allow delete: if isSignedIn();
-      allow update: if false;
+      // Modification réservée aux rédacteurs (épinglage des messages).
+      allow update: if isMacroEditor();
     }
 
     // ── DONNÉES PRIVÉES — Performance Tracker ────────────────────

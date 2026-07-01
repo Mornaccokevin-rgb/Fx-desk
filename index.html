@@ -737,6 +737,69 @@
         align-items: center;
         justify-content: center;
     }
+    .sa-ticker {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        display: flex;
+        align-items: stretch;
+        height: 34px;
+        background: #0b0b12;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        font-family: 'Space Mono', monospace;
+    }
+    .sa-ticker-lbl {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 14px;
+        background: rgba(var(--acc-rgb), 0.14);
+        color: var(--acc-l);
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 0.7px;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .sa-ticker-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #16d39a;
+        animation: saGlow 1.6s infinite;
+    }
+    .sa-ticker-view {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+    }
+    .sa-ticker-track {
+        display: inline-flex;
+        align-items: center;
+        height: 100%;
+        white-space: nowrap;
+        animation: saTick 50s linear infinite;
+        font-size: 11.5px;
+        color: #8b93a7;
+    }
+    .sa-tk {
+        padding: 0 18px;
+    }
+    .sa-tk b {
+        font-weight: 700;
+        color: #e6e9f0;
+    }
+    .sa-tk b.sa-up {
+        color: #16d39a;
+    }
+    .sa-tk b.sa-down {
+        color: #ff4d5e;
+    }
+    @keyframes saTick {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
     @keyframes saFloat {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-9px); }
@@ -2029,6 +2092,35 @@
         color: var(--fx-red);
         opacity: 1
     }
+    .mp-msg-pin {
+        margin-left: auto;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        opacity: 0.55;
+        padding: 0 2px;
+        filter: grayscale(1)
+    }
+    .mp-msg-pin:hover, .mp-msg-pin.on {
+        opacity: 1;
+        filter: none
+    }
+    .mp-msg-pin + .mp-msg-del {
+        margin-left: 0
+    }
+    .mp-msg.pinned .mp-msg-body {
+        border-color: var(--fx-bb);
+        background: var(--fx-vd)
+    }
+    .mp-pin-hdr {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--fx-vl);
+        padding: 2px 0
+    }
     .mp-msg-body {
         font-size: 13px;
         color: var(--fx-text);
@@ -2448,6 +2540,12 @@
         <div class="landing-wrap">
             <!-- Portail d'accueil -->
             <div class="landing-intro" id="landing-intro">
+
+                <!-- BANDEAU MARCHÉS (cours FX live via Frankfurter) -->
+                <div class="sa-ticker" id="sa-ticker">
+                    <div class="sa-ticker-lbl"><span class="sa-ticker-dot"></span> MARCHÉS</div>
+                    <div class="sa-ticker-view"><div class="sa-ticker-track" id="sa-ticker-track">Chargement des cours…</div></div>
+                </div>
 
                 <!-- HERO -->
                 <section class="sa-hero">
@@ -3393,6 +3491,8 @@
 
     window.addEventListener('load', function() {
         initThemeGlobal();
+        fetchLandingTicker();
+        setInterval(fetchLandingTicker, 15 * 60 * 1000); // rafraîchi toutes les 15 min
         if (typeof firebase === 'undefined')
             return;
         try {
@@ -3432,6 +3532,52 @@
         document.getElementById('landing-intro').style.display = '';
         switchAuthTab('login');
         hideAuthErr();
+    }
+
+    // ── BANDEAU MARCHÉS (landing) — cours FX via Frankfurter (gratuit, sans clé) ──
+    async function fetchLandingTicker() {
+        const track = document.getElementById('sa-ticker-track');
+        if (!track) return;
+        const BASE = 'https://api.frankfurter.dev/v2/rates?base=USD';
+        const toMap = arr => {
+            const m = {};
+            (Array.isArray(arr) ? arr : []).forEach(r => { m[r.quote] = r.rate; });
+            return m;
+        };
+        const val = (map, ccy, inv) => {
+            const r = map[ccy];
+            if (!r) return null;
+            return inv ? 1 / r : r;
+        };
+        try {
+            const prevDate = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+            const [lr, pr] = await Promise.all([
+                fetch(BASE),
+                fetch(BASE + '&date=' + prevDate)
+            ]);
+            const L = toMap(await lr.json()), P = toMap(await pr.json());
+            // [label, devise, inverser(USD→X), décimales]
+            const pairs = [
+                ['EUR/USD', 'EUR', true, 4], ['GBP/USD', 'GBP', true, 4], ['USD/JPY', 'JPY', false, 2],
+                ['USD/CHF', 'CHF', false, 4], ['AUD/USD', 'AUD', true, 4], ['USD/CAD', 'CAD', false, 4],
+                ['NZD/USD', 'NZD', true, 4], ['USD/CNH', 'CNH', false, 4],
+                ['XAU/USD', 'XAU', true, 1], ['XAG/USD', 'XAG', true, 2]
+            ];
+            const items = pairs.map(([lbl, ccy, inv, dp]) => {
+                const v = val(L, ccy, inv), pv = val(P, ccy, inv);
+                if (v == null) return '';
+                let cls = '', arr = '';
+                if (pv != null && Math.abs(v - pv) > 1e-9) {
+                    const up = v > pv;
+                    cls = up ? 'sa-up' : 'sa-down';
+                    arr = up ? ' ▲' : ' ▼';
+                }
+                return '<span class="sa-tk">' + lbl + ' <b class="' + cls + '">' + v.toFixed(dp) + arr + '</b></span>';
+            }).filter(Boolean).join('');
+            track.innerHTML = items ? (items + items) : 'Cours indisponibles';
+        } catch (e) {
+            track.textContent = 'Cours de marché momentanément indisponibles';
+        }
     }
     function showFxApp(user) {
         document.getElementById('fx-main').classList.add('active');
@@ -3816,9 +3962,10 @@
     function loadChat() {
         if (unsubChat)
             unsubChat();
+        // Pas de .limit() : les messages épinglés doivent rester visibles même
+        // s'ils sont plus anciens que les 40 derniers (la purge garde le total borné).
         unsubChat = db.collection('macroChat')
         .orderBy('createdAt', 'desc')
-        .limit(MAX_CHAT)
         .onSnapshot(snap => {
             allChatMsgs = snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
             renderChat();
@@ -3826,47 +3973,88 @@
             console.error('Chat — Firestore :', err);
         });
     }
+    function makeChatNode(m, pinned) {
+        const me = auth.currentUser;
+        const editor = isMacroEditor();
+        const row = document.createElement('div');
+        row.className = 'mp-msg' + (pinned ? ' pinned' : '');
+        const top = document.createElement('div');
+        top.className = 'mp-msg-top';
+        const au = document.createElement('span');
+        au.className = 'mp-msg-author' + (me && m.authorUid === me.uid ? ' me' : '');
+        au.textContent = (pinned ? '📌 ' : '') + (m.authorName || 'Anonyme');
+        const tm = document.createElement('span');
+        tm.className = 'mp-msg-time';
+        tm.textContent = fmtChatTime(m.createdAt);
+        top.append(au, tm);
+        // Épingler / désépingler : rédacteurs uniquement
+        if (editor) {
+            const pin = document.createElement('button');
+            pin.className = 'mp-msg-pin' + (pinned ? ' on' : '');
+            pin.type = 'button';
+            pin.textContent = pinned ? '📌' : '📍';
+            pin.title = pinned ? 'Désépingler' : 'Épingler';
+            pin.onclick = () => togglePinMsg(m.id, !pinned);
+            top.appendChild(pin);
+        }
+        // Suppression : son propre message ou un rédacteur
+        if (me && (m.authorUid === me.uid || editor)) {
+            const del = document.createElement('button');
+            del.className = 'mp-msg-del';
+            del.type = 'button';
+            del.textContent = '✕';
+            del.title = 'Supprimer';
+            del.onclick = () => deleteChatMsg(m.id);
+            top.appendChild(del);
+        }
+        const body = document.createElement('div');
+        body.className = 'mp-msg-body';
+        body.textContent = m.text || '';
+        row.append(top, body);
+        return row;
+    }
     function renderChat() {
         const box = document.getElementById('mp-chat-msgs');
         const empty = document.getElementById('mp-chat-empty');
         if (!box)
             return;
-        const me = auth.currentUser;
-        box.querySelectorAll('.mp-msg').forEach(n => n.remove());
+        box.querySelectorAll('.mp-msg, .mp-pin-hdr').forEach(n => n.remove());
         if (!allChatMsgs.length) {
             if (empty) empty.style.display = '';
             return;
         }
         if (empty) empty.style.display = 'none';
-        allChatMsgs.forEach(m => {
-            const row = document.createElement('div');
-            row.className = 'mp-msg';
-            const top = document.createElement('div');
-            top.className = 'mp-msg-top';
-            const au = document.createElement('span');
-            au.className = 'mp-msg-author' + (me && m.authorUid === me.uid ? ' me' : '');
-            au.textContent = m.authorName || 'Anonyme';
-            const tm = document.createElement('span');
-            tm.className = 'mp-msg-time';
-            tm.textContent = fmtChatTime(m.createdAt);
-            top.append(au, tm);
-            // Suppression : son propre message ou un rédacteur
-            if (me && (m.authorUid === me.uid || isMacroEditor())) {
-                const del = document.createElement('button');
-                del.className = 'mp-msg-del';
-                del.type = 'button';
-                del.textContent = '✕';
-                del.title = 'Supprimer';
-                del.onclick = () => deleteChatMsg(m.id);
-                top.appendChild(del);
-            }
-            const body = document.createElement('div');
-            body.className = 'mp-msg-body';
-            body.textContent = m.text || '';
-            row.append(top, body);
-            box.appendChild(row);
-        });
+        const pinned = allChatMsgs.filter(m => m.pinned);
+        const normal = allChatMsgs.filter(m => !m.pinned);
+        if (pinned.length) {
+            const hdr = document.createElement('div');
+            hdr.className = 'mp-pin-hdr';
+            hdr.textContent = '📌 Épinglés';
+            box.appendChild(hdr);
+            pinned.forEach(m => box.appendChild(makeChatNode(m, true)));
+            const sep = document.createElement('div');
+            sep.className = 'mp-pin-hdr';
+            sep.style.opacity = '.6';
+            sep.textContent = 'Messages récents';
+            box.appendChild(sep);
+        }
+        normal.forEach(m => box.appendChild(makeChatNode(m, false)));
         box.scrollTop = box.scrollHeight;
+    }
+    async function togglePinMsg(id, makePinned) {
+        if (!isMacroEditor()) {
+            showToast('Épinglage réservé aux rédacteurs');
+            return;
+        }
+        try {
+            await db.collection('macroChat').doc(id).update({ pinned: !!makePinned });
+            // Au dé-épinglage : le message reprend sa place et est purgé s'il est
+            // désormais au-delà des 40 messages non épinglés.
+            if (!makePinned)
+                pruneChat();
+        } catch (err) {
+            showToast('Épinglage impossible : ' + err.message);
+        }
     }
     function fmtChatTime(iso) {
         if (!iso) return '';
@@ -3893,7 +4081,8 @@
                 authorUid: user.uid,
                 authorEmail: user.email || '',
                 authorName: chatDisplayName(user),
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                pinned: false
             });
             pruneChat();
         } catch (err) {
@@ -3908,12 +4097,14 @@
             showToast('Suppression impossible : ' + err.message);
         }
     }
-    // Garde au maximum MAX_CHAT messages : supprime les plus anciens
+    // Garde au maximum MAX_CHAT messages NON épinglés : supprime les plus anciens.
+    // Les messages épinglés sont exclus du compte et jamais supprimés par la purge.
     async function pruneChat() {
         try {
             const snap = await db.collection('macroChat').orderBy('createdAt', 'desc').get();
-            if (snap.size > MAX_CHAT) {
-                const old = snap.docs.slice(MAX_CHAT);
+            const nonPinned = snap.docs.filter(d => !((d.data() || {}).pinned));
+            if (nonPinned.length > MAX_CHAT) {
+                const old = nonPinned.slice(MAX_CHAT);
                 await Promise.all(old.map(d => d.ref.delete().catch(() => {})));
             }
         } catch (err) {
@@ -3947,7 +4138,12 @@
             allMacroNotes = snap.docs.map(d => ({
                 firestoreId: d.id,
                 ...d.data()
-            }));
+            })).sort((a, b) => {
+                // Date décroissante, puis à date égale le plus RÉCEMMENT écrit en 1er
+                if ((a.date || '') !== (b.date || ''))
+                    return (a.date || '') < (b.date || '') ? 1 : -1;
+                return (b.createdAt || '').localeCompare(a.createdAt || '');
+            });
             renderMacroNotes();
         }, err => {
             // Erreur fréquente : règles Firestore non configurées (permission-denied).

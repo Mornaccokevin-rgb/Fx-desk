@@ -139,6 +139,19 @@ a{color:inherit;text-decoration:none}
 .rx-bd-bar{height:12px;border-radius:6px;background:var(--panel3);overflow:hidden}
 .rx-bd-bar>span{display:block;height:100%}
 
+/* ─── COT / POSITIONNEMENT ─── */
+.cot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.cot-card{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:14px 16px}
+.cot-top{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--t)}
+.cot-top b{font-family:var(--mono)}
+.cot-bias{margin-left:auto;font-size:10px;font-family:var(--mono);font-weight:700}
+.cot-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:11px 0 6px;background:var(--panel3)}
+.cot-l{background:var(--buy);display:flex;align-items:center;justify-content:center;color:#04120b;font-size:10px;font-weight:700;font-family:var(--mono);min-width:0;transition:width .5s ease}
+.cot-s{background:var(--sell);display:flex;align-items:center;justify-content:center;color:#1a0508;font-size:10px;font-weight:700;font-family:var(--mono);min-width:0;transition:width .5s ease}
+.cot-legend{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono)}
+.cot-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-top:9px;border-top:1px solid var(--bd);padding-top:8px}
+.cot-meta b{font-family:var(--mono)}
+
 /* ─── TICKER ─── */
 .ticker{display:flex;align-items:stretch;background:var(--bg2);border-bottom:1px solid var(--bd);overflow:hidden;height:32px}
 .ticker-lbl{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:0 14px;background:var(--accent-dim);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.7px;border-right:1px solid var(--bd)}
@@ -341,6 +354,7 @@ a{color:inherit;text-decoration:none}
     <button class="cmd-tab active" id="tab-btn-dash" onclick="switchTab('dash')">Dashboard</button>
     <button class="cmd-tab" id="tab-btn-sessions" onclick="switchTab('sessions')">Sessions</button>
     <button class="cmd-tab" id="tab-btn-rates" onclick="switchTab('rates')">Attentes de taux</button>
+    <button class="cmd-tab" id="tab-btn-cot" onclick="switchTab('cot')">Positionnement</button>
     <button class="cmd-tab" id="tab-btn-market" onclick="switchTab('market')">Analyse Marché</button>
   </div>
   <div class="cmd-right">
@@ -433,6 +447,25 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="note-banner"><i class="ti ti-info-circle"></i><div>La carte <b>Fed</b> est alimentée en direct par les marchés de prédiction (Polymarket). Les autres banques centrales sont maintenues à la main par les rédacteurs. Clique une carte pour le détail des probabilités.</div></div>
     <div class="rate-grid" id="rate-grid"></div>
+  </div>
+
+  <!-- ═══════ POSITIONNEMENT (COT + RETAIL) TAB ═══════ -->
+  <div id="tab-cot" class="tab-pane">
+    <div class="sec-hdr">
+      <i class="ti ti-building-bank"></i><h2>Institutionnels &mdash; COT (CFTC)</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est" id="cot-date"></span>
+    </div>
+    <div class="note-banner"><i class="ti ti-info-circle"></i><div>Positionnement des <b>gros spéculateurs</b> (non-commerciaux = fonds &amp; institutionnels) sur les futures de devises au CME. Longs vs shorts en % du positionnement spéculatif. Publié chaque vendredi par la CFTC (données arrêtées au mardi).</div></div>
+    <div class="cot-grid" id="cot-grid"><div class="empty-mini">Chargement des données COT…</div></div>
+
+    <div class="sec-hdr" style="margin-top:30px">
+      <i class="ti ti-users"></i><h2>Retail &mdash; Sentiment communautaire (Myfxbook)</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est" style="color:var(--amber)">Contrarian</span>
+    </div>
+    <div class="note-banner"><i class="ti ti-info-circle"></i><div>Positions <b>long/short des traders particuliers</b> en temps réel. Souvent lu comme un indicateur à <b>contre-courant</b> : quand le retail est massivement d'un côté, le marché va souvent dans l'autre.</div></div>
+    <iframe id="mfb-frame" title="Myfxbook Community Outlook" style="width:100%;border:1px solid var(--bd);background:#fff;border-radius:12px;min-height:470px;display:block"></iframe>
   </div>
 
   <!-- ═══════ MARKET ANALYSIS TAB (maintenance) ═══════ -->
@@ -1377,6 +1410,60 @@ async function fetchPredictions(){
   }
 }
 
+/* ══ COT / POSITIONNEMENT (CFTC) + RETAIL (Myfxbook) ══ */
+const COT_CCY=[
+  ['🇪🇺','EUR','EURO FX'],
+  ['🇬🇧','GBP','BRITISH POUND'],
+  ['🇯🇵','JPY','JAPANESE YEN'],
+  ['🇨🇭','CHF','SWISS FRANC'],
+  ['🇨🇦','CAD','CANADIAN DOLLAR'],
+  ['🇦🇺','AUD','AUSTRALIAN DOLLAR'],
+  ['🇳🇿','NZD','NEW ZEALAND DOLLAR'],
+  ['🇺🇸','USD','U.S. DOLLAR INDEX']
+];
+async function fetchCOT(){
+  const grid=document.getElementById('cot-grid'); if(!grid) return;
+  try{
+    const rows=await Promise.all(COT_CCY.map(async ([flag,code,name])=>{
+      try{
+        const where=encodeURIComponent("contract_market_name like '"+name+"%'");
+        const url='https://publicreporting.cftc.gov/resource/6dca-aqww.json?$where='+where+'&$order=report_date_as_yyyy_mm_dd%20DESC&$limit=1';
+        const r=await fetch(url); const j=await r.json();
+        return [flag,code,(Array.isArray(j)&&j[0])||null];
+      }catch(e){ return [flag,code,null]; }
+    }));
+    let date='';
+    const fmtN=n=>n.toLocaleString('fr-FR');
+    const cards=rows.map(([flag,code,d])=>{
+      if(!d) return '<div class="cot-card"><div class="cot-top">'+flag+' <b>'+code+'</b></div><div class="empty-mini" style="padding:14px">Donnée indisponible</div></div>';
+      const L=+d.noncomm_positions_long_all||0, S=+d.noncomm_positions_short_all||0, tot=L+S;
+      const pl=tot?Math.round(L/tot*100):50, ps=100-pl;
+      const net=L-S;
+      const chg=(+d.change_in_noncomm_long_all||0)-(+d.change_in_noncomm_short_all||0);
+      if(d.report_date_as_yyyy_mm_dd) date=d.report_date_as_yyyy_mm_dd.slice(0,10);
+      const bias=pl>=55?'Net acheteur':ps>=55?'Net vendeur':'Neutre';
+      const biasCol=pl>=55?'var(--buy)':ps>=55?'var(--sell)':'var(--t2)';
+      return '<div class="cot-card">'
+        +'<div class="cot-top">'+flag+' <b>'+code+'</b><span class="cot-bias" style="color:'+biasCol+'">'+bias+'</span></div>'
+        +'<div class="cot-bar"><span class="cot-l" style="width:'+pl+'%">'+(pl>=15?pl+'%':'')+'</span><span class="cot-s" style="width:'+ps+'%">'+(ps>=15?ps+'%':'')+'</span></div>'
+        +'<div class="cot-legend"><span style="color:var(--buy)">Longs '+pl+'%</span><span style="color:var(--sell)">Shorts '+ps+'%</span></div>'
+        +'<div class="cot-meta"><span>Net : <b style="color:'+(net>=0?'var(--buy)':'var(--sell)')+'">'+(net>=0?'+':'')+fmtN(net)+'</b></span><span>Δ sem. <b style="color:'+(chg>=0?'var(--buy)':'var(--sell)')+'">'+(chg>=0?'+':'')+fmtN(chg)+'</b></span></div>'
+        +'</div>';
+    }).join('');
+    const dEl=document.getElementById('cot-date');
+    if(dEl) dEl.textContent = date ? ('Rapport du '+new Date(date).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})) : '';
+    grid.innerHTML=cards;
+  }catch(e){
+    grid.innerHTML='<div class="empty-mini">Données COT indisponibles (CFTC) pour le moment</div>';
+    console.warn('COT',e.message);
+  }
+}
+function loadRetailOutlook(){
+  const f=document.getElementById('mfb-frame'); if(!f||f.dataset.loaded) return;
+  f.dataset.loaded='1';
+  f.srcdoc='<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;font-family:Arial,sans-serif;font-size:13px}</style></head><body><div style="width:100%;text-align:center"><script type="text/javascript" src="https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1"><\/script></div></body></html>';
+}
+
 function renderRateExpectations(){
   const grid=document.getElementById('rate-grid');
   grid.innerHTML=Object.entries(RATE_EXPECTATIONS).map(([code,r])=>{
@@ -1623,6 +1710,8 @@ function init(){
   fetchFxTicker(); setInterval(fetchFxTicker, 15*60*1000);
   initRateSync();
   fetchPredictions(); setInterval(fetchPredictions, 10*60*1000);
+  fetchCOT();
+  loadRetailOutlook();
 }
 window.addEventListener('load',init);
 </script>

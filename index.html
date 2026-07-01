@@ -428,29 +428,326 @@
     }/* LANDING / PORTAIL */
     .landing-wrap {
         min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-        background: #000;
+        background: #060608;
         position: relative;
-        overflow: hidden;
-    }
-    .landing-wrap::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(ellipse 60% 50% at 50% 38%, rgba(var(--acc-rgb), 0.13), transparent 70%);
-        pointer-events: none;
+        overflow-x: hidden;
     }
     .landing-intro {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+        display: block;
         position: relative;
         z-index: 1;
         animation: landingFade 0.6s ease;
+    }
+    /* Le hero et l'auth restent centrés */
+    .sa-hero {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 80px 24px 40px;
+        overflow: hidden;
+    }
+    .sa-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 62% 52% at 50% 34%, rgba(var(--acc-rgb), 0.16), transparent 70%),
+                    radial-gradient(ellipse 40% 30% at 50% 84%, rgba(200, 144, 10, 0.08), transparent 70%);
+        pointer-events: none;
+    }
+    .sa-hero-inner {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .sa-brand {
+        font-family: 'Cinzel', Georgia, serif;
+        font-weight: 700;
+        font-size: clamp(40px, 8vw, 84px);
+        letter-spacing: 0.05em;
+        margin: 22px 0 0;
+        background: linear-gradient(135deg, #7A5000 0%, #C8900A 20%, #F5D060 45%, #FFE88A 50%, #F5D060 55%, #C8900A 80%, #7A5000 100%);
+        background-size: 250% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 5s linear infinite;
+    }
+    .sa-emblem {
+        font-size: 62px;
+        line-height: 1;
+        color: var(--acc-l);
+        text-shadow: 0 0 44px rgba(var(--acc-rgb), 0.7);
+        animation: saFloat 5s ease-in-out infinite;
+    }
+    .sa-tag {
+        font-family: 'Space Mono', monospace;
+        font-size: 13px;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: #8b8fa3;
+        margin: 20px 0 0;
+    }
+    .sa-rule {
+        width: 150px;
+        height: 1px;
+        margin: 34px 0 0;
+        background: linear-gradient(90deg, transparent, #C8900A, transparent);
+    }
+    .sa-lead {
+        max-width: 520px;
+        margin: 34px 0 0;
+        font-size: 16px;
+        line-height: 1.7;
+        color: #a7a7b2;
+        font-weight: 300;
+    }
+    .sa-scroll {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        z-index: 1;
+    }
+    .sa-scroll span:first-child {
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        letter-spacing: 0.3em;
+        color: #5a5170;
+        text-transform: uppercase;
+    }
+    .sa-scroll span:last-child {
+        font-size: 18px;
+        color: var(--acc-l);
+        animation: saBounce 1.8s ease-in-out infinite;
+    }
+    .sa-section {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 60px 24px 96px;
+    }
+    .sa-sec-eyebrow {
+        font-family: 'Space Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+        color: #C8900A;
+        margin: 0 0 14px;
+        text-align: center;
+    }
+    .sa-sec-title {
+        font-family: 'Cinzel', serif;
+        font-weight: 700;
+        font-size: clamp(28px, 4vw, 42px);
+        letter-spacing: 0.03em;
+        margin: 0 0 52px;
+        color: #EFEFEF;
+        text-align: center;
+    }
+    .sa-mods {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+    @media (max-width: 820px) {
+        .sa-mods {
+            grid-template-columns: 1fr;
+        }
+    }
+    .sa-mod {
+        position: relative;
+        background: #0e0e14;
+        border: 1px solid rgba(200, 144, 10, 0.2);
+        border-radius: 16px;
+        padding: 28px 24px;
+        transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+    }
+    .sa-mod:hover {
+        transform: translateY(-4px);
+        border-color: rgba(200, 144, 10, 0.45);
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+    }
+    .sa-mod-badge {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+        color: #C8900A;
+    }
+    .sa-mod-badge span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #1E8A4A;
+        animation: saGlow 2s infinite;
+    }
+    .sa-mod-icon {
+        font-size: 30px;
+        margin-bottom: 16px;
+    }
+    .sa-mod h3 {
+        font-family: 'Cinzel', serif;
+        font-size: 17px;
+        font-weight: 600;
+        color: #F0C040;
+        letter-spacing: 0.03em;
+        margin: 0 0 10px;
+    }
+    .sa-mod p {
+        font-size: 13px;
+        line-height: 1.65;
+        color: #8b8896;
+        margin: 0;
+    }
+    .sa-stats {
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        background: linear-gradient(180deg, rgba(var(--acc-rgb), 0.04), transparent);
+    }
+    .sa-stats-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 56px 24px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        text-align: center;
+    }
+    @media (max-width: 640px) {
+        .sa-stats-inner {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 36px;
+        }
+    }
+    .sa-stat-num {
+        font-family: 'Space Mono', monospace;
+        font-size: clamp(30px, 5vw, 46px);
+        font-weight: 700;
+        line-height: 1;
+        background: linear-gradient(135deg, #C8900A, #F5D060);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .sa-stat-lbl {
+        font-size: 12px;
+        color: #8b8896;
+        margin: 12px 0 0;
+        letter-spacing: 0.02em;
+    }
+    .sa-cta {
+        position: relative;
+        padding: 110px 24px 90px;
+        text-align: center;
+        overflow: hidden;
+    }
+    .sa-cta::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 55% 60% at 50% 45%, rgba(var(--acc-rgb), 0.15), transparent 72%);
+        pointer-events: none;
+    }
+    .sa-cta-inner {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .sa-cta h2 {
+        font-family: 'Cinzel', serif;
+        font-weight: 700;
+        font-size: clamp(28px, 5vw, 48px);
+        letter-spacing: 0.03em;
+        margin: 20px 0 0;
+        color: #EFEFEF;
+    }
+    .sa-cta-lead {
+        max-width: 440px;
+        margin: 18px 0 40px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #a7a7b2;
+        font-weight: 300;
+    }
+    .sa-btns {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .sa-join {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: #1c1400;
+        background: linear-gradient(135deg, #C8900A, #F0C040 55%, #FFE07A);
+        border: none;
+        border-radius: 12px;
+        padding: 16px 34px;
+        cursor: pointer;
+        box-shadow: 0 12px 36px rgba(200, 144, 10, 0.36);
+        transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .sa-join:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 46px rgba(200, 144, 10, 0.5);
+    }
+    .sa-login {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: var(--acc-l);
+        background: transparent;
+        border: 1px solid rgba(var(--acc-rgb), 0.55);
+        border-radius: 12px;
+        padding: 16px 34px;
+        cursor: pointer;
+        transition: border-color 0.18s, color 0.18s, background 0.18s;
+    }
+    .sa-login:hover {
+        border-color: var(--acc-l);
+        background: rgba(var(--acc-rgb), 0.08);
+    }
+    .sa-foot {
+        margin-top: 64px;
+        font-family: 'Space Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        color: #4a4750;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+    }
+    @keyframes saFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-9px); }
+    }
+    @keyframes saBounce {
+        0%, 100% { transform: translateY(0); opacity: 0.5; }
+        50% { transform: translateY(7px); opacity: 1; }
+    }
+    @keyframes saGlow {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 0.85; }
     }
     .landing-emblem {
         font-size: 64px;
@@ -2149,12 +2446,74 @@
     <!-- ══════ PORTAIL / PAGE D'ACCUEIL ══════ -->
     <div id="landing" class="screen active">
         <div class="landing-wrap">
-            <!-- Intro -->
+            <!-- Portail d'accueil -->
             <div class="landing-intro" id="landing-intro">
-                <span class="landing-emblem">⚜</span>
-                <h1 class="landing-brand">Sphinx Alliance</h1>
-                <p class="landing-tag">Intelligence · Discipline · Edge</p>
-                <button class="landing-cta" onclick="showAuthCard()">Se connecter</button>
+
+                <!-- HERO -->
+                <section class="sa-hero">
+                    <div class="sa-hero-inner">
+                        <span class="sa-emblem">⚜</span>
+                        <h1 class="sa-brand">Sphinx Alliance</h1>
+                        <p class="sa-tag">Intelligence · Discipline · Edge</p>
+                        <div class="sa-rule"></div>
+                        <p class="sa-lead">La plateforme de trading FX qui réunit terminal macro, journal de performance et mémoire des marchés. Un seul objectif : construire votre edge.</p>
+                    </div>
+                    <div class="sa-scroll" onclick="document.getElementById('sa-modules').scrollIntoView({behavior:'smooth'})" style="cursor:pointer">
+                        <span>Scrollez pour rejoindre l'Alliance</span>
+                        <span>⌄</span>
+                    </div>
+                </section>
+
+                <!-- MODULES -->
+                <section class="sa-section" id="sa-modules">
+                    <p class="sa-sec-eyebrow">La plateforme</p>
+                    <h2 class="sa-sec-title">Trois modules, un seul edge</h2>
+                    <div class="sa-mods">
+                        <div class="sa-mod">
+                            <div class="sa-mod-badge"><span></span>ACTIF</div>
+                            <div class="sa-mod-icon">🌍</div>
+                            <h3>FX Macro Compass</h3>
+                            <p>Terminal macro forex façon Bloomberg : 9 devises notées /100 sur la croissance, l'inflation, la politique monétaire et la géopolitique — avec news live et attentes de taux.</p>
+                        </div>
+                        <div class="sa-mod">
+                            <div class="sa-mod-badge"><span></span>ACTIF</div>
+                            <div class="sa-mod-icon">📈</div>
+                            <h3>Performance Tracker</h3>
+                            <p>Journal de trading complet : statistiques, courbe de capital, profit factor, espérance et ratio de Kelly, analyses avancées et historique détaillé.</p>
+                        </div>
+                        <div class="sa-mod">
+                            <div class="sa-mod-badge"><span></span>ACTIF</div>
+                            <div class="sa-mod-icon">🧠</div>
+                            <h3>Macro Prep</h3>
+                            <p>Journal de synthèse macro : rédigez vos analyses post-annonces (NFP, CPI, FOMC) pour garder une mémoire de la réaction des marchés et affiner votre lecture.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- STATS -->
+                <section class="sa-stats">
+                    <div class="sa-stats-inner">
+                        <div><div class="sa-stat-num">9</div><p class="sa-stat-lbl">Devises notées en continu</p></div>
+                        <div><div class="sa-stat-num">4</div><p class="sa-stat-lbl">Dimensions macro par devise</p></div>
+                        <div><div class="sa-stat-num">4</div><p class="sa-stat-lbl">Sessions suivies 24/5</p></div>
+                        <div><div class="sa-stat-num">100%</div><p class="sa-stat-lbl">Discipline mesurée</p></div>
+                    </div>
+                </section>
+
+                <!-- CTA FINAL -->
+                <section class="sa-cta">
+                    <div class="sa-cta-inner">
+                        <span class="sa-emblem" style="font-size:40px;animation:none">⚜</span>
+                        <h2>Rejoignez l'Alliance</h2>
+                        <p class="sa-cta-lead">Accédez au terminal, au journal de performance et à la synthèse macro. Créez votre compte ou connectez-vous.</p>
+                        <div class="sa-btns">
+                            <button class="sa-join" onclick="showAuthCard('signup')">Rejoindre Sphinx Alliance</button>
+                            <button class="sa-login" onclick="showAuthCard('login')">Se connecter</button>
+                        </div>
+                        <div class="sa-foot"><span>SPHINX ALLIANCE</span><span>·</span><span>TOUS DROITS RÉSERVÉS</span></div>
+                    </div>
+                </section>
+
             </div>
             <!-- AUTH (masquée jusqu'au clic) -->
             <div id="fx-auth" class="fx-auth-wrap" style="display:none">
@@ -3056,18 +3415,21 @@
     });
 
     // ── PORTAIL : bascule intro ↔ carte de connexion ──────────────
-    function showAuthCard() {
+    function showAuthCard(tab) {
         document.getElementById('landing-intro').style.display = 'none';
         document.getElementById('fx-auth').style.display = 'flex';
+        switchAuthTab(tab === 'signup' ? 'signup' : 'login');
+        window.scrollTo(0, 0);
     }
     function hideAuthCard() {
         document.getElementById('fx-auth').style.display = 'none';
-        document.getElementById('landing-intro').style.display = 'flex';
+        document.getElementById('landing-intro').style.display = '';
         hideAuthErr();
+        window.scrollTo(0, 0);
     }
     function resetAuthCard() {
         document.getElementById('fx-auth').style.display = 'none';
-        document.getElementById('landing-intro').style.display = 'flex';
+        document.getElementById('landing-intro').style.display = '';
         switchAuthTab('login');
         hideAuthErr();
     }

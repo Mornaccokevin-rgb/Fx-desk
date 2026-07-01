@@ -269,7 +269,24 @@ a{color:inherit;text-decoration:none}
 .note-banner .ti{color:var(--amber);font-size:16px;flex-shrink:0;margin-top:1px}
 .note-banner b{color:var(--t)}
 .empty-mini{padding:30px;text-align:center;color:var(--t3);font-size:12.5px}
+.rate-edit{background:none;border:1px solid var(--bd2);border-radius:6px;color:var(--t2);cursor:pointer;font-size:12px;line-height:1;padding:3px 6px;margin-left:8px}
+.rate-edit:hover{border-color:var(--accent);color:var(--accent)}
+.rx-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:20px}
+.rx-box{background:var(--panel);border:1px solid var(--bd2);border-radius:14px;padding:24px;width:100%;max-width:420px;font-family:'Space Grotesk',sans-serif}
+.rx-box h3{margin:0 0 16px;font-size:15px;color:var(--t)}
+.rx-fld{margin-bottom:12px}
+.rx-fld label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:5px}
+.rx-fld input{width:100%;background:var(--panel2);border:1px solid var(--bd);border-radius:8px;color:var(--t);padding:9px 11px;font-size:13px;font-family:inherit}
+.rx-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.rx-sum{font-size:11px;color:var(--t3);margin:2px 0 12px}
+.rx-btns{display:flex;gap:10px;margin-top:8px}
+.rx-btns button{flex:1;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.rx-save{background:var(--accent);color:#fff}
+.rx-cancel{background:var(--panel3);color:var(--t2)}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -297,6 +314,12 @@ a{color:inherit;text-decoration:none}
 <div class="ticker">
   <div class="ticker-lbl"><i class="ti ti-bolt"></i> FX SQUAWK</div>
   <div class="ticker-scroll"><div class="ticker-inner" id="ticker-inner"></div></div>
+</div>
+
+<!-- FX RATES TICKER (Frankfurter) -->
+<div class="ticker">
+  <div class="ticker-lbl" style="background:var(--buy-dim);color:var(--buy)"><i class="ti ti-currency-dollar"></i> FX</div>
+  <div class="ticker-scroll"><div class="ticker-inner" id="fx-ticker-inner" style="animation-duration:60s">Chargement des cours…</div></div>
 </div>
 
 <div class="wrap">
@@ -330,7 +353,7 @@ a{color:inherit;text-decoration:none}
     <div class="sec-hdr">
       <i class="ti ti-building-bank"></i><h2>Attentes de politique monétaire</h2>
       <div class="sec-hdr-line"></div>
-      <span class="badge-est">EST · à actualiser</span>
+      <span class="badge-est" id="rate-updated">EST · à actualiser</span>
     </div>
     <div class="rate-grid" id="rate-grid"></div>
 
@@ -1148,6 +1171,74 @@ function buildTicker(){
 /* ══════════════════════════════════════════════════════════════
    ATTENTES DE TAUX (bar chart CSS)
 ═══════════════════════════════════════════════════════════════ */
+/* ── Attentes de taux : synchro + édition partagée (Firestore) ── */
+const RATE_FB_CONFIG={apiKey:"AIzaSyA0T_I8fj5HJyIMJSm39j5PBJQ-4y8f1R0",authDomain:"journal-de-trading-c79ee.firebaseapp.com",projectId:"journal-de-trading-c79ee",storageBucket:"journal-de-trading-c79ee.firebasestorage.app",messagingSenderId:"393817220904",appId:"1:393817220904:web:8e5b747361aa2c83ddd21d"};
+const MACRO_EDITORS_FX=['mornaccokevin@gmail.com'];
+let fxDb=null, fxAuthUser=null, rateMeta={updatedAt:null,updatedBy:''};
+function mpIsEditor(){return !!(fxAuthUser&&fxAuthUser.email&&MACRO_EDITORS_FX.includes(fxAuthUser.email.toLowerCase()));}
+function initRateSync(){
+  if(typeof firebase==='undefined') return;
+  try{firebase.initializeApp(RATE_FB_CONFIG);}catch(e){}
+  try{
+    fxDb=firebase.firestore();
+    firebase.auth().onAuthStateChanged(u=>{fxAuthUser=u;renderRateExpectations();});
+    fxDb.collection('config').doc('rateExpectations').onSnapshot(doc=>{
+      if(doc.exists){
+        const data=doc.data()||{};
+        rateMeta.updatedAt=data.updatedAt||null; rateMeta.updatedBy=data.updatedBy||'';
+        const banks=data.banks||{};
+        Object.keys(banks).forEach(code=>{ if(RATE_EXPECTATIONS[code]) Object.assign(RATE_EXPECTATIONS[code],banks[code]); });
+        renderRateExpectations(); updateRateBadge();
+      }
+    }, err=>console.warn('rateExpectations',err.message));
+  }catch(e){console.warn('initRateSync',e.message);}
+}
+function updateRateBadge(){
+  const b=document.getElementById('rate-updated');
+  if(b) b.textContent = rateMeta.updatedAt
+    ? ('MAJ · '+new Date(rateMeta.updatedAt).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}))
+    : ('EST · '+LAST_MANUAL_UPDATE);
+}
+function openRateEdit(code){
+  if(!mpIsEditor()){toast('Réservé aux rédacteurs');return;}
+  const r=RATE_EXPECTATIONS[code]; if(!r) return;
+  const ov=document.createElement('div'); ov.className='rx-modal';
+  ov.innerHTML=`<div class="rx-box">
+    <h3>Attentes — ${r.bank} · ${code}</h3>
+    <div class="rx-fld"><label>Taux directeur actuel</label><input id="rx-rate" value="${(r.rate||'').replace(/"/g,'&quot;')}"></div>
+    <div class="rx-fld"><label>Prochaine réunion</label><input id="rx-meet" value="${(r.meeting||'').replace(/"/g,'&quot;')}"></div>
+    <label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:5px">Probabilités (%)</label>
+    <div class="rx-row">
+      <div class="rx-fld" style="margin:0"><label>Hausse</label><input id="rx-hike" type="number" min="0" max="100" value="${r.hike||0}"></div>
+      <div class="rx-fld" style="margin:0"><label>Statu quo</label><input id="rx-hold" type="number" min="0" max="100" value="${r.hold||0}"></div>
+      <div class="rx-fld" style="margin:0"><label>Baisse</label><input id="rx-cut" type="number" min="0" max="100" value="${r.cut||0}"></div>
+    </div>
+    <div class="rx-sum" id="rx-sum"></div>
+    <div class="rx-btns"><button class="rx-cancel" id="rx-cancel">Annuler</button><button class="rx-save" id="rx-save">Enregistrer</button></div>
+  </div>`;
+  document.body.appendChild(ov);
+  const g=id=>ov.querySelector('#'+id);
+  const refreshSum=()=>{const s=(+g('rx-hike').value||0)+(+g('rx-hold').value||0)+(+g('rx-cut').value||0);g('rx-sum').textContent='Somme : '+s+'% '+(s===100?'✓':'(idéalement 100)');g('rx-sum').style.color=s===100?'var(--buy)':'var(--amber)';};
+  ['rx-hike','rx-hold','rx-cut'].forEach(id=>g(id).addEventListener('input',refreshSum)); refreshSum();
+  g('rx-cancel').onclick=()=>ov.remove();
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  g('rx-save').onclick=()=>{
+    const vals={rate:g('rx-rate').value.trim(),meeting:g('rx-meet').value.trim(),hike:+g('rx-hike').value||0,hold:+g('rx-hold').value||0,cut:+g('rx-cut').value||0};
+    saveRateEdit(code,vals); ov.remove();
+  };
+}
+async function saveRateEdit(code,vals){
+  Object.assign(RATE_EXPECTATIONS[code],vals); renderRateExpectations();
+  if(!fxDb||!mpIsEditor()){toast('Sauvegarde impossible (non connecté)');return;}
+  try{
+    await fxDb.collection('config').doc('rateExpectations').set({
+      banks:{[code]:vals}, updatedAt:new Date().toISOString(), updatedBy:fxAuthUser.email||''
+    },{merge:true});
+    rateMeta.updatedAt=new Date().toISOString(); updateRateBadge();
+    toast('Attentes mises à jour ✅');
+  }catch(e){toast('Erreur : '+e.message);}
+}
+
 function renderRateExpectations(){
   const grid=document.getElementById('rate-grid');
   grid.innerHTML=Object.entries(RATE_EXPECTATIONS).map(([code,r])=>{
@@ -1156,6 +1247,7 @@ function renderRateExpectations(){
       <div class="rate-hd">
         <div class="rate-cb"><span class="rate-flag">${r.flag}</span><span class="rate-bank">${r.bank} · ${code}</span></div>
         <span class="rate-now">${r.rate}</span>
+        ${mpIsEditor()?`<button class="rate-edit" onclick="openRateEdit('${code}')" title="Modifier les attentes">✏️</button>`:''}
       </div>
       <div class="rate-meet">Prochaine réunion : <b>${r.meeting}</b></div>
       <div class="rate-bars">
@@ -1314,6 +1406,31 @@ async function refreshAll(){
 }
 
 
+/* ── BANDEAU FX (Frankfurter — gratuit, sans clé) ── */
+async function fetchFxTicker(){
+  const el=document.getElementById('fx-ticker-inner');
+  if(!el) return;
+  const BASE='https://api.frankfurter.dev/v2/rates?base=USD';
+  const toMap=arr=>{const m={};(Array.isArray(arr)?arr:[]).forEach(r=>{m[r.quote]=r.rate;});return m;};
+  const val=(m,c,inv)=>{const r=m[c];if(!r)return null;return inv?1/r:r;};
+  try{
+    const prev=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
+    const [lr,pr]=await Promise.all([fetch(BASE),fetch(BASE+'&date='+prev)]);
+    const L=toMap(await lr.json()), P=toMap(await pr.json());
+    const pairs=[['EUR/USD','EUR',true,4],['GBP/USD','GBP',true,4],['USD/JPY','JPY',false,2],
+      ['USD/CHF','CHF',false,4],['AUD/USD','AUD',true,4],['USD/CAD','CAD',false,4],
+      ['NZD/USD','NZD',true,4],['USD/CNH','CNH',false,4],['XAU/USD','XAU',true,1],['XAG/USD','XAG',true,2]];
+    const items=pairs.map(([lbl,c,inv,dp])=>{
+      const v=val(L,c,inv), pv=val(P,c,inv);
+      if(v==null) return '';
+      let col='var(--t2)', arr='';
+      if(pv!=null&&Math.abs(v-pv)>1e-9){const up=v>pv;col=up?'var(--buy)':'var(--sell)';arr=up?' ▲':' ▼';}
+      return '<span style="padding:0 18px">'+lbl+' <b style="color:'+col+'">'+v.toFixed(dp)+arr+'</b></span>';
+    }).filter(Boolean).join('');
+    el.innerHTML = items ? (items+items) : 'Cours indisponibles';
+  }catch(e){ el.textContent='Cours FX momentanément indisponibles'; }
+}
+
 function init(){
   if(localStorage.getItem('fxmt_theme')==='light'){document.body.classList.add('light');document.getElementById('theme-icon').className='ti ti-moon';}
   tickClock();setInterval(tickClock,1000);
@@ -1322,6 +1439,8 @@ function init(){
   loadAllCurrencies();
   loadNews();
   startNewsAutoRefresh();
+  fetchFxTicker(); setInterval(fetchFxTicker, 15*60*1000);
+  initRateSync();
 }
 window.addEventListener('load',init);
 </script>

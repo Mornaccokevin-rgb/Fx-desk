@@ -50,6 +50,13 @@ service cloud.firestore {
       allow update: if isMacroEditor();
     }
 
+    // ── CONFIG PARTAGÉE (attentes de taux du Compass) ────────────
+    //  Lecture : tout utilisateur connecté. Écriture : rédacteurs.
+    match /config/{doc} {
+      allow read:  if isSignedIn();
+      allow write: if isMacroEditor();
+    }
+
     // ── DONNÉES PRIVÉES — Performance Tracker ────────────────────
     //  Chaque utilisateur n'accède qu'à ses propres trades / capital.
     match /users/{uid}/{document=**} {

@@ -1254,7 +1254,7 @@ function buildTicker(){
 ═══════════════════════════════════════════════════════════════ */
 /* ── Attentes de taux : synchro + édition partagée (Firestore) ── */
 const RATE_FB_CONFIG={apiKey:"AIzaSyA0T_I8fj5HJyIMJSm39j5PBJQ-4y8f1R0",authDomain:"journal-de-trading-c79ee.firebaseapp.com",projectId:"journal-de-trading-c79ee",storageBucket:"journal-de-trading-c79ee.firebasestorage.app",messagingSenderId:"393817220904",appId:"1:393817220904:web:8e5b747361aa2c83ddd21d"};
-const MACRO_EDITORS_FX=['mornaccokevin@gmail.com'];
+const MACRO_EDITORS_FX=['mornaccokevin@gmail.com','malikaboubacarkoda@gmail.com'];
 let fxDb=null, fxAuthUser=null, rateMeta={updatedAt:null,updatedBy:''};
 function mpIsEditor(){return !!(fxAuthUser&&fxAuthUser.email&&MACRO_EDITORS_FX.includes(fxAuthUser.email.toLowerCase()));}
 function initRateSync(){

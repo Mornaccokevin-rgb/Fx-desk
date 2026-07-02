@@ -12,8 +12,8 @@ service cloud.firestore {
     }
     function editorEmails() {
       return [
-        'mornaccokevin@gmail.com'
-        // , 'redacteur2@exemple.com'
+        'mornaccokevin@gmail.com',
+        'malikaboubacarkoda@gmail.com'
         // , 'redacteur3@exemple.com'
       ];
     }

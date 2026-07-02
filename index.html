@@ -1950,13 +1950,43 @@
         font-size: 11px;
         color: var(--fx-muted)
     }
-    .mp-img-preview {
+    .mp-img-previews {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px
+    }
+    .mp-img-previews:empty {
+        display: none
+    }
+    .mp-img-thumb {
+        position: relative
+    }
+    .mp-img-thumb img {
         display: block;
-        max-width: 100%;
-        max-height: 280px;
-        margin-top: 10px;
+        max-height: 140px;
+        max-width: 200px;
         border-radius: 8px;
-        border: 1px solid var(--fx-bd)
+        border: 1px solid var(--fx-bd);
+        cursor: zoom-in
+    }
+    .mp-img-thumb-rm {
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid var(--fx-bd);
+        background: var(--fx-card2);
+        color: var(--fx-muted);
+        font-size: 11px;
+        line-height: 1;
+        cursor: pointer
+    }
+    .mp-img-thumb-rm:hover {
+        color: var(--fx-red);
+        border-color: var(--fx-red)
     }
 
     /* ── Historique : sous-composantes + image ── */
@@ -1989,6 +2019,22 @@
         border-radius: 8px;
         border: 1px solid var(--fx-bd);
         cursor: zoom-in
+    }
+    /* Rangée d'images d'une synthèse (1 à 4, cliquables) */
+    .mp-card-imgs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px
+    }
+    .mp-card-imgs .mp-card-img {
+        margin: 0;
+        flex: 0 1 auto;
+        max-width: min(100%, 420px);
+        max-height: 260px
+    }
+    .mp-card-imgs .mp-card-img:only-child {
+        max-height: 360px
     }
 
     /* ── Macro Prep : 2 colonnes (contenu + chat) ── */
@@ -2033,10 +2079,60 @@
         flex-direction: column;
         gap: 2px
     }
-    .mp-chat-hdr > span:first-child {
+    .mp-chat-hdr-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px
+    }
+    .mp-chat-hdr-top > span {
         font-size: 14px;
         font-weight: 600;
         color: var(--fx-vl)
+    }
+    .mp-chat-expand {
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bd);
+        border-radius: 8px;
+        color: var(--fx-muted);
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+        transition: color .15s, border-color .15s
+    }
+    .mp-chat-expand:hover {
+        color: var(--fx-vl);
+        border-color: var(--fx-vl)
+    }
+    /* ── Chat agrandi : passe au premier plan, le reste flouté derrière ── */
+    .mp-chat-backdrop {
+        display: none
+    }
+    .mp-chat-backdrop.on {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 9990;
+        background: rgba(0, 0, 0, .45);
+        -webkit-backdrop-filter: blur(7px);
+        backdrop-filter: blur(7px)
+    }
+    .mp-chat.mp-chat-max {
+        position: fixed;
+        z-index: 9991;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(860px, 94vw);
+        height: min(84vh, 920px);
+        max-height: none;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, .55)
     }
     .mp-chat-sub {
         font-size: 10.5px;
@@ -3278,14 +3374,14 @@
                                     style="resize:vertical;line-height:1.5"></textarea>
                             </div>
                             <div class="fx-fgrp">
-                                <label class="fx-flbl">Image (optionnel — graphique, capture…)</label>
+                                <label class="fx-flbl">Images (optionnel — graphiques, captures… jusqu'à 4)</label>
                                 <div class="mp-img-row">
-                                    <label class="mp-img-btn" for="mp-image-input">🖼️ Choisir une image</label>
-                                    <input type="file" id="mp-image-input" accept="image/*" style="display:none" onchange="handleMacroImage(event)">
-                                    <button type="button" class="mp-img-clear" id="mp-img-clear" onclick="clearMacroImage()" style="display:none">✕ Retirer</button>
+                                    <label class="mp-img-btn" for="mp-image-input">🖼️ Ajouter des images</label>
+                                    <input type="file" id="mp-image-input" accept="image/*" multiple style="display:none" onchange="handleMacroImage(event)">
+                                    <button type="button" class="mp-img-clear" id="mp-img-clear" onclick="clearMacroImage()" style="display:none">✕ Tout retirer</button>
                                     <span class="mp-img-hint" id="mp-img-hint">Aucune image</span>
                                 </div>
-                                <img id="mp-img-preview" class="mp-img-preview" alt="" style="display:none">
+                                <div id="mp-img-previews" class="mp-img-previews"></div>
                             </div>
                         </fieldset>
 
@@ -3321,9 +3417,15 @@
 
                <!-- ══ CHAT DE L'ALLIANCE ══ -->
                <aside class="mp-col-chat">
-                 <div class="mp-chat">
+                 <!-- Fond flouté affiché quand le chat est agrandi (clic = fermer) -->
+                 <div class="mp-chat-backdrop" id="mp-chat-backdrop" onclick="toggleChatExpand()"></div>
+                 <div class="mp-chat" id="mp-chat-card">
                    <div class="mp-chat-hdr">
-                     <span>💬 Chat de l'Alliance</span>
+                     <div class="mp-chat-hdr-top">
+                       <span>💬 Chat de l'Alliance</span>
+                       <button type="button" class="mp-chat-expand" id="mp-chat-expand"
+                         onclick="toggleChatExpand()" title="Agrandir le chat" aria-label="Agrandir le chat">⤢</button>
+                     </div>
                      <span class="mp-chat-sub">Questions &amp; échanges · 40 derniers messages</span>
                    </div>
                    <div class="mp-chat-msgs" id="mp-chat-msgs">
@@ -3878,7 +3980,10 @@
     let allMacroNotes = [],
         unsubMacroNotes = null,
         editingMacroId = null,
-        currentMacroImage = null; // image en base64 de la synthèse en cours d'édition
+        currentMacroImages = []; // images en base64 de la synthèse en cours d'édition
+
+    const MAX_MACRO_IMAGES = 4;         // nombre max d'images par synthèse
+    const MACRO_IMAGES_BUDGET = 900000; // ~0,9 Mo au total (un document Firestore est limité à 1 Mo)
 
     // ── Sous-composantes (formulaire) ─────────────────────────────
     function addMacroSub(data) {
@@ -3909,69 +4014,118 @@
         })).filter(s => s.name || s.consensus || s.actual || s.previous);
     }
 
-    // ── Image (compression + base64, stockée dans la note) ────────
-    function handleMacroImage(ev) {
-        const file = ev.target.files && ev.target.files[0];
-        if (!file)
-            return;
-        if (!file.type.startsWith('image/')) {
-            showToast('Fichier image invalide');
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = e => {
-            const img = new Image();
-            img.onload = () => {
-                const MAX = 1280;
-                let { width: w, height: h } = img;
-                if (w > MAX || h > MAX) {
-                    const r = Math.min(MAX / w, MAX / h);
-                    w = Math.round(w * r);
-                    h = Math.round(h * r);
-                }
-                const cv = document.createElement('canvas');
-                cv.width = w;
-                cv.height = h;
-                cv.getContext('2d').drawImage(img, 0, 0, w, h);
-                currentMacroImage = cv.toDataURL('image/jpeg', 0.72);
-                // Garde-fou : Firestore limite un document à ~1 Mo
-                if (currentMacroImage.length > 950000) {
-                    currentMacroImage = cv.toDataURL('image/jpeg', 0.5);
-                }
-                if (currentMacroImage.length > 950000) {
-                    showToast('Image trop lourde même compressée — choisis-en une plus petite');
-                    currentMacroImage = null;
-                    setMacroImagePreview(null);
-                    return;
-                }
-                setMacroImagePreview(currentMacroImage);
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+    // ── Images (compression + base64, stockées dans la note) ──────
+    //  Jusqu'à MAX_MACRO_IMAGES images, budget total MACRO_IMAGES_BUDGET
+    //  (limite Firestore : 1 Mo par document).
+    function macroImagesSize() {
+        return currentMacroImages.reduce((s, im) => s + im.length, 0);
     }
-    function setMacroImagePreview(src) {
-        const prev = document.getElementById('mp-img-preview');
+    function compressMacroImage(img, maxDim, quality) {
+        let { width: w, height: h } = img;
+        if (w > maxDim || h > maxDim) {
+            const r = Math.min(maxDim / w, maxDim / h);
+            w = Math.round(w * r);
+            h = Math.round(h * r);
+        }
+        const cv = document.createElement('canvas');
+        cv.width = w;
+        cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        return cv.toDataURL('image/jpeg', quality);
+    }
+    function addMacroImageFile(file) {
+        return new Promise(resolve => {
+            if (!file.type.startsWith('image/')) {
+                showToast('Fichier image invalide : ' + file.name);
+                return resolve();
+            }
+            if (currentMacroImages.length >= MAX_MACRO_IMAGES) {
+                showToast('Maximum ' + MAX_MACRO_IMAGES + ' images par synthèse');
+                return resolve();
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    // Compression progressive jusqu'à tenir dans le budget restant
+                    const budget = MACRO_IMAGES_BUDGET - macroImagesSize();
+                    let data = compressMacroImage(img, 1280, 0.72);
+                    if (data.length > budget)
+                        data = compressMacroImage(img, 1280, 0.5);
+                    if (data.length > budget)
+                        data = compressMacroImage(img, 900, 0.55);
+                    if (data.length > budget) {
+                        showToast('« ' + file.name + ' » trop lourde pour l\'espace restant — retire une image ou choisis-en une plus légère');
+                        return resolve();
+                    }
+                    currentMacroImages.push(data);
+                    renderMacroImagePreviews();
+                    resolve();
+                };
+                img.onerror = () => {
+                    showToast('Image illisible : ' + file.name);
+                    resolve();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    function handleMacroImage(ev) {
+        const files = Array.from(ev.target.files || []);
+        if (!files.length)
+            return;
+        // Traite les fichiers l'un après l'autre (budget calculé au fur et à mesure)
+        let queue = Promise.resolve();
+        files.forEach(f => {
+            queue = queue.then(() => addMacroImageFile(f));
+        });
+        queue.then(() => {
+            ev.target.value = ''; // permet de re-sélectionner le même fichier
+            renderMacroImagePreviews();
+        });
+    }
+    function renderMacroImagePreviews() {
+        const wrap = document.getElementById('mp-img-previews');
         const clr = document.getElementById('mp-img-clear');
         const hint = document.getElementById('mp-img-hint');
-        if (src) {
-            prev.src = src;
-            prev.style.display = '';
-            clr.style.display = '';
-            hint.textContent = 'Image prête';
-        } else {
-            prev.removeAttribute('src');
-            prev.style.display = 'none';
-            clr.style.display = 'none';
-            hint.textContent = 'Aucune image';
-        }
+        if (!wrap)
+            return;
+        wrap.innerHTML = '';
+        currentMacroImages.forEach((src, i) => {
+            const cell = document.createElement('div');
+            cell.className = 'mp-img-thumb';
+            const im = document.createElement('img');
+            im.src = src;
+            im.alt = 'Image ' + (i + 1);
+            im.title = 'Cliquer pour agrandir';
+            im.onclick = () => openImgLightbox(src);
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.className = 'mp-img-thumb-rm';
+            rm.textContent = '✕';
+            rm.title = 'Retirer cette image';
+            rm.setAttribute('aria-label', 'Retirer l\'image ' + (i + 1));
+            rm.onclick = () => {
+                currentMacroImages.splice(i, 1);
+                renderMacroImagePreviews();
+            };
+            cell.append(im, rm);
+            wrap.appendChild(cell);
+        });
+        if (clr)
+            clr.style.display = currentMacroImages.length ? '' : 'none';
+        if (hint)
+            hint.textContent = currentMacroImages.length
+                ? currentMacroImages.length + '/' + MAX_MACRO_IMAGES + ' image' + (currentMacroImages.length > 1 ? 's' : '') + ' · ~' + Math.round(macroImagesSize() / 1024) + ' Ko'
+                : 'Aucune image';
     }
     function clearMacroImage() {
-        currentMacroImage = null;
+        currentMacroImages = [];
         const inp = document.getElementById('mp-image-input');
         if (inp)
             inp.value = '';
-        setMacroImagePreview(null);
+        renderMacroImagePreviews();
     }
     // Agrandit une image de synthèse en plein écran (clic pour fermer)
     function openImgLightbox(src) {
@@ -4148,6 +4302,40 @@
         }
     }
 
+    // ── Agrandissement du chat (premier plan + arrière-plan flouté) ──
+    function toggleChatExpand() {
+        const card = document.getElementById('mp-chat-card');
+        const bk = document.getElementById('mp-chat-backdrop');
+        const btn = document.getElementById('mp-chat-expand');
+        if (!card || !bk)
+            return;
+        const on = !card.classList.contains('mp-chat-max');
+        card.classList.toggle('mp-chat-max', on);
+        bk.classList.toggle('on', on);
+        if (btn) {
+            btn.textContent = on ? '⤡' : '⤢';
+            btn.title = on ? 'Réduire le chat' : 'Agrandir le chat';
+            btn.setAttribute('aria-label', btn.title);
+        }
+        // Reste calé sur les derniers messages après le changement de taille
+        const box = document.getElementById('mp-chat-msgs');
+        if (box)
+            box.scrollTop = box.scrollHeight;
+        if (on) {
+            const inp = document.getElementById('mp-chat-input');
+            if (inp)
+                inp.focus();
+        }
+    }
+    // Échap referme le chat agrandi
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            const card = document.getElementById('mp-chat-card');
+            if (card && card.classList.contains('mp-chat-max'))
+                toggleChatExpand();
+        }
+    });
+
     function isMacroEditor() {
         const u = auth.currentUser;
         return !!(u && u.email && MACRO_EDITORS.includes(u.email.toLowerCase()));
@@ -4217,7 +4405,8 @@
             actual: f.actual.value.trim(),
             previous: f.previous.value.trim(),
             subs: getMacroSubs(),
-            image: currentMacroImage || '',
+            images: currentMacroImages.slice(),
+            image: currentMacroImages[0] || '', // rétro-compatibilité (anciennes versions)
             analysis: f.analysis.value.trim()
         };
         if (!note.date || !note.event || !note.analysis) {
@@ -4261,9 +4450,11 @@
         // Sous-composantes
         document.getElementById('mp-subs').innerHTML = '';
         (n.subs || []).forEach(s => addMacroSub(s));
-        // Image existante
-        currentMacroImage = n.image || null;
-        setMacroImagePreview(currentMacroImage);
+        // Images existantes (rétro-compatible : anciennes notes à image unique)
+        currentMacroImages = Array.isArray(n.images) && n.images.length
+            ? n.images.slice()
+            : (n.image ? [n.image] : []);
+        renderMacroImagePreviews();
         editingMacroId = fid;
         setMacroEditUI(true);
         f.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -4481,15 +4672,23 @@
             p.textContent = n.analysis || '';
             li.appendChild(p);
 
-            // Image éventuelle
-            if (n.image) {
-                const im = document.createElement('img');
-                im.className = 'mp-card-img';
-                im.src = n.image;
-                im.alt = 'Illustration — ' + (n.event || '');
-                im.loading = 'lazy';
-                im.onclick = () => openImgLightbox(n.image);
-                li.appendChild(im);
+            // Images éventuelles (rétro-compatible avec l'ancien champ unique)
+            const noteImgs = Array.isArray(n.images) && n.images.length
+                ? n.images
+                : (n.image ? [n.image] : []);
+            if (noteImgs.length) {
+                const imgRow = document.createElement('div');
+                imgRow.className = 'mp-card-imgs';
+                noteImgs.forEach((src, i) => {
+                    const im = document.createElement('img');
+                    im.className = 'mp-card-img';
+                    im.src = src;
+                    im.alt = 'Illustration ' + (i + 1) + ' — ' + (n.event || '');
+                    im.loading = 'lazy';
+                    im.onclick = () => openImgLightbox(src);
+                    imgRow.appendChild(im);
+                });
+                li.appendChild(imgRow);
             }
 
             list.appendChild(li);

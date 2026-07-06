@@ -2026,6 +2026,78 @@
         margin: 0
     }
 
+    /* ── Éditeur de texte enrichi (RTE) ── */
+    .mp-rte {
+        min-height: 130px;
+        max-height: 420px;
+        overflow-y: auto;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        cursor: text
+    }
+    .mp-rte:empty:before {
+        content: attr(data-placeholder);
+        color: var(--fx-muted);
+        pointer-events: none
+    }
+    .mp-rte:focus {
+        outline: none;
+        border-color: var(--fx-vl)
+    }
+    /* Titres 1/2/3 dans l'éditeur ET dans les cartes rendues */
+    .mp-rte h1, .mp-analysis h1 { font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: var(--fx-text); line-height: 1.3 }
+    .mp-rte h2, .mp-analysis h2 { font-size: 16px; font-weight: 700; margin: 7px 0 4px; color: var(--fx-text); line-height: 1.3 }
+    .mp-rte h3, .mp-analysis h3 { font-size: 14px; font-weight: 600; margin: 6px 0 3px; color: var(--fx-vl); line-height: 1.3 }
+    .mp-rte ul, .mp-analysis ul, .mp-rte ol, .mp-analysis ol { margin: 4px 0 4px 20px }
+
+    /* Barre d'outils flottante */
+    .mp-rte-tb {
+        position: absolute;
+        top: 0; left: 0;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        gap: 2px;
+        padding: 5px;
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bb);
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45)
+    }
+    .mp-rte-tb.show { display: flex }
+    .mp-rte-tb .rtb {
+        min-width: 28px;
+        height: 28px;
+        padding: 0 7px;
+        border: none;
+        background: none;
+        color: var(--fx-text);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-family: 'Space Grotesk', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center
+    }
+    .mp-rte-tb .rtb:hover { background: var(--fx-vd); color: var(--fx-vl) }
+    .mp-rte-tb .rtb-sep {
+        width: 1px;
+        height: 20px;
+        background: var(--fx-bd);
+        margin: 0 3px
+    }
+    .mp-rte-tb .rtb-clr {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        cursor: pointer;
+        margin: 0 1px
+    }
+    .mp-rte-tb .rtb-clr:hover { transform: scale(1.15) }
+
     /* ── Formulaire : sous-composantes ── */
     .mp-subs {
         display: flex;
@@ -3538,9 +3610,8 @@
                             <legend class="fx-fst" style="width:100%">✍️ Mon analyse</legend>
                             <div class="fx-fgrp" style="margin-bottom:14px">
                                 <label class="fx-flbl" for="mp-analysis">Réaction du marché &amp; mon biais *</label>
-                                <textarea id="mp-analysis" name="analysis" class="fx-fc" rows="6" required
-                                    placeholder="Comment le marché a-t-il réagi vs le consensus ? Quel est mon biais directionnel et pourquoi ? Quels niveaux / paires surveiller ?"
-                                    style="resize:vertical;line-height:1.5"></textarea>
+                                <div id="mp-analysis" class="fx-fc mp-rte" contenteditable="true" role="textbox" aria-multiline="true"
+                                    data-placeholder="Sélectionne du texte pour le mettre en forme (gras, couleur, titres…). Comment le marché a-t-il réagi vs le consensus ? Quel est mon biais ?"></div>
                             </div>
                             <div class="fx-fgrp">
                                 <label class="fx-flbl">Images (optionnel — graphiques, captures… jusqu'à 4)</label>
@@ -3652,6 +3723,26 @@
     </div>
 
     <div class="fx-toast" id="fx-toast"></div>
+
+    <!-- Barre d'outils flottante (mise en forme du texte, façon Notion) -->
+    <div class="mp-rte-tb" id="mp-rte-toolbar" onmousedown="event.preventDefault()">
+        <button type="button" class="rtb" data-cmd="h1" title="Titre 1">T1</button>
+        <button type="button" class="rtb" data-cmd="h2" title="Titre 2">T2</button>
+        <button type="button" class="rtb" data-cmd="h3" title="Titre 3">T3</button>
+        <button type="button" class="rtb" data-cmd="normal" title="Texte normal">¶</button>
+        <span class="rtb-sep"></span>
+        <button type="button" class="rtb" data-cmd="bold" title="Gras"><b>G</b></button>
+        <button type="button" class="rtb" data-cmd="italic" title="Italique"><i>I</i></button>
+        <button type="button" class="rtb" data-cmd="underline" title="Souligné"><u>S</u></button>
+        <button type="button" class="rtb" data-cmd="strike" title="Barré"><s>B</s></button>
+        <span class="rtb-sep"></span>
+        <button type="button" class="rtb-clr" data-color="inherit" title="Couleur par défaut" style="background:linear-gradient(135deg,#fff,#888)"></button>
+        <button type="button" class="rtb-clr" data-color="#ef4444" title="Rouge" style="background:#ef4444"></button>
+        <button type="button" class="rtb-clr" data-color="#22c55e" title="Vert" style="background:#22c55e"></button>
+        <button type="button" class="rtb-clr" data-color="#3b82f6" title="Bleu" style="background:#3b82f6"></button>
+        <button type="button" class="rtb-clr" data-color="#f59e0b" title="Orange" style="background:#f59e0b"></button>
+        <button type="button" class="rtb-clr" data-color="#a78bfa" title="Violet" style="background:#a78bfa"></button>
+    </div>
 
     <!-- ══════ PARAMÈTRES D'AFFICHAGE ══════ -->
     <div class="modal-wrap" id="settingsModal">
@@ -3767,6 +3858,7 @@
             try {
                 setMpView('dash');       // toujours ouvrir sur la semaine en cours
                 renderTagChipsInput();
+                initRteToolbar();
                 loadMacroNotes();
                 applyMacroEditorUI();
                 loadChat();
@@ -4318,6 +4410,85 @@
         else { if (mpView !== 'dash') setMpView('dash'); mpTagFilter = t; renderMacroNotes(); }
     }
 
+    // ── Éditeur de texte enrichi (barre flottante façon Notion) ───
+    function rteCmd(cmd, val) {
+        const ed = document.getElementById('mp-analysis');
+        if (!ed) return;
+        ed.focus();
+        try { document.execCommand('styleWithCSS', false, true); } catch (e) {}
+        if (cmd === 'bold' || cmd === 'italic' || cmd === 'underline') document.execCommand(cmd, false, null);
+        else if (cmd === 'strike') document.execCommand('strikeThrough', false, null);
+        else if (cmd === 'h1' || cmd === 'h2' || cmd === 'h3') document.execCommand('formatBlock', false, cmd.toUpperCase());
+        else if (cmd === 'normal') document.execCommand('formatBlock', false, 'DIV');
+        else if (cmd === 'color') document.execCommand('foreColor', false, (val === 'inherit' ? '#e2e8f0' : val));
+        updateRteToolbar();
+    }
+    function initRteToolbar() {
+        const tb = document.getElementById('mp-rte-toolbar');
+        if (!tb || tb.dataset.wired) return;
+        tb.dataset.wired = '1';
+        tb.querySelectorAll('.rtb').forEach(b => b.addEventListener('click', () => rteCmd(b.getAttribute('data-cmd'))));
+        tb.querySelectorAll('.rtb-clr').forEach(b => b.addEventListener('click', () => rteCmd('color', b.getAttribute('data-color'))));
+        document.addEventListener('selectionchange', updateRteToolbar);
+        window.addEventListener('scroll', () => { tb.classList.remove('show'); }, true);
+    }
+    function updateRteToolbar() {
+        const tb = document.getElementById('mp-rte-toolbar');
+        const ed = document.getElementById('mp-analysis');
+        if (!tb || !ed) return;
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { tb.classList.remove('show'); return; }
+        const range = sel.getRangeAt(0);
+        if (!ed.contains(range.commonAncestorContainer)) { tb.classList.remove('show'); return; }
+        const r = range.getBoundingClientRect();
+        if (!r.width && !r.height) { tb.classList.remove('show'); return; }
+        tb.classList.add('show');
+        const tbr = tb.getBoundingClientRect();
+        let top = r.top - tbr.height - 8 + window.scrollY;
+        let left = r.left + r.width / 2 - tbr.width / 2 + window.scrollX;
+        if (top < window.scrollY + 4) top = r.bottom + 8 + window.scrollY;
+        const maxLeft = window.scrollX + document.documentElement.clientWidth - tbr.width - 8;
+        left = Math.max(window.scrollX + 8, Math.min(left, maxLeft));
+        tb.style.top = top + 'px';
+        tb.style.left = left + 'px';
+    }
+    // Nettoyage HTML au rendu : n'autorise que des balises de mise en forme
+    function filterStyleRich(s) {
+        const allow = ['color', 'background-color', 'font-size', 'font-weight', 'font-style', 'text-decoration', 'text-decoration-line', 'text-align'];
+        return (s || '').split(';').map(x => x.trim()).filter(x => {
+            const p = (x.split(':')[0] || '').trim().toLowerCase();
+            return allow.indexOf(p) > -1 && !/url\(|expression|javascript:/i.test(x);
+        }).join('; ');
+    }
+    function sanitizeRich(html) {
+        const allowed = { B:1, STRONG:1, I:1, EM:1, U:1, S:1, STRIKE:1, BR:1, P:1, DIV:1, H1:1, H2:1, H3:1, SPAN:1, UL:1, OL:1, LI:1, FONT:1 };
+        function clean(node) {
+            let out = '';
+            node.childNodes.forEach(ch => {
+                if (ch.nodeType === 3) {
+                    out += ch.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                } else if (ch.nodeType === 1) {
+                    const tag = ch.tagName;
+                    if (tag === 'BR') { out += '<br>'; return; }
+                    const inner = clean(ch);
+                    if (allowed[tag]) {
+                        let style = (ch.getAttribute && ch.getAttribute('style')) ? filterStyleRich(ch.getAttribute('style')) : '';
+                        if (tag === 'FONT' && ch.getAttribute && ch.getAttribute('color'))
+                            style = ('color:' + ch.getAttribute('color') + ';' + style);
+                        const t = (tag === 'FONT') ? 'span' : tag.toLowerCase();
+                        out += '<' + t + (style ? ' style="' + style.replace(/"/g, '') + '"' : '') + '>' + inner + '</' + t + '>';
+                    } else {
+                        out += inner;
+                    }
+                }
+            });
+            return out;
+        }
+        // DOMParser : parse sans charger d'images ni exécuter de script
+        const doc = new DOMParser().parseFromString(html || '', 'text/html');
+        return clean(doc.body);
+    }
+
     const MAX_MACRO_IMAGES = 4;         // nombre max d'images par synthèse
     const MACRO_IMAGES_BUDGET = 900000; // ~0,9 Mo au total (un document Firestore est limité à 1 Mo)
 
@@ -4747,9 +4918,10 @@
             tags: currentMacroTags.slice(),
             images: currentMacroImages.slice(),
             image: currentMacroImages[0] || '', // rétro-compatibilité (anciennes versions)
-            analysis: f.analysis.value.trim()
+            analysis: (document.getElementById('mp-analysis').innerHTML || '').trim()
         };
-        if (!note.date || !note.event || !note.analysis) {
+        const analysisText = (document.getElementById('mp-analysis').innerText || '').trim();
+        if (!note.date || !note.event || !analysisText) {
             showToast('Date, événement et analyse sont requis');
             return;
         }
@@ -4786,7 +4958,7 @@
         f.consensus.value = n.consensus || '';
         f.actual.value = n.actual || '';
         f.previous.value = n.previous || '';
-        f.analysis.value = n.analysis || '';
+        document.getElementById('mp-analysis').innerHTML = n.analysis || '';
         // Sous-composantes
         document.getElementById('mp-subs').innerHTML = '';
         (n.subs || []).forEach(s => addMacroSub(s));
@@ -4809,6 +4981,8 @@
     function cancelMacroEdit() {
         editingMacroId = null;
         document.getElementById('macroForm').reset();
+        const ed = document.getElementById('mp-analysis');
+        if (ed) ed.innerHTML = ''; // le reset() ne vide pas un contenteditable
         const subs = document.getElementById('mp-subs');
         if (subs)
             subs.innerHTML = '';
@@ -4973,9 +5147,9 @@
             li.appendChild(tbl);
         }
 
-        const p = document.createElement('p');
+        const p = document.createElement('div');
         p.className = 'mp-analysis';
-        p.textContent = n.analysis || '';
+        p.innerHTML = sanitizeRich(n.analysis || '');
         li.appendChild(p);
 
         const noteImgs = Array.isArray(n.images) && n.images.length

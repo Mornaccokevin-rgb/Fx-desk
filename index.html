@@ -1732,6 +1732,166 @@
         flex-wrap: wrap
     }
 
+    /* ── Daily FX : sous-nav, tags, semaines ── */
+    .mp-subnav {
+        display: flex;
+        gap: 6px;
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bd);
+        border-radius: 10px;
+        padding: 4px;
+        margin-bottom: 18px
+    }
+    .mp-subtab {
+        flex: 1;
+        padding: 9px 12px;
+        border: none;
+        background: none;
+        color: var(--fx-muted2);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: all 0.15s
+    }
+    .mp-subtab.active {
+        background: var(--fx-vd);
+        color: var(--fx-vl)
+    }
+    .mp-week-range {
+        font-weight: 400;
+        color: var(--fx-muted);
+        font-size: 12px
+    }
+    /* Champ tags (formulaire) */
+    .mp-tags-input {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 14px
+    }
+    .mp-tags-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px
+    }
+    .mp-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--fx-vd);
+        color: var(--fx-vl);
+        border: 1px solid var(--fx-bd);
+        border-radius: 20px;
+        padding: 3px 6px 3px 10px;
+        font-size: 11.5px;
+        font-weight: 600
+    }
+    .mp-tag button {
+        background: none;
+        border: none;
+        color: var(--fx-vl);
+        cursor: pointer;
+        font-size: 11px;
+        opacity: 0.7;
+        padding: 0
+    }
+    .mp-tag button:hover {
+        opacity: 1
+    }
+    /* Barre de filtre par tag */
+    .mp-tagbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 14px
+    }
+    .mp-tagchip {
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bd);
+        color: var(--fx-muted2);
+        border-radius: 20px;
+        padding: 4px 11px;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif;
+        transition: all 0.15s
+    }
+    .mp-tagchip:hover {
+        border-color: var(--fx-vl);
+        color: var(--fx-vl)
+    }
+    .mp-tagchip.active {
+        background: var(--fx-violet);
+        border-color: var(--fx-violet);
+        color: #fff
+    }
+    /* Tags affichés sur les cartes */
+    .mp-card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 0
+    }
+    .mp-card-tag {
+        background: var(--fx-vd);
+        color: var(--fx-vl);
+        border: 1px solid var(--fx-bd);
+        border-radius: 20px;
+        padding: 2px 9px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer
+    }
+    .mp-card-tag:hover {
+        background: rgba(var(--acc-rgb), 0.18)
+    }
+    /* Historique : cartes de semaine */
+    .mp-weeks {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px
+    }
+    .mp-week-card {
+        text-align: left;
+        background: var(--fx-card);
+        border: 1px solid var(--fx-bd);
+        border-left: 3px solid var(--fx-violet);
+        border-radius: 10px;
+        padding: 16px 18px;
+        cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif;
+        transition: transform 0.12s, border-color 0.15s
+    }
+    .mp-week-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--fx-vl)
+    }
+    .mp-week-card .mp-week-range {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fx-text)
+    }
+    .mp-week-cnt {
+        font-size: 12px;
+        color: var(--fx-muted);
+        margin-top: 4px
+    }
+    .mp-back-week {
+        background: none;
+        border: none;
+        color: var(--fx-vl);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'Space Grotesk', sans-serif;
+        padding: 0;
+        margin-bottom: 14px
+    }
+
     .mp-count {
         font-size: 11px;
         color: var(--fx-muted);
@@ -2678,7 +2838,7 @@
                         <div class="sa-mod">
                             <div class="sa-mod-badge"><span></span>ACTIF</div>
                             <div class="sa-mod-icon">🧠</div>
-                            <h3>Macro Prep</h3>
+                            <h3>Daily FX</h3>
                             <p>Journal de synthèse macro : rédigez vos analyses post-annonces (NFP, CPI, FOMC) pour garder une mémoire de la réaction des marchés et affiner votre lecture.</p>
                         </div>
                     </div>
@@ -2812,7 +2972,7 @@
                         Actif
                     </div>
                     <div class="mod-icon">🧠</div>
-                    <div class="mod-name">Macro Prep</div>
+                    <div class="mod-name">Daily FX</div>
                     <div class="mod-desc">Journal de synthèse macro : rédigez vos analyses post-annonces (NFP, CPI, FOMC) pour construire votre propre edge et garder une mémoire de la réaction des marchés.</div>
                     <div class="mod-arr">→</div>
                 </div>
@@ -3302,14 +3462,14 @@
             <span class="topbar-emb">⚜</span>
             <span class="topbar-brand">Sphinx Alliance</span>
             <div class="topbar-sep"></div>
-            <span class="topbar-mod" style="color:var(--fx-vl)">Macro Prep</span>
+            <span class="topbar-mod" style="color:var(--fx-vl)">Daily FX</span>
         </nav>
 
         <main class="fx-app active">
             <header class="fx-header">
                 <div class="fx-header-top">
-                    <div class="fx-logo">MP</div>
-                    <div class="fx-header-title">JOURNAL DE SYNTHÈSE MACRO — PRÉPARATION &amp; EDGE</div>
+                    <div class="fx-logo">DF</div>
+                    <div class="fx-header-title">DAILY FX — SYNTHÈSE MACRO &amp; EDGE</div>
                     <button class="theme-toggle-btn" onclick="toggleThemeGlobal()" title="Thème Clair/Sombre">
                         <i class="ti ti-sun" id="global-theme-icon-macro"></i>
                     </button>
@@ -3319,6 +3479,15 @@
             <div class="fx-content">
               <div class="mp-grid">
                <div class="mp-col-main">
+
+                <!-- Sous-navigation Daily FX -->
+                <div class="mp-subnav">
+                    <button class="mp-subtab active" id="mp-subtab-dash" type="button" onclick="setMpView('dash')">📊 Semaine en cours</button>
+                    <button class="mp-subtab" id="mp-subtab-hist" type="button" onclick="setMpView('hist')">📚 Historique</button>
+                </div>
+
+                <!-- ════ VUE : SEMAINE EN COURS ════ -->
+                <div id="mp-view-dash">
 
                 <!-- Bannière lecture seule (non-rédacteurs) -->
                 <p id="mp-readonly" class="mp-readonly" style="display:none" role="status">
@@ -3385,6 +3554,15 @@
                             </div>
                         </fieldset>
 
+                        <fieldset style="border:none;margin:0;padding:0;min-width:0">
+                            <legend class="fx-fst" style="width:100%">🏷️ Tags <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(optionnel — crée les tiens, ex : CPI, Fed, USD)</span></legend>
+                            <div class="mp-tags-input">
+                                <div id="mp-tags-chips" class="mp-tags-chips"></div>
+                                <input type="text" id="mp-tag-add" class="fx-fc" placeholder="Écris un tag puis Entrée…" autocomplete="off"
+                                    onkeydown="if(event.key==='Enter'||event.key===','){event.preventDefault();addTagChip(this.value);this.value='';}">
+                            </div>
+                        </fieldset>
+
                         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                             <button type="submit" class="fx-submit" id="mp-submit-btn">💾 Enregistrer l'analyse</button>
                             <button type="button" class="fx-submit" id="mp-cancel-btn" onclick="cancelMacroEdit()"
@@ -3393,25 +3571,54 @@
                     </form>
                 </section>
 
-                <!-- ── PARTIE 2 : HISTORIQUE ── -->
+                <!-- ── Synthèses de la SEMAINE EN COURS ── -->
                 <section aria-labelledby="mp-hist-title">
                     <div class="mp-toolbar">
-                        <h2 id="mp-hist-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0">📚 Historique des synthèses</h2>
+                        <h2 id="mp-hist-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0">📊 Cette semaine <span id="mp-week-range" class="mp-week-range"></span></h2>
                         <span class="mp-count" id="mp-count" aria-live="polite"></span>
                         <input type="search" id="mp-filter" class="fx-fc mp-search" placeholder="🔍 Filtrer par événement ou mot-clé…"
                             oninput="renderMacroNotes()" aria-label="Filtrer les synthèses">
                     </div>
+                    <div class="mp-tagbar" id="mp-tagbar"></div>
 
                     <div id="mp-empty" class="fx-empty">
                         <div class="fx-empty-icon">📭</div>
-                        <div class="fx-empty-title">Aucune synthèse pour l'instant</div>
+                        <div class="fx-empty-title">Aucune synthèse cette semaine</div>
                         <div style="font-size:12px;color:var(--fx-muted)">
-                            Rédigez votre première analyse post-annonce ci-dessus pour bâtir votre edge.
+                            Rédigez votre première analyse de la semaine ci-dessus. Chaque lundi, la semaine repart à zéro et l'ancienne bascule dans l'Historique.
                         </div>
                     </div>
 
                     <ul class="mp-list" id="mp-list"></ul>
                 </section>
+
+                </div><!-- /#mp-view-dash -->
+
+                <!-- ════ VUE : HISTORIQUE ════ -->
+                <div id="mp-view-hist" style="display:none">
+
+                    <!-- Accueil : liste des semaines -->
+                    <div id="mp-hist-landing">
+                        <div class="mp-toolbar">
+                            <h2 style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0">📚 Historique — par semaine</h2>
+                        </div>
+                        <div class="mp-weeks" id="mp-weeks"></div>
+                    </div>
+
+                    <!-- Détail d'une semaine -->
+                    <div id="mp-hist-week" style="display:none">
+                        <button class="mp-back-week" type="button" onclick="setMpView('hist')">← Toutes les semaines</button>
+                        <div class="mp-toolbar">
+                            <h2 id="mp-week-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0"></h2>
+                            <span class="mp-count" id="mp-week-count"></span>
+                            <input type="search" id="mp-week-filter" class="fx-fc mp-search" placeholder="🔍 Filtrer dans cette semaine…"
+                                oninput="renderHistoryWeek()" aria-label="Filtrer les synthèses de la semaine">
+                        </div>
+                        <div class="mp-tagbar" id="mp-week-tagbar"></div>
+                        <ul class="mp-list" id="mp-week-list"></ul>
+                    </div>
+
+                </div><!-- /#mp-view-hist -->
 
                </div><!-- /.mp-col-main -->
 
@@ -3558,12 +3765,14 @@
             // Une erreur d'init (Firestore, etc.) ne doit jamais laisser
             // l'écran vide : on l'isole pour que le formulaire reste visible.
             try {
+                setMpView('dash');       // toujours ouvrir sur la semaine en cours
+                renderTagChipsInput();
                 loadMacroNotes();
                 applyMacroEditorUI();
                 loadChat();
             } catch (e) {
-                console.error('Macro Prep — erreur init :', e);
-                showToast('Macro Prep : ' + (e && e.message ? e.message : 'erreur de chargement'));
+                console.error('Daily FX — erreur init :', e);
+                showToast('Daily FX : ' + (e && e.message ? e.message : 'erreur de chargement'));
             }
         }
         if (id === 'landing')
@@ -3980,7 +4189,134 @@
     let allMacroNotes = [],
         unsubMacroNotes = null,
         editingMacroId = null,
-        currentMacroImages = []; // images en base64 de la synthèse en cours d'édition
+        currentMacroImages = [], // images en base64 de la synthèse en cours d'édition
+        currentMacroTags = [];   // tags de la synthèse en cours d'édition
+
+    // ── État de navigation Daily FX ───────────────────────────────
+    let mpView = 'dash';          // 'dash' | 'hist'
+    let mpHistWeek = null;        // clé (lundi) de la semaine ouverte dans l'historique
+    let mpTagFilter = '';         // tag filtré dans le dashboard
+    let mpWeekTagFilter = '';     // tag filtré dans le détail d'une semaine
+
+    // Lundi (YYYY-MM-DD) de la semaine contenant dateStr — calcul 100% UTC (pas de décalage de fuseau)
+    function weekStartKey(dateStr) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateStr || '');
+        if (!m) return '';
+        const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+        const day = (d.getUTCDay() + 6) % 7; // lundi = 0
+        d.setUTCDate(d.getUTCDate() - day);
+        return d.toISOString().slice(0, 10);
+    }
+    function todayLocalKey() {
+        const n = new Date();
+        return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0');
+    }
+    function currentWeekKey() {
+        return weekStartKey(todayLocalKey());
+    }
+    function weekLabel(mondayKey) {
+        const mm0 = /^(\d{4})-(\d{2})-(\d{2})/.exec(mondayKey || '');
+        if (!mm0) return mondayKey || '';
+        const mon = new Date(Date.UTC(+mm0[1], +mm0[2] - 1, +mm0[3]));
+        const sun = new Date(mon); sun.setUTCDate(sun.getUTCDate() + 6);
+        const dd = n => String(n.getUTCDate()).padStart(2, '0');
+        const mm = n => String(n.getUTCMonth() + 1).padStart(2, '0');
+        if (mon.getUTCMonth() === sun.getUTCMonth() && mon.getUTCFullYear() === sun.getUTCFullYear())
+            return dd(mon) + '–' + dd(sun) + '/' + mm(sun) + '/' + sun.getUTCFullYear();
+        if (mon.getUTCFullYear() === sun.getUTCFullYear())
+            return dd(mon) + '/' + mm(mon) + ' – ' + dd(sun) + '/' + mm(sun) + '/' + sun.getUTCFullYear();
+        return dd(mon) + '/' + mm(mon) + '/' + mon.getUTCFullYear() + ' – ' + dd(sun) + '/' + mm(sun) + '/' + sun.getUTCFullYear();
+    }
+
+    // ── Navigation Dashboard / Historique ─────────────────────────
+    function setMpView(v) {
+        mpView = (v === 'hist') ? 'hist' : 'dash';
+        const dash = document.getElementById('mp-view-dash');
+        const hist = document.getElementById('mp-view-hist');
+        if (dash) dash.style.display = mpView === 'dash' ? '' : 'none';
+        if (hist) hist.style.display = mpView === 'hist' ? '' : 'none';
+        const bd = document.getElementById('mp-subtab-dash'), bh = document.getElementById('mp-subtab-hist');
+        if (bd) bd.classList.toggle('active', mpView === 'dash');
+        if (bh) bh.classList.toggle('active', mpView === 'hist');
+        if (mpView === 'dash') {
+            renderMacroNotes();
+        } else {
+            mpHistWeek = null;
+            document.getElementById('mp-hist-landing').style.display = '';
+            document.getElementById('mp-hist-week').style.display = 'none';
+            renderHistoryLanding();
+        }
+    }
+    function openHistWeek(key) {
+        mpHistWeek = key; mpWeekTagFilter = '';
+        document.getElementById('mp-hist-landing').style.display = 'none';
+        document.getElementById('mp-hist-week').style.display = '';
+        const wf = document.getElementById('mp-week-filter'); if (wf) wf.value = '';
+        renderHistoryWeek();
+    }
+    // Re-render la vue active (appelé quand les données changent)
+    function refreshMacroViews() {
+        if (mpView === 'hist') {
+            if (mpHistWeek) renderHistoryWeek(); else renderHistoryLanding();
+        } else {
+            renderMacroNotes();
+        }
+    }
+
+    // ── Tags ──────────────────────────────────────────────────────
+    function addTagChip(val) {
+        val = (val || '').trim().replace(/^#+/, '').replace(/\s+/g, ' ');
+        if (!val) return;
+        if (currentMacroTags.some(t => t.toLowerCase() === val.toLowerCase())) return;
+        currentMacroTags.push(val);
+        renderTagChipsInput();
+    }
+    function removeTagChip(i) {
+        currentMacroTags.splice(i, 1);
+        renderTagChipsInput();
+    }
+    function renderTagChipsInput() {
+        const c = document.getElementById('mp-tags-chips');
+        if (!c) return;
+        c.innerHTML = currentMacroTags.map((t, i) =>
+            '<span class="mp-tag">#' + t.replace(/</g, '&lt;') + '<button type="button" onclick="removeTagChip(' + i + ')" title="Retirer">✕</button></span>'
+        ).join('');
+    }
+    function allMacroTags() {
+        const s = new Set();
+        allMacroNotes.forEach(n => (n.tags || []).forEach(t => { if (t) s.add(t); }));
+        return [...s].sort((a, b) => a.localeCompare(b, 'fr'));
+    }
+    function renderTagBar(containerId, active, onPick) {
+        const c = document.getElementById(containerId);
+        if (!c) return;
+        const tags = allMacroTags();
+        if (!tags.length) { c.innerHTML = ''; c.style.display = 'none'; return; }
+        c.style.display = '';
+        c.innerHTML = '';
+        const mk = (label, val, isOn) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'mp-tagchip' + (isOn ? ' active' : '');
+            b.textContent = label;
+            b.onclick = () => onPick(val);
+            return b;
+        };
+        c.appendChild(mk('Tous', '', !active));
+        tags.forEach(t => c.appendChild(mk('#' + t, t, active && active.toLowerCase() === t.toLowerCase())));
+    }
+    function matchNote(n, q, tag) {
+        if (tag && !((n.tags || []).some(t => t.toLowerCase() === tag.toLowerCase()))) return false;
+        if (q) {
+            const hay = ((n.event || '') + ' ' + (n.analysis || '') + ' ' + ((n.tags || []).join(' '))).toLowerCase();
+            if (!hay.includes(q)) return false;
+        }
+        return true;
+    }
+    function filterByTag(t) {
+        if (mpView === 'hist' && mpHistWeek) { mpWeekTagFilter = t; renderHistoryWeek(); }
+        else { if (mpView !== 'dash') setMpView('dash'); mpTagFilter = t; renderMacroNotes(); }
+    }
 
     const MAX_MACRO_IMAGES = 4;         // nombre max d'images par synthèse
     const MACRO_IMAGES_BUDGET = 900000; // ~0,9 Mo au total (un document Firestore est limité à 1 Mo)
@@ -4368,7 +4704,7 @@
                     return (a.date || '') < (b.date || '') ? 1 : -1;
                 return (b.createdAt || '').localeCompare(a.createdAt || '');
             });
-            renderMacroNotes();
+            refreshMacroViews();
         }, err => {
             // Erreur fréquente : règles Firestore non configurées (permission-denied).
             // On l'affiche DANS l'écran pour qu'il ne reste jamais vide.
@@ -4398,6 +4734,9 @@
             return;
         }
         const f = e.target;
+        // Prend en compte un tag tapé mais pas encore validé par Entrée
+        const pendingTag = document.getElementById('mp-tag-add');
+        if (pendingTag && pendingTag.value.trim()) { addTagChip(pendingTag.value); pendingTag.value = ''; }
         const note = {
             date: f.date.value,
             event: f.event.value.trim(),
@@ -4405,6 +4744,7 @@
             actual: f.actual.value.trim(),
             previous: f.previous.value.trim(),
             subs: getMacroSubs(),
+            tags: currentMacroTags.slice(),
             images: currentMacroImages.slice(),
             image: currentMacroImages[0] || '', // rétro-compatibilité (anciennes versions)
             analysis: f.analysis.value.trim()
@@ -4455,7 +4795,12 @@
             ? n.images.slice()
             : (n.image ? [n.image] : []);
         renderMacroImagePreviews();
+        // Tags existants
+        currentMacroTags = Array.isArray(n.tags) ? n.tags.slice() : [];
+        renderTagChipsInput();
+        const ti = document.getElementById('mp-tag-add'); if (ti) ti.value = '';
         editingMacroId = fid;
+        setMpView('dash'); // l'édition se fait dans la vue Semaine en cours
         setMacroEditUI(true);
         f.scrollIntoView({ behavior: 'smooth', block: 'start' });
         f.event.focus();
@@ -4468,6 +4813,9 @@
         if (subs)
             subs.innerHTML = '';
         clearMacroImage();
+        currentMacroTags = [];
+        renderTagChipsInput();
+        const ti = document.getElementById('mp-tag-add'); if (ti) ti.value = '';
         setMacroEditUI(false);
     }
 
@@ -4516,28 +4864,179 @@
         });
     }
 
+    // Construit la carte <li> d'une synthèse (réutilisée : semaine en cours + historique)
+    function buildMacroCard(n) {
+        const li = document.createElement('li');
+        li.className = 'mp-card';
+
+        const head = document.createElement('div');
+        head.className = 'mp-card-head';
+
+        const time = document.createElement('time');
+        time.className = 'mp-date';
+        time.dateTime = n.date || '';
+        time.textContent = fmtMacroDate(n.date);
+
+        const evt = document.createElement('h3');
+        evt.className = 'mp-evt';
+        evt.textContent = n.event || 'Sans titre';
+
+        head.append(time, evt);
+
+        if (isMacroEditor()) {
+            const actions = document.createElement('div');
+            actions.className = 'mp-actions';
+            const edit = document.createElement('button');
+            edit.className = 'mp-edit';
+            edit.type = 'button';
+            edit.textContent = '✏️ Éditer';
+            edit.onclick = () => editMacroNote(n.firestoreId);
+            const del = document.createElement('button');
+            del.className = 'mp-del';
+            del.type = 'button';
+            del.textContent = '🗑 Supprimer';
+            del.onclick = () => deleteMacroNote(n.firestoreId);
+            actions.append(edit, del);
+            head.appendChild(actions);
+        }
+        li.appendChild(head);
+
+        if (n.authorEmail) {
+            const who = document.createElement('div');
+            who.className = 'mp-author';
+            who.textContent = '✍️ ' + n.authorEmail.split('@')[0];
+            li.appendChild(who);
+        }
+
+        if (n.consensus || n.actual || n.previous) {
+            const figs = document.createElement('div');
+            figs.className = 'mp-figs';
+            if (n.consensus) {
+                const c = document.createElement('span');
+                c.className = 'mp-fig';
+                c.innerHTML = 'Consensus : <b></b>';
+                c.querySelector('b').textContent = n.consensus;
+                figs.appendChild(c);
+            }
+            if (n.actual) {
+                const a = document.createElement('span');
+                a.className = 'mp-fig';
+                a.innerHTML = 'Réel : <b></b>';
+                a.querySelector('b').textContent = n.actual;
+                const cv = macroNum(n.consensus), av = macroNum(n.actual);
+                if (!isNaN(cv) && !isNaN(av) && av !== cv) {
+                    const up = av > cv;
+                    a.classList.add(up ? 'mp-up' : 'mp-down');
+                    const arr = document.createElement('span');
+                    arr.className = 'mp-arrow';
+                    arr.textContent = up ? '▲' : '▼';
+                    a.querySelector('b').appendChild(arr);
+                }
+                figs.appendChild(a);
+            }
+            if (n.previous) {
+                const pv = document.createElement('span');
+                pv.className = 'mp-fig';
+                pv.innerHTML = 'Précédent : <b></b>';
+                pv.querySelector('b').textContent = n.previous;
+                figs.appendChild(pv);
+            }
+            li.appendChild(figs);
+        }
+
+        if (Array.isArray(n.subs) && n.subs.length) {
+            const tbl = document.createElement('table');
+            tbl.className = 'mp-sub-table';
+            tbl.innerHTML = '<thead><tr><th>Sous-composante</th><th>Cons.</th><th>Réel</th><th>Préc.</th></tr></thead>';
+            const tb = document.createElement('tbody');
+            n.subs.forEach(s => {
+                const tr = document.createElement('tr');
+                [s.name, s.consensus, s.actual, s.previous].forEach((val, i) => {
+                    const td = document.createElement('td');
+                    if (i === 0) {
+                        td.textContent = val || '—';
+                    } else {
+                        const b = document.createElement('b');
+                        b.textContent = val || '—';
+                        if (i === 2) {
+                            const cv = macroNum(s.consensus), av = macroNum(s.actual);
+                            if (!isNaN(cv) && !isNaN(av) && av !== cv)
+                                b.style.color = av > cv ? 'var(--fx-blue)' : 'var(--fx-red)';
+                        }
+                        td.appendChild(b);
+                    }
+                    tr.appendChild(td);
+                });
+                tb.appendChild(tr);
+            });
+            tbl.appendChild(tb);
+            li.appendChild(tbl);
+        }
+
+        const p = document.createElement('p');
+        p.className = 'mp-analysis';
+        p.textContent = n.analysis || '';
+        li.appendChild(p);
+
+        const noteImgs = Array.isArray(n.images) && n.images.length
+            ? n.images
+            : (n.image ? [n.image] : []);
+        if (noteImgs.length) {
+            const imgRow = document.createElement('div');
+            imgRow.className = 'mp-card-imgs';
+            noteImgs.forEach((src, i) => {
+                const im = document.createElement('img');
+                im.className = 'mp-card-img';
+                im.src = src;
+                im.alt = 'Illustration ' + (i + 1) + ' — ' + (n.event || '');
+                im.loading = 'lazy';
+                im.onclick = () => openImgLightbox(src);
+                imgRow.appendChild(im);
+            });
+            li.appendChild(imgRow);
+        }
+
+        // Tags (cliquables → filtre)
+        if (Array.isArray(n.tags) && n.tags.length) {
+            const tw = document.createElement('div');
+            tw.className = 'mp-card-tags';
+            n.tags.forEach(t => {
+                if (!t) return;
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'mp-card-tag';
+                b.textContent = '#' + t;
+                b.onclick = () => filterByTag(t);
+                tw.appendChild(b);
+            });
+            li.appendChild(tw);
+        }
+        return li;
+    }
+
+    // Vue « Semaine en cours » : uniquement les synthèses de la semaine courante
     function renderMacroNotes() {
         const list = document.getElementById('mp-list');
         const empty = document.getElementById('mp-empty');
         const count = document.getElementById('mp-count');
-        if (!list)
-            return;
+        if (!list) return;
+        renderTagBar('mp-tagbar', mpTagFilter, t => { mpTagFilter = (mpTagFilter === t ? '' : t); renderMacroNotes(); });
+        const wk = currentWeekKey();
+        const range = document.getElementById('mp-week-range');
+        if (range) range.textContent = '· ' + weekLabel(wk);
+        const weekNotes = allMacroNotes.filter(n => weekStartKey(n.date) === wk);
         const q = (document.getElementById('mp-filter').value || '').toLowerCase().trim();
-        const notes = q
-            ? allMacroNotes.filter(n =>
-                (n.event || '').toLowerCase().includes(q) ||
-                (n.analysis || '').toLowerCase().includes(q))
-            : allMacroNotes;
+        const notes = weekNotes.filter(n => matchNote(n, q, mpTagFilter));
 
         list.innerHTML = '';
-        count.textContent = allMacroNotes.length
-            ? (q ? notes.length + ' / ' + allMacroNotes.length : allMacroNotes.length) +
-                ' synthèse' + (allMacroNotes.length > 1 ? 's' : '')
+        count.textContent = weekNotes.length
+            ? ((q || mpTagFilter) ? notes.length + ' / ' + weekNotes.length : weekNotes.length) +
+                ' synthèse' + (weekNotes.length > 1 ? 's' : '')
             : '';
 
-        if (!allMacroNotes.length) {
+        if (!weekNotes.length) {
             empty.style.display = '';
-            empty.querySelector('.fx-empty-title').textContent = 'Aucune synthèse pour l\'instant';
+            empty.querySelector('.fx-empty-title').textContent = 'Aucune synthèse cette semaine';
             return;
         }
         if (!notes.length) {
@@ -4546,153 +5045,47 @@
             return;
         }
         empty.style.display = 'none';
+        notes.forEach(n => list.appendChild(buildMacroCard(n)));
+    }
 
-        notes.forEach(n => {
-            const li = document.createElement('li');
-            li.className = 'mp-card';
-
-            const head = document.createElement('div');
-            head.className = 'mp-card-head';
-
-            const time = document.createElement('time');
-            time.className = 'mp-date';
-            time.dateTime = n.date || '';
-            time.textContent = fmtMacroDate(n.date);
-
-            const evt = document.createElement('h3');
-            evt.className = 'mp-evt';
-            evt.textContent = n.event || 'Sans titre';
-
-            head.append(time, evt);
-
-            // Boutons Éditer/Supprimer : rédacteurs autorisés uniquement
-            if (isMacroEditor()) {
-                const actions = document.createElement('div');
-                actions.className = 'mp-actions';
-
-                const edit = document.createElement('button');
-                edit.className = 'mp-edit';
-                edit.type = 'button';
-                edit.textContent = '✏️ Éditer';
-                edit.setAttribute('aria-label', 'Éditer la synthèse ' + (n.event || ''));
-                edit.onclick = () => editMacroNote(n.firestoreId);
-
-                const del = document.createElement('button');
-                del.className = 'mp-del';
-                del.type = 'button';
-                del.textContent = '🗑 Supprimer';
-                del.setAttribute('aria-label', 'Supprimer la synthèse ' + (n.event || ''));
-                del.onclick = () => deleteMacroNote(n.firestoreId);
-
-                actions.append(edit, del);
-                head.appendChild(actions);
-            }
-            li.appendChild(head);
-
-            // Auteur (flux partagé)
-            if (n.authorEmail) {
-                const who = document.createElement('div');
-                who.className = 'mp-author';
-                who.textContent = '✍️ ' + n.authorEmail.split('@')[0];
-                li.appendChild(who);
-            }
-
-            if (n.consensus || n.actual || n.previous) {
-                const figs = document.createElement('div');
-                figs.className = 'mp-figs';
-                if (n.consensus) {
-                    const c = document.createElement('span');
-                    c.className = 'mp-fig';
-                    c.innerHTML = 'Consensus : <b></b>';
-                    c.querySelector('b').textContent = n.consensus;
-                    figs.appendChild(c);
-                }
-                if (n.actual) {
-                    const a = document.createElement('span');
-                    a.className = 'mp-fig';
-                    a.innerHTML = 'Réel : <b></b>';
-                    a.querySelector('b').textContent = n.actual;
-                    // Coloration vs consensus : ↑ vert si au-dessus, ↓ rouge si en-dessous
-                    const cv = macroNum(n.consensus),
-                        av = macroNum(n.actual);
-                    if (!isNaN(cv) && !isNaN(av) && av !== cv) {
-                        const up = av > cv;
-                        a.classList.add(up ? 'mp-up' : 'mp-down');
-                        const arr = document.createElement('span');
-                        arr.className = 'mp-arrow';
-                        arr.textContent = up ? '▲' : '▼';
-                        arr.setAttribute('aria-label', up ? 'au-dessus du consensus' : 'en-dessous du consensus');
-                        a.querySelector('b').appendChild(arr);
-                    }
-                    figs.appendChild(a);
-                }
-                if (n.previous) {
-                    const pv = document.createElement('span');
-                    pv.className = 'mp-fig';
-                    pv.innerHTML = 'Précédent : <b></b>';
-                    pv.querySelector('b').textContent = n.previous;
-                    figs.appendChild(pv);
-                }
-                li.appendChild(figs);
-            }
-
-            // Tableau des sous-composantes
-            if (Array.isArray(n.subs) && n.subs.length) {
-                const tbl = document.createElement('table');
-                tbl.className = 'mp-sub-table';
-                tbl.innerHTML = '<thead><tr><th>Sous-composante</th><th>Cons.</th><th>Réel</th><th>Préc.</th></tr></thead>';
-                const tb = document.createElement('tbody');
-                n.subs.forEach(s => {
-                    const tr = document.createElement('tr');
-                    [s.name, s.consensus, s.actual, s.previous].forEach((val, i) => {
-                        const td = document.createElement('td');
-                        if (i === 0) {
-                            td.textContent = val || '—';
-                        } else {
-                            const b = document.createElement('b');
-                            b.textContent = val || '—';
-                            // Coloration réel vs consensus
-                            if (i === 2) {
-                                const cv = macroNum(s.consensus), av = macroNum(s.actual);
-                                if (!isNaN(cv) && !isNaN(av) && av !== cv)
-                                    b.style.color = av > cv ? 'var(--fx-blue)' : 'var(--fx-red)';
-                            }
-                            td.appendChild(b);
-                        }
-                        tr.appendChild(td);
-                    });
-                    tb.appendChild(tr);
-                });
-                tbl.appendChild(tb);
-                li.appendChild(tbl);
-            }
-
-            const p = document.createElement('p');
-            p.className = 'mp-analysis';
-            p.textContent = n.analysis || '';
-            li.appendChild(p);
-
-            // Images éventuelles (rétro-compatible avec l'ancien champ unique)
-            const noteImgs = Array.isArray(n.images) && n.images.length
-                ? n.images
-                : (n.image ? [n.image] : []);
-            if (noteImgs.length) {
-                const imgRow = document.createElement('div');
-                imgRow.className = 'mp-card-imgs';
-                noteImgs.forEach((src, i) => {
-                    const im = document.createElement('img');
-                    im.className = 'mp-card-img';
-                    im.src = src;
-                    im.alt = 'Illustration ' + (i + 1) + ' — ' + (n.event || '');
-                    im.loading = 'lazy';
-                    im.onclick = () => openImgLightbox(src);
-                    imgRow.appendChild(im);
-                });
-                li.appendChild(imgRow);
-            }
-
-            list.appendChild(li);
+    // Vue « Historique » — accueil : liste des semaines passées
+    function renderHistoryLanding() {
+        const wrap = document.getElementById('mp-weeks');
+        if (!wrap) return;
+        const cur = currentWeekKey();
+        const byWeek = {};
+        allMacroNotes.forEach(n => {
+            const k = weekStartKey(n.date);
+            if (!k || k === cur) return; // la semaine courante reste dans le dashboard
+            (byWeek[k] = byWeek[k] || []).push(n);
         });
+        const keys = Object.keys(byWeek).sort((a, b) => a < b ? 1 : -1); // décroissant
+        if (!keys.length) {
+            wrap.innerHTML = '<div class="fx-empty"><div class="fx-empty-icon">🗓️</div><div class="fx-empty-title">Aucune semaine archivée</div><div style="font-size:12px;color:var(--fx-muted)">Les synthèses des semaines passées apparaîtront ici automatiquement chaque lundi.</div></div>';
+            return;
+        }
+        wrap.innerHTML = keys.map(k => {
+            const cnt = byWeek[k].length;
+            return '<button class="mp-week-card" type="button" onclick="openHistWeek(\'' + k + '\')">' +
+                '<span class="mp-week-range">🗓️ ' + weekLabel(k) + '</span>' +
+                '<span class="mp-week-cnt">' + cnt + ' synthèse' + (cnt > 1 ? 's' : '') + '</span>' +
+                '</button>';
+        }).join('');
+    }
+
+    // Vue « Historique » — détail d'une semaine
+    function renderHistoryWeek() {
+        const list = document.getElementById('mp-week-list');
+        if (!list || !mpHistWeek) return;
+        document.getElementById('mp-week-title').textContent = '🗓️ Semaine du ' + weekLabel(mpHistWeek);
+        renderTagBar('mp-week-tagbar', mpWeekTagFilter, t => { mpWeekTagFilter = (mpWeekTagFilter === t ? '' : t); renderHistoryWeek(); });
+        const weekNotes = allMacroNotes.filter(n => weekStartKey(n.date) === mpHistWeek);
+        const q = (document.getElementById('mp-week-filter').value || '').toLowerCase().trim();
+        const notes = weekNotes.filter(n => matchNote(n, q, mpWeekTagFilter));
+        const cnt = document.getElementById('mp-week-count');
+        if (cnt) cnt.textContent = ((q || mpWeekTagFilter) ? notes.length + ' / ' + weekNotes.length : weekNotes.length) + ' synthèse' + (weekNotes.length > 1 ? 's' : '');
+        list.innerHTML = '';
+        notes.forEach(n => list.appendChild(buildMacroCard(n)));
     }
 
     // ── UTILS ─────────────────────────────────────────────────────

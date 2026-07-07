@@ -100,7 +100,18 @@
     :root[data-accent="turquoise"] { --acc:#0d9488; --acc-l:#2dd4bf; --acc-d:#0f766e; --acc-rgb:13, 148, 136; }
     :root[data-accent="blue"]      { --acc:#2563eb; --acc-l:#60a5fa; --acc-d:#1d4ed8; --acc-rgb:37, 99, 235; }
 
-    /* ── MODE OLED (noir pur) — actif uniquement en mode sombre ── */
+    /* ── FOND : NEUTRE (défaut) / AMBIANCE (teinté accent) / OLED (noir pur) ──
+       Actifs uniquement en mode sombre. */
+    body.ambiance:not(.light-mode) {
+        --fx-bg:    color-mix(in srgb, #060608 92%, var(--acc) 8%);
+        --fx-bg2:   color-mix(in srgb, #0b0b0e 90%, var(--acc) 10%);
+        --fx-card:  color-mix(in srgb, #0f0f13 87%, var(--acc) 13%);
+        --fx-card2: color-mix(in srgb, #15151b 84%, var(--acc) 16%);
+        --h-bg:     color-mix(in srgb, #060608 93%, var(--acc) 7%);
+        --h-bg2:    color-mix(in srgb, #0e0e11 90%, var(--acc) 10%);
+        --h-bg3:    color-mix(in srgb, #141418 88%, var(--acc) 12%);
+        --h-bg4:    color-mix(in srgb, #1a1a20 86%, var(--acc) 14%);
+    }
     body.oled:not(.light-mode) {
         --fx-bg: #000000;
         --fx-bg2: #050505;
@@ -2723,6 +2734,32 @@
         box-shadow: 0 0 0 2px var(--fx-bg), 0 0 0 4px var(--sw)
     }
 
+    .surf-row {
+        display: flex;
+        gap: 6px;
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bd);
+        border-radius: 9px;
+        padding: 4px
+    }
+    .surf-btn {
+        flex: 1;
+        padding: 8px 6px;
+        border: none;
+        background: none;
+        color: var(--fx-muted2);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s
+    }
+    .surf-btn.active {
+        background: var(--fx-vd);
+        color: var(--fx-vl)
+    }
+
     #loadingScreen {
         position: fixed;
         inset: 0;
@@ -3827,9 +3864,13 @@
             <div style="font-size:12px;font-weight:600;color:var(--fx-text);margin:20px 0 10px">Mode</div>
             <button class="btn-close-modal" onclick="toggleThemeGlobal()" style="width:auto;padding:9px 18px;margin:0">🌗 Basculer clair / sombre</button>
 
-            <div style="font-size:12px;font-weight:600;color:var(--fx-text);margin:20px 0 8px">Écran OLED</div>
-            <div style="font-size:11px;color:var(--fx-muted);margin-bottom:10px">Passe tous les fonds en noir pur (idéal pour les écrans OLED, économise la batterie). Actif seulement en mode sombre.</div>
-            <button class="btn-close-modal" id="oled-btn" onclick="toggleOled()" style="width:auto;padding:9px 18px;margin:0">🌑 Activer le noir pur (OLED)</button>
+            <div style="font-size:12px;font-weight:600;color:var(--fx-text);margin:20px 0 8px">Fond (mode sombre)</div>
+            <div style="font-size:11px;color:var(--fx-muted);margin-bottom:10px"><b>Ambiance</b> teinte les fonds selon la couleur choisie · <b>Noir pur</b> pour les écrans OLED.</div>
+            <div class="surf-row" id="surfRow">
+                <button class="surf-btn" data-surf="neutral" onclick="applySurface('neutral')">Neutre</button>
+                <button class="surf-btn" data-surf="ambiance" onclick="applySurface('ambiance')">🎨 Ambiance</button>
+                <button class="surf-btn" data-surf="oled" onclick="applySurface('oled')">🌑 Noir pur</button>
+            </div>
 
             <button class="btn-close-modal" onclick="closeSettings()" style="margin-top:18px">Fermer</button>
         </div>
@@ -3872,22 +3913,22 @@
         }
         // Accent de couleur sauvegardé (violet par défaut)
         applyAccent(localStorage.getItem('sphinx_accent') || 'violet');
-        // Mode OLED (noir pur) sauvegardé
-        applyOled(localStorage.getItem('sphinx_oled') === '1');
+        // Fond sombre : neutre / ambiance / oled (migration depuis l'ancien réglage OLED)
+        const savedSurf = localStorage.getItem('sphinx_surface')
+            || (localStorage.getItem('sphinx_oled') === '1' ? 'oled' : 'neutral');
+        applySurface(savedSurf);
     }
 
-    // ── MODE OLED (noir pur) ──────────────────────────────────────
-    function applyOled(on) {
-        document.body.classList.toggle('oled', !!on);
-        const b = document.getElementById('oled-btn');
-        if (b) b.textContent = on ? '🌑 Noir pur activé ✓' : '🌑 Activer le noir pur (OLED)';
-    }
-    function toggleOled() {
-        const on = !document.body.classList.contains('oled');
-        localStorage.setItem('sphinx_oled', on ? '1' : '0');
-        applyOled(on);
-        if (on && document.body.classList.contains('light-mode'))
-            showToast('Le noir pur s\'applique en mode sombre');
+    // ── FOND SOMBRE : neutre / ambiance (teinté accent) / oled (noir pur) ──
+    function applySurface(mode) {
+        if (['neutral', 'ambiance', 'oled'].indexOf(mode) < 0) mode = 'neutral';
+        document.body.classList.toggle('ambiance', mode === 'ambiance');
+        document.body.classList.toggle('oled', mode === 'oled');
+        localStorage.setItem('sphinx_surface', mode);
+        document.querySelectorAll('.surf-btn').forEach(b =>
+            b.classList.toggle('active', b.getAttribute('data-surf') === mode));
+        if (mode !== 'neutral' && document.body.classList.contains('light-mode'))
+            showToast('Cet effet s\'applique en mode sombre');
     }
 
     // ── PARAMÈTRES : couleur d'accent ─────────────────────────────

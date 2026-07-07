@@ -47,10 +47,10 @@
         --h-t2: #A0A0A0;
         --h-t3: #606060;
         --h-t4: #383838;
-        --fx-bg: #05050c;
-        --fx-bg2: #0a0a18;
-        --fx-card: #0e0e1f;
-        --fx-card2: #131327;
+        --fx-bg: #080808;
+        --fx-bg2: #111112;
+        --fx-card: #161617;
+        --fx-card2: #1d1d1f;
         --fx-bd: rgba(var(--acc-rgb), 0.18);
         --fx-bb: rgba(var(--acc-rgb), 0.4);
         --fx-violet: var(--acc);
@@ -99,6 +99,18 @@
     :root[data-accent="red"]       { --acc:#dc2626; --acc-l:#f87171; --acc-d:#b91c1c; --acc-rgb:220, 38, 38; }
     :root[data-accent="turquoise"] { --acc:#0d9488; --acc-l:#2dd4bf; --acc-d:#0f766e; --acc-rgb:13, 148, 136; }
     :root[data-accent="blue"]      { --acc:#2563eb; --acc-l:#60a5fa; --acc-d:#1d4ed8; --acc-rgb:37, 99, 235; }
+
+    /* ── MODE OLED (noir pur) — actif uniquement en mode sombre ── */
+    body.oled:not(.light-mode) {
+        --fx-bg: #000000;
+        --fx-bg2: #050505;
+        --fx-card: #0a0a0a;
+        --fx-card2: #121212;
+        --h-bg: #000000;
+        --h-bg2: #070707;
+        --h-bg3: #0d0d0d;
+        --h-bg4: #141414;
+    }
 
     html, body {
         min-height: 100vh;
@@ -3815,6 +3827,10 @@
             <div style="font-size:12px;font-weight:600;color:var(--fx-text);margin:20px 0 10px">Mode</div>
             <button class="btn-close-modal" onclick="toggleThemeGlobal()" style="width:auto;padding:9px 18px;margin:0">🌗 Basculer clair / sombre</button>
 
+            <div style="font-size:12px;font-weight:600;color:var(--fx-text);margin:20px 0 8px">Écran OLED</div>
+            <div style="font-size:11px;color:var(--fx-muted);margin-bottom:10px">Passe tous les fonds en noir pur (idéal pour les écrans OLED, économise la batterie). Actif seulement en mode sombre.</div>
+            <button class="btn-close-modal" id="oled-btn" onclick="toggleOled()" style="width:auto;padding:9px 18px;margin:0">🌑 Activer le noir pur (OLED)</button>
+
             <button class="btn-close-modal" onclick="closeSettings()" style="margin-top:18px">Fermer</button>
         </div>
     </div>
@@ -3856,6 +3872,22 @@
         }
         // Accent de couleur sauvegardé (violet par défaut)
         applyAccent(localStorage.getItem('sphinx_accent') || 'violet');
+        // Mode OLED (noir pur) sauvegardé
+        applyOled(localStorage.getItem('sphinx_oled') === '1');
+    }
+
+    // ── MODE OLED (noir pur) ──────────────────────────────────────
+    function applyOled(on) {
+        document.body.classList.toggle('oled', !!on);
+        const b = document.getElementById('oled-btn');
+        if (b) b.textContent = on ? '🌑 Noir pur activé ✓' : '🌑 Activer le noir pur (OLED)';
+    }
+    function toggleOled() {
+        const on = !document.body.classList.contains('oled');
+        localStorage.setItem('sphinx_oled', on ? '1' : '0');
+        applyOled(on);
+        if (on && document.body.classList.contains('light-mode'))
+            showToast('Le noir pur s\'applique en mode sombre');
     }
 
     // ── PARAMÈTRES : couleur d'accent ─────────────────────────────

@@ -2853,6 +2853,57 @@
     .insight-box strong {
         color: var(--fx-text)
     }
+
+    /* ════════════════════════════════════════════════════════════
+       VERSION MOBILE — ne s'applique QUE sous 768px de large.
+       N'affecte en rien le rendu ordinateur.
+       ════════════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+        body { overflow-x: hidden; }
+
+        /* Conteneurs plus compacts */
+        .fx-content { padding: 16px 12px; }
+        .fx-header { padding: 12px 14px 0; }
+        .fx-header-top { gap: 8px; flex-wrap: wrap; }
+        .fx-header-title { font-size: 11px; letter-spacing: 0.03em; }
+        .fx-topbar, .topbar { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 6px; }
+
+        /* Onglets défilables horizontalement (Dashboard / Analyse / Trades…) */
+        .fx-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+        .fx-tabs::-webkit-scrollbar { height: 0; }
+        .fx-tab { white-space: nowrap; flex: 0 0 auto; }
+
+        /* Grilles multi-colonnes → 1 colonne */
+        .fx-fg { grid-template-columns: 1fr; }
+        .hub-grid { grid-template-columns: 1fr; }
+        .mp-grid { grid-template-columns: 1fr; }
+        .an-grid { grid-template-columns: 1fr; }
+        .fx-capital-grid { grid-template-columns: repeat(2, 1fr); }
+        .mp-weeks { grid-template-columns: 1fr; }
+
+        /* Daily FX : chat sous le contenu, hauteur raisonnable */
+        .mp-col-chat { position: static; }
+        .mp-chat { height: 62vh; min-height: 300px; max-height: 70vh; }
+
+        /* Tableaux & contenus larges : défilement interne plutôt que casser la page */
+        .fx-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .mp-sub-table { min-width: 360px; }
+        .analyse-table { min-width: 600px; }
+
+        /* Barre d'outils de l'éditeur : peut passer à la ligne */
+        .mp-rte-tb { flex-wrap: wrap; max-width: 92vw; }
+
+        /* Accueil (portail) */
+        .sa-hero { padding: 70px 16px 34px; }
+        .sa-section { padding: 40px 16px 60px; }
+        .sa-cta { padding: 80px 16px 70px; }
+        .hub-emblem { font-size: 46px; }
+    }
+    @media (max-width: 460px) {
+        .fx-capital-grid { grid-template-columns: 1fr; }
+        .fx-user-pill .fx-user-email { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .mp-subtab { font-size: 12px; padding: 8px 6px; }
+    }
     </style>
 </head>
 <body>

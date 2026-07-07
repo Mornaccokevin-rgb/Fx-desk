@@ -334,6 +334,36 @@ a{color:inherit;text-decoration:none}
 .rx-btns button{flex:1;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
 .rx-save{background:var(--accent);color:#fff}
 .rx-cancel{background:var(--panel3);color:var(--t2)}
+
+/* ═══ VERSION MOBILE — s'applique uniquement sous 768px, aucun impact desktop ═══ */
+@media (max-width:768px){
+  body{overflow-x:hidden}
+  .wrap{padding:14px 12px 60px}
+  /* Barre de commande : logo + actions sur une ligne, onglets défilables en dessous */
+  .cmdbar{flex-wrap:wrap;height:auto;gap:8px;padding:8px 12px}
+  .logo-sub{display:none}
+  .cmd-right{margin-left:auto;gap:10px}
+  .cmd-nav{order:3;width:100%;margin-left:0;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+  .cmd-nav::-webkit-scrollbar{height:0}
+  .cmd-tab{white-space:nowrap;flex:0 0 auto}
+  /* Grilles → 1 colonne */
+  .dash-grid,.sess-tab-grid{grid-template-columns:1fr}
+  .dash-side{position:static}
+  .ccy-grid{grid-template-columns:1fr 1fr}
+  .sess-cards{grid-template-columns:1fr}
+  .rate-grid,.cot-grid,.pm-grid{grid-template-columns:1fr}
+  /* Sessions : rail un peu plus court, chrono plus petit */
+  .sess-timer{font-size:32px}
+  .sec-hdr h2{font-size:11px}
+  /* Contenus larges : défilement interne */
+  .rate-bars,.sess-tl{overflow-x:auto}
+}
+@media (max-width:430px){
+  .ccy-grid{grid-template-columns:1fr}
+  .logo-txt{font-size:13px}
+  .cmd-tab{font-size:12px;padding:7px 10px}
+  .sess-timer{font-size:28px}
+}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>

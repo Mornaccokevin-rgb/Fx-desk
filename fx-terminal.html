@@ -493,7 +493,10 @@ a{color:inherit;text-decoration:none}
       <div class="sec-hdr-line"></div>
       <span class="badge-est" style="color:var(--amber)">Contrarian</span>
     </div>
-    <div class="mfb-wrap" style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;overflow:auto">
+    <!-- Rendu natif (alimenté par les données du widget) -->
+    <div class="cot-grid" id="mfb-native"><div class="empty-mini">Chargement du sentiment retail…</div></div>
+    <!-- Widget Myfxbook : présent mais caché (sert de source de données) -->
+    <div id="mfb-src" aria-hidden="true" style="position:absolute;left:-99999px;top:0;width:680px;opacity:0;pointer-events:none">
       <div style="width:100%;text-align:center">
         <script type="text/javascript" src="https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1"></script>
       </div>
@@ -1492,6 +1495,51 @@ async function fetchCOT(){
   }
 }
 
+/* ══ RETAIL — rendu natif à partir du widget Myfxbook (caché) ══ */
+function scrapeMyfxbook(){
+  const src=document.getElementById('mfb-src'), out=document.getElementById('mfb-native');
+  if(!src||!out) return false;
+  const rows=Array.from(src.querySelectorAll('tr'));
+  const seen={}, data=[];
+  rows.forEach(tr=>{
+    const txt=(tr.textContent||'').replace(/\s+/g,' ').trim();
+    const pm=txt.match(/\b([A-Z]{3}\/?[A-Z]{3})\b/);
+    if(!pm) return;
+    const pair=pm[1].replace('/','');
+    const pcts=(txt.match(/(\d+(?:\.\d+)?)\s*%/g)||[]).map(x=>parseFloat(x));
+    if(pcts.length<2) return;
+    // On ne garde qu'un couple de pourcentages qui somme ~100 (short + long)
+    let a=null,b=null;
+    for(let i=0;i<pcts.length-1;i++){ if(Math.abs(pcts[i]+pcts[i+1]-100)<=12){ a=pcts[i]; b=pcts[i+1]; break; } }
+    if(a===null){ if(Math.abs(pcts[0]+pcts[1]-100)<=20){ a=pcts[0]; b=pcts[1]; } else return; }
+    if(seen[pair]) return; seen[pair]=1;
+    data.push({pair, shortP:a, longP:b}); // hypothèse : short puis long (à confirmer)
+  });
+  if(!data.length) return false;
+  out.innerHTML=data.map(d=>{
+    const l=Math.round(d.longP), s=Math.round(d.shortP);
+    const bias=l>=55?'Net long':s>=55?'Net short':'Neutre';
+    const col=l>=55?'var(--buy)':s>=55?'var(--sell)':'var(--t2)';
+    return '<div class="cot-card"><div class="cot-top">💬 <b>'+d.pair+'</b><span class="cot-bias" style="color:'+col+'">'+bias+'</span></div>'
+      +'<div class="cot-bar"><span class="cot-l" style="width:'+l+'%">'+(l>=15?l+'%':'')+'</span><span class="cot-s" style="width:'+s+'%">'+(s>=15?s+'%':'')+'</span></div>'
+      +'<div class="cot-legend"><span style="color:var(--buy)">Longs '+l+'%</span><span style="color:var(--sell)">Shorts '+s+'%</span></div></div>';
+  }).join('');
+  return true;
+}
+function initMyfxbook(){
+  let tries=0;
+  const iv=setInterval(()=>{
+    tries++;
+    if(scrapeMyfxbook()||tries>25){
+      clearInterval(iv);
+      if(!document.querySelector('#mfb-native .cot-card')){
+        const out=document.getElementById('mfb-native');
+        if(out) out.innerHTML='<div class="empty-mini">Sentiment retail momentanément indisponible</div>';
+      }
+    }
+  },700);
+}
+
 function renderRateExpectations(){
   const grid=document.getElementById('rate-grid');
   grid.innerHTML=Object.entries(RATE_EXPECTATIONS).map(([code,r])=>{
@@ -1739,6 +1787,7 @@ function init(){
   initRateSync();
   fetchPredictions(); setInterval(fetchPredictions, 10*60*1000);
   fetchCOT();
+  initMyfxbook();
 }
 window.addEventListener('load',init);
 </script>

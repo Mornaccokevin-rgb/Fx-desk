@@ -100,18 +100,7 @@
     :root[data-accent="turquoise"] { --acc:#0d9488; --acc-l:#2dd4bf; --acc-d:#0f766e; --acc-rgb:13, 148, 136; }
     :root[data-accent="blue"]      { --acc:#2563eb; --acc-l:#60a5fa; --acc-d:#1d4ed8; --acc-rgb:37, 99, 235; }
 
-    /* ── FOND : NEUTRE (défaut) / AMBIANCE (teinté accent) / OLED (noir pur) ──
-       Actifs uniquement en mode sombre. */
-    body.ambiance:not(.light-mode) {
-        --fx-bg:    color-mix(in srgb, #060608 92%, var(--acc) 8%);
-        --fx-bg2:   color-mix(in srgb, #0b0b0e 90%, var(--acc) 10%);
-        --fx-card:  color-mix(in srgb, #0f0f13 87%, var(--acc) 13%);
-        --fx-card2: color-mix(in srgb, #15151b 84%, var(--acc) 16%);
-        --h-bg:     color-mix(in srgb, #060608 93%, var(--acc) 7%);
-        --h-bg2:    color-mix(in srgb, #0e0e11 90%, var(--acc) 10%);
-        --h-bg3:    color-mix(in srgb, #141418 88%, var(--acc) 12%);
-        --h-bg4:    color-mix(in srgb, #1a1a20 86%, var(--acc) 14%);
-    }
+    /* ── FOND : NEUTRE (défaut) / OLED (noir pur) — mode sombre uniquement ── */
     body.oled:not(.light-mode) {
         --fx-bg: #000000;
         --fx-bg2: #050505;
@@ -2760,6 +2749,10 @@
         color: var(--fx-vl)
     }
 
+    /* Taille de l'affichage (zoom global) */
+    body.zoom-lg { zoom: 1.12; }
+    body.zoom-xl { zoom: 1.25; }
+
     #loadingScreen {
         position: fixed;
         inset: 0;
@@ -3868,8 +3861,14 @@
             <div style="font-size:11px;color:var(--fx-muted);margin-bottom:10px"><b>Ambiance</b> teinte les fonds selon la couleur choisie · <b>Noir pur</b> pour les écrans OLED.</div>
             <div class="surf-row" id="surfRow">
                 <button class="surf-btn" data-surf="neutral" onclick="applySurface('neutral')">Neutre</button>
-                <button class="surf-btn" data-surf="ambiance" onclick="applySurface('ambiance')">🎨 Ambiance</button>
-                <button class="surf-btn" data-surf="oled" onclick="applySurface('oled')">🌑 Noir pur</button>
+                <button class="surf-btn" data-surf="oled" onclick="applySurface('oled')">🌑 Noir pur (OLED)</button>
+            </div>
+
+            <div style="font-size:12px;font-weight:600;color:var(--fx-text);margin:20px 0 8px">Taille de l'affichage</div>
+            <div class="surf-row" id="zoomRow">
+                <button class="surf-btn" data-zoom="normal" onclick="applyZoom('normal')">Normal</button>
+                <button class="surf-btn" data-zoom="lg" onclick="applyZoom('lg')">Grand</button>
+                <button class="surf-btn" data-zoom="xl" onclick="applyZoom('xl')">Très grand</button>
             </div>
 
             <button class="btn-close-modal" onclick="closeSettings()" style="margin-top:18px">Fermer</button>
@@ -3917,18 +3916,31 @@
         const savedSurf = localStorage.getItem('sphinx_surface')
             || (localStorage.getItem('sphinx_oled') === '1' ? 'oled' : 'neutral');
         applySurface(savedSurf);
+        // Taille d'affichage
+        applyZoom(localStorage.getItem('sphinx_zoom') || 'normal');
     }
 
-    // ── FOND SOMBRE : neutre / ambiance (teinté accent) / oled (noir pur) ──
+    // ── TAILLE DE L'AFFICHAGE (zoom global) ───────────────────────
+    function applyZoom(level) {
+        if (['normal', 'lg', 'xl'].indexOf(level) < 0) level = 'normal';
+        document.body.classList.remove('zoom-lg', 'zoom-xl');
+        if (level === 'lg') document.body.classList.add('zoom-lg');
+        else if (level === 'xl') document.body.classList.add('zoom-xl');
+        localStorage.setItem('sphinx_zoom', level);
+        document.querySelectorAll('#zoomRow .surf-btn').forEach(b =>
+            b.classList.toggle('active', b.getAttribute('data-zoom') === level));
+    }
+
+    // ── FOND SOMBRE : neutre / oled (noir pur) ──
     function applySurface(mode) {
-        if (['neutral', 'ambiance', 'oled'].indexOf(mode) < 0) mode = 'neutral';
-        document.body.classList.toggle('ambiance', mode === 'ambiance');
+        if (['neutral', 'oled'].indexOf(mode) < 0) mode = 'neutral'; // 'ambiance' (retiré) → neutre
+        document.body.classList.remove('ambiance');
         document.body.classList.toggle('oled', mode === 'oled');
         localStorage.setItem('sphinx_surface', mode);
         document.querySelectorAll('.surf-btn').forEach(b =>
             b.classList.toggle('active', b.getAttribute('data-surf') === mode));
-        if (mode !== 'neutral' && document.body.classList.contains('light-mode'))
-            showToast('Cet effet s\'applique en mode sombre');
+        if (mode === 'oled' && document.body.classList.contains('light-mode'))
+            showToast('Le noir pur s\'applique en mode sombre');
     }
 
     // ── PARAMÈTRES : couleur d'accent ─────────────────────────────
@@ -4555,6 +4567,18 @@
         tb.querySelectorAll('.rtb-clr').forEach(b => b.addEventListener('click', () => rteCmd('color', b.getAttribute('data-color'))));
         document.addEventListener('selectionchange', updateRteToolbar);
         window.addEventListener('scroll', () => { tb.classList.remove('show'); }, true);
+        // Collage : on retire les couleurs collées → le texte suit le thème (blanc/noir auto)
+        const ed = document.getElementById('mp-analysis');
+        if (ed) ed.addEventListener('paste', e => {
+            e.preventDefault();
+            const cd = e.clipboardData || window.clipboardData;
+            const html = cd ? cd.getData('text/html') : '';
+            const text = cd ? cd.getData('text/plain') : '';
+            let frag;
+            if (html) frag = sanitizeRich(html, true); // true = retire les couleurs
+            else frag = (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\r?\n/g, '<br>');
+            document.execCommand('insertHTML', false, frag);
+        });
     }
     function updateRteToolbar() {
         const tb = document.getElementById('mp-rte-toolbar');
@@ -4576,15 +4600,18 @@
         tb.style.top = top + 'px';
         tb.style.left = left + 'px';
     }
-    // Nettoyage HTML au rendu : n'autorise que des balises de mise en forme
-    function filterStyleRich(s) {
-        const allow = ['color', 'background-color', 'font-size', 'font-weight', 'font-style', 'text-decoration', 'text-decoration-line', 'text-align'];
+    // Nettoyage HTML : n'autorise que des balises de mise en forme.
+    // stripColor = true → retire les couleurs (utilisé au collage pour que le
+    // texte suive le thème automatiquement, blanc en sombre / noir en clair).
+    function filterStyleRich(s, stripColor) {
+        let allow = ['color', 'background-color', 'font-size', 'font-weight', 'font-style', 'text-decoration', 'text-decoration-line', 'text-align'];
+        if (stripColor) allow = allow.filter(p => p !== 'color' && p !== 'background-color');
         return (s || '').split(';').map(x => x.trim()).filter(x => {
             const p = (x.split(':')[0] || '').trim().toLowerCase();
             return allow.indexOf(p) > -1 && !/url\(|expression|javascript:/i.test(x);
         }).join('; ');
     }
-    function sanitizeRich(html) {
+    function sanitizeRich(html, stripColor) {
         const allowed = { B:1, STRONG:1, I:1, EM:1, U:1, S:1, STRIKE:1, BR:1, P:1, DIV:1, H1:1, H2:1, H3:1, SPAN:1, UL:1, OL:1, LI:1, FONT:1 };
         function clean(node) {
             let out = '';
@@ -4596,8 +4623,8 @@
                     if (tag === 'BR') { out += '<br>'; return; }
                     const inner = clean(ch);
                     if (allowed[tag]) {
-                        let style = (ch.getAttribute && ch.getAttribute('style')) ? filterStyleRich(ch.getAttribute('style')) : '';
-                        if (tag === 'FONT' && ch.getAttribute && ch.getAttribute('color'))
+                        let style = (ch.getAttribute && ch.getAttribute('style')) ? filterStyleRich(ch.getAttribute('style'), stripColor) : '';
+                        if (!stripColor && tag === 'FONT' && ch.getAttribute && ch.getAttribute('color'))
                             style = ('color:' + ch.getAttribute('color') + ';' + style);
                         const t = (tag === 'FONT') ? 'span' : tag.toLowerCase();
                         out += '<' + t + (style ? ' style="' + style.replace(/"/g, '') + '"' : '') + '>' + inner + '</' + t + '>';

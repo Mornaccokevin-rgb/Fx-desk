@@ -365,6 +365,12 @@ a{color:inherit;text-decoration:none}
   .sess-timer{font-size:28px}
 }
 
+/* ─── ATTENTES DE TAUX : coller-pour-MAJ ─── */
+.rate-paste{background:var(--panel);border:1px dashed var(--bd2);border-radius:12px;padding:14px;margin-bottom:16px}
+.rate-paste textarea{width:100%;min-height:120px;background:var(--panel2);border:1px solid var(--bd);border-radius:8px;color:var(--t);padding:10px 12px;font-family:var(--mono);font-size:12px;line-height:1.5;resize:vertical}
+.rate-bps{font-size:11px;color:var(--t3);margin-top:9px;font-family:var(--mono)}
+.rate-bps b{color:var(--t2)}
+
 /* ─── ANALYSE IA (Gemini) ─── */
 .ai-brief-btn{background:var(--accent);border:none;color:#fff;border-radius:20px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--sans);white-space:nowrap}
 .ai-brief-btn:hover{filter:brightness(1.1)}
@@ -510,7 +516,19 @@ a{color:inherit;text-decoration:none}
       <div class="sec-hdr-line"></div>
       <span class="badge-est" id="rate-updated">EST · à actualiser</span>
     </div>
-    <div class="note-banner"><i class="ti ti-info-circle"></i><div>La carte <b>Fed</b> est alimentée en direct par les marchés de prédiction (Polymarket). Les autres banques centrales sont maintenues à la main par les rédacteurs. Clique une carte pour le détail des probabilités.</div></div>
+    <div class="note-banner"><i class="ti ti-info-circle"></i><div>Colle ton bloc quotidien ci-dessous pour tout mettre à jour d'un coup. Tu peux aussi cliquer une carte pour le détail, ou le crayon ✏️ pour l'éditer à la main.</div></div>
+    <!-- Coller-pour-mettre-à-jour (rédacteurs) -->
+    <div class="rate-paste" id="rate-paste" style="display:none">
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">📋 Colle ton bloc « bps + probabilité next meeting » (RBNZ, ECB, BoE, Fed, BoJ, BoC, RBA, SNB) :</div>
+      <textarea id="rate-paste-input" placeholder="RBNZ: 52 bps (67% probability of rate hike at the next meeting)
+ECB: 42 bps (86% probability of no change at the next meeting)
+Fed: 26 bps (90% probability of no change at the next meeting)
+…"></textarea>
+      <div style="display:flex;gap:10px;margin-top:8px;align-items:center;flex-wrap:wrap">
+        <button class="ai-brief-btn" onclick="applyRatesPaste()">↻ Mettre à jour depuis le texte</button>
+        <span id="rate-paste-status" style="font-size:11px;color:var(--t3)"></span>
+      </div>
+    </div>
     <div class="rate-grid" id="rate-grid"></div>
   </div>
 
@@ -1332,9 +1350,10 @@ function initRateSync(){
       if(doc.exists){
         const data=doc.data()||{};
         rateMeta.updatedAt=data.updatedAt||null; rateMeta.updatedBy=data.updatedBy||'';
+        if(data.manual) configManual=true; // attentes collées → priment sur le Fed auto
         const banks=data.banks||{};
         Object.keys(banks).forEach(code=>{
-          if(code==='USD'&&fedLive) return; // le Fed live (Polymarket) prime sur le manuel
+          if(code==='USD'&&fedLive&&!configManual) return; // sinon le Fed live (Polymarket) prime
           if(RATE_EXPECTATIONS[code]) Object.assign(RATE_EXPECTATIONS[code],banks[code]);
         });
         renderRateExpectations(); updateRateBadge();
@@ -1414,6 +1433,7 @@ function openRateDetail(code){
 
 /* ══ MARCHÉS DE PRÉDICTION (Polymarket) + Fed auto ══ */
 let fedLive=false;
+let configManual=false; // vrai si les attentes ont été mises à jour par collage (prime sur le Fed auto)
 const PM_GAMMA='https://gamma-api.polymarket.com';
 function pmOutRow(lbl,pct,col){
   return `<div class="pm-out"><div class="pm-out-top"><span class="pm-lbl">${lbl}</span><span class="pm-pct">${pct}%</span></div><div class="pm-bar"><span style="width:${Math.max(0,Math.min(100,pct))}%;background:${col||'var(--accent)'}"></span></div></div>`;
@@ -1434,6 +1454,7 @@ function parseFedEvent(ev){
 }
 function applyFedToRates(fed){
   if(!fed||!RATE_EXPECTATIONS.USD) return;
+  if(configManual) return; // si tu as collé tes attentes, elles priment sur le Fed auto
   RATE_EXPECTATIONS.USD.hike=fed.hike; RATE_EXPECTATIONS.USD.hold=fed.hold; RATE_EXPECTATIONS.USD.cut=fed.cut;
   if(fed.meeting) RATE_EXPECTATIONS.USD.meeting=fmtPmDate(fed.meeting);
   fedLive=true; renderRateExpectations();
@@ -1530,6 +1551,7 @@ async function fetchCOT(){
 
 function renderRateExpectations(){
   const grid=document.getElementById('rate-grid');
+  const pasteBox=document.getElementById('rate-paste'); if(pasteBox) pasteBox.style.display=mpIsEditor()?'':'none';
   grid.innerHTML=Object.entries(RATE_EXPECTATIONS).map(([code,r])=>{
     const seg=(cls,v,lbl)=>v>0?`<div class="rate-seg ${cls}" style="width:${v}%" title="${lbl} ${v}%">${v>=12?v+'%':''}</div>`:'';
     return `<div class="rate-card" onclick="openRateDetail('${code}')">
@@ -1549,8 +1571,51 @@ function renderRateExpectations(){
         <span><i style="background:var(--amber)"></i>Statu quo ${r.hold}%</span>
         <span><i style="background:var(--sell)"></i>Baisse ${r.cut}%</span>
       </div>
+      ${(r.bpsYE!==undefined&&r.bpsYE!==null)?`<div class="rate-bps">📅 Marché : <b>${r.bpsYE>=0?'+':''}${r.bpsYE} bps</b> attendus d'ici fin d'année</div>`:''}
     </div>`;
   }).join('');
+}
+
+/* ══ Coller-pour-MAJ des attentes de taux (parser déterministe, sans IA) ══ */
+const BANK2CCY={RBNZ:'NZD',ECB:'EUR',BOE:'GBP',FED:'USD',BOJ:'JPY',BOC:'CAD',RBA:'AUD',SNB:'CHF'};
+function parseRatesPaste(text){
+  const out={};
+  (text||'').split(/\r?\n/).forEach(line=>{
+    const bm=line.match(/\b(RBNZ|ECB|BoE|Fed|BoJ|BoC|RBA|SNB)\b/i);
+    if(!bm) return;
+    const code=BANK2CCY[bm[1].toUpperCase()]; if(!code) return;
+    const bpsM=line.match(/(-?\d+(?:\.\d+)?)\s*bps/i);
+    const probM=line.match(/(\d+(?:\.\d+)?)\s*%\s*(?:probability|proba|chance)[^%]*?(rate\s*hike|no\s*change|rate\s*cut|hike|cut|hold|increase|decrease|unchanged)/i);
+    const bpsYE=bpsM?Math.round(parseFloat(bpsM[1])):null;
+    let hike=0,hold=0,cut=0;
+    if(probM){
+      const prob=Math.round(parseFloat(probM[1]));
+      const d=probM[2].toLowerCase();
+      const rest=Math.max(0,100-prob);
+      if(/hike|increase/.test(d)){ hike=prob; hold=rest; }
+      else if(/cut|decrease/.test(d)){ cut=prob; hold=rest; }
+      else { hold=prob; if(bpsYE>0) hike=rest; else if(bpsYE<0) cut=rest; else hold=100; }
+    }
+    out[code]={hike,hold,cut}; if(bpsYE!==null) out[code].bpsYE=bpsYE;
+  });
+  return out;
+}
+async function applyRatesPaste(){
+  if(!mpIsEditor()){toast('Réservé aux rédacteurs');return;}
+  const inp=document.getElementById('rate-paste-input'), st=document.getElementById('rate-paste-status');
+  const parsed=parseRatesPaste(inp?inp.value:'');
+  const codes=Object.keys(parsed);
+  if(!codes.length){ if(st){st.textContent='Aucune banque reconnue — vérifie le format.';st.style.color='var(--sell)';} return; }
+  configManual=true;
+  codes.forEach(code=>{ if(RATE_EXPECTATIONS[code]) Object.assign(RATE_EXPECTATIONS[code],parsed[code]); });
+  renderRateExpectations();
+  if(!fxDb){ if(st){st.textContent=codes.length+' banque(s) mises à jour (local — non connecté pour partager).';st.style.color='var(--amber)';} return; }
+  try{
+    const banks={}; codes.forEach(c=>banks[c]=parsed[c]);
+    await fxDb.collection('config').doc('rateExpectations').set({ banks:banks, manual:true, updatedAt:new Date().toISOString(), updatedBy:(fxAuthUser&&fxAuthUser.email)||'' },{merge:true});
+    rateMeta.updatedAt=new Date().toISOString(); updateRateBadge();
+    if(st){st.textContent='✅ '+codes.length+' banques mises à jour et partagées à l\'alliance.';st.style.color='var(--buy)';}
+  }catch(e){ if(st){st.textContent='Erreur : '+e.message;st.style.color='var(--sell)';} }
 }
 
 /* ══════════════════════════════════════════════════════════════

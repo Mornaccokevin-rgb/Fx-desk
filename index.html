@@ -1903,6 +1903,55 @@
         padding: 0;
         margin-bottom: 14px
     }
+    /* Biais par devise (IA) */
+    .mp-bias {
+        margin-top: 26px;
+        background: var(--fx-card);
+        border: 1px solid var(--fx-bd);
+        border-radius: 12px;
+        padding: 16px 18px
+    }
+    .mp-bias-hd {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fx-vl);
+        margin-bottom: 12px
+    }
+    .mp-bias-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 12px
+    }
+    .mp-bias-chip {
+        background: var(--fx-card2);
+        border: 1px solid var(--fx-bd);
+        color: var(--fx-text);
+        border-radius: 20px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif;
+        transition: all 0.15s
+    }
+    .mp-bias-chip:hover { border-color: var(--fx-vl); color: var(--fx-vl) }
+    .mp-bias-out {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--fx-text);
+        border-top: 1px solid var(--fx-bd);
+        padding-top: 12px
+    }
+    .mp-bias-out strong { color: var(--fx-vl) }
+    .mp-bias-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--fx-vl);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em
+    }
 
     .mp-count {
         font-size: 11px;
@@ -1932,6 +1981,37 @@
         padding: 16px 18px;
         overflow: hidden
     }
+    .mp-expand {
+        background: none;
+        border: 1px solid var(--fx-bd);
+        color: var(--fx-muted2);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        line-height: 1;
+        padding: 3px 7px;
+        margin-left: auto
+    }
+    .mp-expand:hover { border-color: var(--fx-vl); color: var(--fx-vl) }
+    /* Agrandissement au premier plan */
+    .mp-note-ov {
+        position: fixed; inset: 0; z-index: 99998;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+        display: flex; align-items: flex-start; justify-content: center;
+        padding: 44px 16px; overflow: auto
+    }
+    .mp-note-ov-box { position: relative; width: 100%; max-width: 780px; margin: auto }
+    .mp-note-ov-close {
+        position: absolute; top: -12px; right: -6px; z-index: 2;
+        width: 36px; height: 36px; border-radius: 50%; border: none;
+        background: var(--fx-card2); color: var(--fx-text); cursor: pointer;
+        font-size: 15px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5)
+    }
+    .mp-card-big { font-size: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) }
+    .mp-card-big .mp-analysis { font-size: 15.5px; line-height: 1.7 }
+    .mp-card-big .mp-evt { font-size: 17px }
+    .mp-card-big .mp-card-img { max-height: 520px }
 
     .mp-card-head {
         display: flex;
@@ -3767,6 +3847,13 @@
                             <h2 style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0">📚 Historique — par semaine</h2>
                         </div>
                         <div class="mp-weeks" id="mp-weeks"></div>
+
+                        <!-- Biais par devise (IA) -->
+                        <div class="mp-bias" id="mp-bias">
+                            <div class="mp-bias-hd">🧠 Biais par devise <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(IA — analyse tes synthèses taguées de la devise)</span></div>
+                            <div class="mp-bias-chips" id="mp-bias-chips"></div>
+                            <div class="mp-bias-out" id="mp-bias-out"><div style="font-size:12px;color:var(--fx-muted)">Choisis une devise : l'IA lit toutes tes synthèses taguées de cette devise et en dégage le biais.</div></div>
+                        </div>
                     </div>
 
                     <!-- Détail d'une semaine -->
@@ -3828,6 +3915,10 @@
         <button type="button" class="rtb" data-cmd="italic" title="Italique"><i>I</i></button>
         <button type="button" class="rtb" data-cmd="underline" title="Souligné"><u>S</u></button>
         <button type="button" class="rtb" data-cmd="strike" title="Barré"><s>B</s></button>
+        <span class="rtb-sep"></span>
+        <button type="button" class="rtb" data-cmd="size-2" title="Petit texte" style="font-size:10px">A</button>
+        <button type="button" class="rtb" data-cmd="size-3" title="Taille normale" style="font-size:13px">A</button>
+        <button type="button" class="rtb" data-cmd="size-5" title="Grand texte" style="font-size:17px">A</button>
         <span class="rtb-sep"></span>
         <button type="button" class="rtb-clr" data-color="inherit" title="Couleur par défaut" style="background:linear-gradient(135deg,#fff,#888)"></button>
         <button type="button" class="rtb-clr" data-color="#ef4444" title="Rouge" style="background:#ef4444"></button>
@@ -4546,17 +4637,101 @@
         else { if (mpView !== 'dash') setMpView('dash'); mpTagFilter = t; renderMacroNotes(); }
     }
 
+    // ── IA (Gemini) — biais par devise à partir des synthèses taguées ──
+    const GEMINI_KEY = 'AQ.Ab8RN6Ifg1zGbECBJY_fVCl5Ag5Ky_bripuLqE9oZxC8RzvXsA';
+    const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
+    function mdToHtml(t) {
+        let s = (t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        s = s.replace(/^\s*###?\s+(.+)$/gm, '<h3>$1</h3>');
+        s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+        s = s.replace(/\r?\n/g, '<br>');
+        return s;
+    }
+    function htmlToText(html) {
+        try { return new DOMParser().parseFromString(html || '', 'text/html').body.innerText || ''; }
+        catch (e) { return (html || '').replace(/<[^>]+>/g, ' '); }
+    }
+    async function geminiOne(prompt, model, useSearch) {
+        const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + GEMINI_KEY;
+        const body = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 900 } };
+        if (useSearch) body.tools = [{ google_search: {} }];
+        const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const d = await r.json();
+        if (!r.ok) throw new Error((d.error && d.error.message) || ('HTTP ' + r.status));
+        const c = d.candidates && d.candidates[0], parts = c && c.content && c.content.parts;
+        return parts ? parts.map(p => p.text || '').join('') : '';
+    }
+    async function geminiTry(prompt) {
+        let lastErr = 'aucun modèle disponible';
+        for (const model of GEMINI_MODELS) {
+            for (const useSearch of [false, true]) { // le biais se lit sur les synthèses → pas besoin du web d'abord
+                try { const t = await geminiOne(prompt, model, useSearch); if (t && t.trim()) return t; }
+                catch (e) { lastErr = e.message; if (useSearch && !/tool|search|grounding/i.test(e.message)) break; }
+            }
+        }
+        throw new Error(lastErr);
+    }
+
+    const BIAS_CCY = [['🇺🇸', 'USD'], ['🇪🇺', 'EUR'], ['🇬🇧', 'GBP'], ['🇯🇵', 'JPY'], ['🇨🇭', 'CHF'], ['🇦🇺', 'AUD'], ['🇨🇦', 'CAD'], ['🇳🇿', 'NZD'], ['🇨🇳', 'CNH'], ['🥇', 'XAU']];
+    function renderBiasChips() {
+        const c = document.getElementById('mp-bias-chips');
+        if (!c) return;
+        const tagset = new Set(allMacroTags().map(t => t.toUpperCase()));
+        const avail = BIAS_CCY.filter(([f, code]) => tagset.has(code));
+        if (!avail.length) { c.innerHTML = '<span style="font-size:12px;color:var(--fx-muted)">Tague tes synthèses avec le nom d\'une devise (ex : #USD) pour activer l\'analyse de biais.</span>'; return; }
+        c.innerHTML = avail.map(([f, code]) => '<button type="button" class="mp-bias-chip" onclick="analyzeBias(\'' + code + '\')">' + f + ' ' + code + '</button>').join('');
+    }
+    async function analyzeBias(ccy) {
+        const out = document.getElementById('mp-bias-out');
+        if (!out) return;
+        const notes = allMacroNotes.filter(n => (n.tags || []).some(t => t.toLowerCase() === ccy.toLowerCase()));
+        if (!notes.length) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">Aucune synthèse taguée ' + ccy + '.</div>'; return; }
+        const corpus = notes.slice(0, 18).map(n => {
+            const figs = [n.consensus ? 'cons. ' + n.consensus : '', n.actual ? 'réel ' + n.actual : '', n.previous ? 'préc. ' + n.previous : ''].filter(Boolean).join(', ');
+            return '• [' + (n.date || '') + '] ' + (n.event || '') + (figs ? ' (' + figs + ')' : '') + ' — ' + htmlToText(n.analysis).replace(/\s+/g, ' ').trim();
+        }).join('\n');
+        const prompt = "Tu es analyste macro FX. Voici mes synthèses personnelles taguées « " + ccy + " », de la plus récente à la plus ancienne :\n\n" + corpus +
+            "\n\nÀ partir de CES synthèses uniquement, résume en FRANÇAIS le BIAIS directionnel actuel sur " + ccy + " (haussier / baissier / neutre), son évolution récente, et les 2-3 catalyseurs clés qui ressortent. ~120 mots, direct, **gras** pour l'essentiel. Ne t'appuie que sur ces notes, n'invente rien.";
+        out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">L\'IA lit tes synthèses ' + ccy + '…</div>';
+        try {
+            const txt = await geminiTry(prompt);
+            if (!txt || !txt.trim()) throw new Error('réponse vide (quota ?)');
+            out.innerHTML = '<div class="mp-bias-title">Biais ' + ccy + ' — d\'après ' + notes.length + ' synthèse' + (notes.length > 1 ? 's' : '') + '</div>' + mdToHtml(txt.trim());
+        } catch (e) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-red)">IA indisponible : ' + e.message + '</div>'; }
+    }
+
     // ── Éditeur de texte enrichi (barre flottante façon Notion) ───
+    // Normalise n'importe quelle couleur en "r,g,b" (pour comparer)
+    function normColor(c) {
+        if (!c) return '';
+        const d = document.createElement('span');
+        d.style.color = c; d.style.display = 'none';
+        document.body.appendChild(d);
+        const rgb = getComputedStyle(d).color; d.remove();
+        const m = rgb.match(/\d+/g);
+        return m ? m.slice(0, 3).join(',') : '';
+    }
     function rteCmd(cmd, val) {
         const ed = document.getElementById('mp-analysis');
         if (!ed) return;
         ed.focus();
         try { document.execCommand('styleWithCSS', false, true); } catch (e) {}
+        const defColor = getComputedStyle(ed).color; // couleur du thème (blanc/noir)
         if (cmd === 'bold' || cmd === 'italic' || cmd === 'underline') document.execCommand(cmd, false, null);
         else if (cmd === 'strike') document.execCommand('strikeThrough', false, null);
         else if (cmd === 'h1' || cmd === 'h2' || cmd === 'h3') document.execCommand('formatBlock', false, cmd.toUpperCase());
         else if (cmd === 'normal') document.execCommand('formatBlock', false, 'DIV');
-        else if (cmd === 'color') document.execCommand('foreColor', false, (val === 'inherit' ? '#e2e8f0' : val));
+        else if (cmd && cmd.indexOf('size-') === 0) document.execCommand('fontSize', false, cmd.slice(5));
+        else if (cmd === 'color') {
+            if (val === 'inherit') { document.execCommand('foreColor', false, defColor); }
+            else {
+                let cur = ''; try { cur = document.queryCommandValue('foreColor'); } catch (e) {}
+                // Si la sélection a déjà cette couleur → on l'enlève (retour couleur du thème)
+                if (normColor(cur) && normColor(cur) === normColor(val)) document.execCommand('foreColor', false, defColor);
+                else document.execCommand('foreColor', false, val);
+            }
+        }
         updateRteToolbar();
     }
     function initRteToolbar() {
@@ -4794,6 +4969,27 @@
         im.style.cssText = 'max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 12px 48px rgba(0,0,0,.6)';
         ov.appendChild(im);
         ov.onclick = () => ov.remove();
+        document.body.appendChild(ov);
+    }
+
+    // Agrandit une synthèse au premier plan (fond flouté)
+    function expandNote(fid) {
+        const n = allMacroNotes.find(x => x.firestoreId === fid);
+        if (!n) return;
+        const ov = document.createElement('div');
+        ov.className = 'mp-note-ov';
+        const box = document.createElement('div');
+        box.className = 'mp-note-ov-box';
+        const close = document.createElement('button');
+        close.className = 'mp-note-ov-close';
+        close.type = 'button';
+        close.textContent = '✕';
+        close.onclick = () => ov.remove();
+        const card = buildMacroCard(n, true);
+        box.append(close, card);
+        ov.appendChild(box);
+        ov.onclick = (e) => { if (e.target === ov) ov.remove(); };
+        document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', esc); } });
         document.body.appendChild(ov);
     }
 
@@ -5190,9 +5386,9 @@
     }
 
     // Construit la carte <li> d'une synthèse (réutilisée : semaine en cours + historique)
-    function buildMacroCard(n) {
+    function buildMacroCard(n, expanded) {
         const li = document.createElement('li');
-        li.className = 'mp-card';
+        li.className = 'mp-card' + (expanded ? ' mp-card-big' : '');
 
         const head = document.createElement('div');
         head.className = 'mp-card-head';
@@ -5207,6 +5403,16 @@
         evt.textContent = n.event || 'Sans titre';
 
         head.append(time, evt);
+
+        if (!expanded) {
+            const exp = document.createElement('button');
+            exp.className = 'mp-expand';
+            exp.type = 'button';
+            exp.textContent = '⤢';
+            exp.title = 'Agrandir';
+            exp.onclick = (e) => { e.stopPropagation(); expandNote(n.firestoreId); };
+            head.appendChild(exp);
+        }
 
         if (isMacroEditor()) {
             const actions = document.createElement('div');
@@ -5375,6 +5581,7 @@
 
     // Vue « Historique » — accueil : liste des semaines passées
     function renderHistoryLanding() {
+        renderBiasChips();
         const wrap = document.getElementById('mp-weeks');
         if (!wrap) return;
         const cur = currentWeekKey();

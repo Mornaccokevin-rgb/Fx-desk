@@ -3791,7 +3791,6 @@
                                 <button type="button" class="fx-btn-export" onclick="document.getElementById('importFile').click()">⬆️ Import JSON</button>
                                 <button type="button" class="fx-btn-export" onclick="exportTrades()">⬇️ Export JSON</button>
                                 <button type="button" class="fx-btn-export" onclick="exportCSV()">⬇️ Export CSV</button>
-                                <button type="button" class="fx-btn-reset" style="color:var(--fx-red);border-color:var(--fx-red)" onclick="resetTracker()">🗑️ Réinitialiser le tracker</button>
                             </div>
                         </form>
                     </div>
@@ -3816,7 +3815,7 @@
                         <select id="filterPair" class="fx-fc" onchange="applyFilters()">
                             <option value="">Toutes paires</option>
                         </select>
-                        <button class="fx-btn-reset" onclick="resetFilters()">Reset</button>
+                        <button class="fx-btn-reset" onclick="resetTracker()" title="Réinitialise le tracker (3 confirmations)">Reset</button>
                         <span id="filter-count" style="font-size:11px;color:var(--fx-muted)">—</span>
                     </div>
                     <div style="font-size:12px;font-weight:600;color:var(--fx-muted2);margin-bottom:10px">

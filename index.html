@@ -2072,6 +2072,48 @@
     }
     .td-save:hover { filter: brightness(1.08) }
     .td-status { font-size: 12px }
+    /* Mini-visuels */
+    .td-visuals { margin-bottom: 18px }
+    .tv-bars { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px }
+    .tv-item { background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 8px; padding: 8px 11px }
+    .tv-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px }
+    .tv-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--fx-muted) }
+    .tv-val { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700 }
+    .tv-track { height: 6px; border-radius: 4px; background: var(--fx-bd); overflow: hidden }
+    .tv-fill { height: 100%; border-radius: 4px; transition: width 0.3s }
+    .tv-eq { background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 10px; padding: 10px 12px }
+    .tv-eq-hd { font-size: 11px; color: var(--fx-muted); margin-bottom: 6px }
+    /* Sélection / redimensionnement image */
+    .td-img-sel { outline: 2px solid var(--fx-vl); outline-offset: 1px }
+    .td-img-ctrl { position: absolute; z-index: 5 }
+    .td-img-handle {
+        width: 16px; height: 16px; border-radius: 50%;
+        background: var(--fx-vl); border: 2px solid #fff; cursor: nwse-resize;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4)
+    }
+    .td-img-bar { display: flex; gap: 3px; background: rgba(0,0,0,0.55); padding: 3px; border-radius: 7px; backdrop-filter: blur(3px) }
+    .td-ib { width: 24px; height: 24px; border: none; border-radius: 5px; background: rgba(255,255,255,0.15); color: #fff; cursor: pointer; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center }
+    .td-ib:hover { background: var(--fx-vl) }
+    /* Annotateur */
+    .ta-ov {
+        position: fixed; inset: 0; z-index: 99999;
+        background: rgba(0, 0, 0, 0.75);
+        display: flex; align-items: center; justify-content: center; padding: 20px
+    }
+    .ta-box { background: var(--fx-card); border: 1px solid var(--fx-bd); border-radius: 12px; padding: 14px; max-width: 100%; max-height: 100%; display: flex; flex-direction: column; gap: 10px }
+    .ta-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px }
+    .ta-tool, .ta-undo, .ta-clear, .ta-apply, .ta-cancel {
+        background: var(--fx-card2); border: 1px solid var(--fx-bd); color: var(--fx-text);
+        border-radius: 7px; padding: 6px 11px; font-size: 12px; cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif; transition: all 0.15s
+    }
+    .ta-tool:hover, .ta-undo:hover, .ta-clear:hover { border-color: var(--fx-vl); color: var(--fx-vl) }
+    .ta-tool.active { background: var(--fx-vl); border-color: var(--fx-vl); color: #fff }
+    .ta-color { width: 34px; height: 30px; padding: 0; border: 1px solid var(--fx-bd); border-radius: 6px; background: none; cursor: pointer }
+    .ta-width { background: var(--fx-card2); border: 1px solid var(--fx-bd); color: var(--fx-text); border-radius: 7px; padding: 6px 8px; font-size: 12px }
+    .ta-apply { background: var(--fx-vl); border-color: var(--fx-vl); color: #fff; font-weight: 600 }
+    .ta-canvas-wrap { overflow: auto; display: flex; justify-content: center; background: #0a0a12; border-radius: 8px }
+    .ta-canvas { display: block; touch-action: none; cursor: crosshair; max-width: 100%; }
     .mp-card-big { font-size: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) }
     .mp-card-big .mp-analysis { font-size: 15.5px; line-height: 1.7 }
     .mp-card-big .mp-evt { font-size: 17px }
@@ -5099,6 +5141,188 @@
         try { document.execCommand('insertHTML', false, html); }
         catch (e) { ed.insertAdjacentHTML('beforeend', html); }
     }
+    // Mini-visuels du trade (jauges) + sparkline de l'equity
+    function tvBar(label, display, ratio, color) {
+        ratio = Math.max(0, Math.min(1, ratio || 0));
+        return '<div class="tv-item"><div class="tv-top"><span class="tv-lbl">' + label + '</span>' +
+            '<span class="tv-val" style="color:' + color + '">' + display + '</span></div>' +
+            '<div class="tv-track"><div class="tv-fill" style="width:' + (ratio * 100).toFixed(0) + '%;background:' + color + '"></div></div></div>';
+    }
+    function tvEquitySVG(t) {
+        const base = (typeof userCapital !== 'undefined' && userCapital > 0) ? userCapital : 0;
+        const arr = (allTrades || []).slice(); // déjà trié par dateOpen asc
+        if (!arr.length) return '';
+        const idx = arr.findIndex(x => x.firestoreId === t.firestoreId);
+        let cum = base; const pts = [base];
+        arr.forEach(tr => { cum += (parseFloat(tr.pnl) || 0); pts.push(cum); });
+        const min = Math.min(...pts), max = Math.max(...pts), span = (max - min) || 1;
+        const W = 680, H = 120, pad = 8;
+        const X = i => pad + (i / ((pts.length - 1) || 1)) * (W - 2 * pad);
+        const Y = v => pad + (1 - (v - min) / span) * (H - 2 * pad);
+        const line = pts.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ');
+        const area = line + ' L' + X(pts.length - 1).toFixed(1) + ' ' + (H - pad) + ' L' + X(0).toFixed(1) + ' ' + (H - pad) + ' Z';
+        const mi = idx + 1, mx = X(mi), my = Y(pts[mi]);
+        const above = pts[mi] >= base;
+        const col = above ? '#22c55e' : '#ef4444';
+        const baseY = Y(base);
+        return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" style="width:100%;height:120px;display:block">' +
+            '<path d="' + area + '" fill="rgba(139,124,246,0.10)"/>' +
+            (base > 0 ? '<line x1="' + pad + '" y1="' + baseY.toFixed(1) + '" x2="' + (W - pad) + '" y2="' + baseY.toFixed(1) + '" stroke="var(--fx-muted)" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>' : '') +
+            '<path d="' + line + '" fill="none" stroke="var(--fx-vl)" stroke-width="2"/>' +
+            '<line x1="' + mx.toFixed(1) + '" y1="' + pad + '" x2="' + mx.toFixed(1) + '" y2="' + (H - pad) + '" stroke="' + col + '" stroke-width="1" opacity="0.5"/>' +
+            '<circle cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="5" fill="' + col + '" stroke="#fff" stroke-width="1.5"/>' +
+            '</svg>';
+    }
+    function tradeVisualsHTML(t) {
+        const rr = parseFloat(t.rr) || 0;
+        const pnl = parseFloat(t.pnl) || 0;
+        const score = t.score !== '' && t.score != null ? parseFloat(t.score) : null;
+        const risk = t.riskPct !== '' && t.riskPct != null ? parseFloat(t.riskPct) : null;
+        const maxAbsPnl = Math.max(1, ...(allTrades || []).map(x => Math.abs(parseFloat(x.pnl) || 0)));
+        const pos = '#22c55e', neg = '#ef4444';
+        let bars = '';
+        bars += tvBar('R:R réalisé', (rr > 0 ? '+' : '') + rr + 'R', Math.abs(rr) / 5, rr >= 0 ? pos : neg);
+        bars += tvBar('P&L', fmtPnl(pnl), Math.abs(pnl) / maxAbsPnl, pnl >= 0 ? pos : neg);
+        if (score != null) { const c = score >= 7 ? pos : (score >= 4 ? '#f59e0b' : neg); bars += tvBar('Score', score + '/10', score / 10, c); }
+        if (risk != null) bars += tvBar('% risqué', risk + '%', risk / 2, risk > 1 ? '#f59e0b' : 'var(--fx-vl)'); // repère : 2% = plein
+        const eq = tvEquitySVG(t);
+        return '<div class="tv-bars">' + bars + '</div>' +
+            (eq ? '<div class="tv-eq"><div class="tv-eq-hd">📈 Position dans l\'equity ' + (typeof userCapital !== 'undefined' && userCapital > 0 ? '(capital ' + Math.round(userCapital).toLocaleString() + '$)' : '(P&L cumulé)') + '</div>' + eq + '</div>' : '');
+    }
+
+    // Redimensionnement + annotation des images du journal
+    let tdSelImg = null, tdBoxRef = null, tdEdRef = null;
+    function tdClearImgSel(box) {
+        if (tdSelImg) tdSelImg.classList.remove('td-img-sel');
+        tdSelImg = null;
+        box && box.querySelectorAll('.td-img-ctrl').forEach(el => el.remove());
+    }
+    function tdPositionCtrls(box, img) {
+        const bx = box.getBoundingClientRect(), r = img.getBoundingClientRect();
+        const handle = box.querySelector('.td-img-handle');
+        const bar = box.querySelector('.td-img-bar');
+        if (handle) { handle.style.left = (r.right - bx.left - 9) + 'px'; handle.style.top = (r.bottom - bx.top - 9) + 'px'; }
+        if (bar) { bar.style.left = (r.left - bx.left + 4) + 'px'; bar.style.top = (r.top - bx.top + 4) + 'px'; }
+    }
+    function tdSelectImg(img, box, ed) {
+        tdClearImgSel(box);
+        tdSelImg = img; img.classList.add('td-img-sel');
+        const handle = document.createElement('div'); handle.className = 'td-img-ctrl td-img-handle'; handle.title = 'Glisser pour redimensionner';
+        const bar = document.createElement('div'); bar.className = 'td-img-ctrl td-img-bar';
+        bar.innerHTML = '<button type="button" class="td-ib" data-a="annot" title="Annoter / dessiner">✏️</button>' +
+            '<button type="button" class="td-ib" data-a="small" title="Réduire">–</button>' +
+            '<button type="button" class="td-ib" data-a="big" title="Agrandir">+</button>' +
+            '<button type="button" class="td-ib" data-a="full" title="Pleine largeur">⛶</button>';
+        box.appendChild(handle); box.appendChild(bar);
+        tdPositionCtrls(box, img);
+        // Boutons de la barre
+        bar.querySelectorAll('.td-ib').forEach(b => b.onclick = (ev) => {
+            ev.stopPropagation();
+            const a = b.getAttribute('data-a'), w = img.offsetWidth;
+            if (a === 'annot') { openAnnotator(img, box, ed); return; }
+            if (a === 'small') img.style.width = Math.max(50, w - 60) + 'px';
+            if (a === 'big') img.style.width = Math.min(ed.clientWidth - 4, w + 60) + 'px';
+            if (a === 'full') img.style.width = '100%';
+            img.style.height = 'auto';
+            tdPositionCtrls(box, img);
+        });
+        // Drag du coin
+        handle.addEventListener('mousedown', e => {
+            e.preventDefault(); e.stopPropagation();
+            const startX = e.clientX, startW = img.offsetWidth, maxW = ed.clientWidth - 4;
+            const move = ev => { const nw = Math.max(50, Math.min(maxW, startW + (ev.clientX - startX))); img.style.width = nw + 'px'; img.style.height = 'auto'; tdPositionCtrls(box, img); };
+            const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+            document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
+        });
+    }
+
+    // Annotateur : dessine flèches/traits/rectangles/crayon par-dessus une image, puis aplati
+    function openAnnotator(img, box, ed) {
+        const src = img.getAttribute('src');
+        const base = new Image();
+        base.onload = () => {
+            const ov = document.createElement('div'); ov.className = 'ta-ov';
+            const maxW = Math.min(window.innerWidth - 60, 980), maxH = window.innerHeight - 180;
+            let cw = base.naturalWidth, ch = base.naturalHeight;
+            const sc = Math.min(maxW / cw, maxH / ch, 1); cw = Math.round(cw * sc); ch = Math.round(ch * sc);
+            ov.innerHTML =
+                '<div class="ta-box">' +
+                  '<div class="ta-tools">' +
+                    '<button type="button" class="ta-tool active" data-t="arrow" title="Flèche">↗ Flèche</button>' +
+                    '<button type="button" class="ta-tool" data-t="line" title="Trait">╱ Trait</button>' +
+                    '<button type="button" class="ta-tool" data-t="rect" title="Rectangle">▭ Zone</button>' +
+                    '<button type="button" class="ta-tool" data-t="pen" title="Crayon">✎ Crayon</button>' +
+                    '<input type="color" class="ta-color" value="#ef4444" title="Couleur">' +
+                    '<select class="ta-width" title="Épaisseur"><option value="2">Fin</option><option value="4" selected>Moyen</option><option value="7">Épais</option></select>' +
+                    '<button type="button" class="ta-undo" title="Annuler le dernier">↶ Undo</button>' +
+                    '<button type="button" class="ta-clear" title="Tout effacer">🗑️</button>' +
+                    '<span style="flex:1"></span>' +
+                    '<button type="button" class="ta-apply">✔ Appliquer</button>' +
+                    '<button type="button" class="ta-cancel">Annuler</button>' +
+                  '</div>' +
+                  '<div class="ta-canvas-wrap"><canvas class="ta-canvas" width="' + cw + '" height="' + ch + '"></canvas></div>' +
+                '</div>';
+            document.body.appendChild(ov);
+            const cv = ov.querySelector('.ta-canvas'), ctx = cv.getContext('2d');
+            let tool = 'arrow', color = '#ef4444', width = 4;
+            const shapes = []; let cur = null;
+            const redraw = () => {
+                ctx.clearRect(0, 0, cw, ch); ctx.drawImage(base, 0, 0, cw, ch);
+                const all = cur ? shapes.concat([cur]) : shapes;
+                all.forEach(s => drawShape(ctx, s));
+            };
+            const drawShape = (c, s) => {
+                c.strokeStyle = s.color; c.fillStyle = s.color; c.lineWidth = s.width; c.lineCap = 'round'; c.lineJoin = 'round';
+                if (s.type === 'pen') { c.beginPath(); s.pts.forEach((p, i) => i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y)); c.stroke(); return; }
+                if (s.type === 'rect') { c.strokeRect(s.x1, s.y1, s.x2 - s.x1, s.y2 - s.y1); return; }
+                c.beginPath(); c.moveTo(s.x1, s.y1); c.lineTo(s.x2, s.y2); c.stroke();
+                if (s.type === 'arrow') {
+                    const a = Math.atan2(s.y2 - s.y1, s.x2 - s.x1), hl = 8 + s.width * 2.2;
+                    c.beginPath(); c.moveTo(s.x2, s.y2);
+                    c.lineTo(s.x2 - hl * Math.cos(a - Math.PI / 7), s.y2 - hl * Math.sin(a - Math.PI / 7));
+                    c.lineTo(s.x2 - hl * Math.cos(a + Math.PI / 7), s.y2 - hl * Math.sin(a + Math.PI / 7));
+                    c.closePath(); c.fill();
+                }
+            };
+            const pos = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * (cw / r.width), y: (e.clientY - r.top) * (ch / r.height) }; };
+            cv.addEventListener('pointerdown', e => {
+                cv.setPointerCapture(e.pointerId); const p = pos(e);
+                cur = tool === 'pen' ? { type: 'pen', color, width, pts: [p] } : { type: tool, color, width, x1: p.x, y1: p.y, x2: p.x, y2: p.y };
+                redraw();
+            });
+            cv.addEventListener('pointermove', e => {
+                if (!cur) return; const p = pos(e);
+                if (cur.type === 'pen') cur.pts.push(p); else { cur.x2 = p.x; cur.y2 = p.y; }
+                redraw();
+            });
+            cv.addEventListener('pointerup', () => { if (cur) { shapes.push(cur); cur = null; redraw(); } });
+            ov.querySelectorAll('.ta-tool').forEach(b => b.onclick = () => { ov.querySelectorAll('.ta-tool').forEach(x => x.classList.remove('active')); b.classList.add('active'); tool = b.getAttribute('data-t'); });
+            ov.querySelector('.ta-color').oninput = e => color = e.target.value;
+            ov.querySelector('.ta-width').onchange = e => width = parseInt(e.target.value, 10);
+            ov.querySelector('.ta-undo').onclick = () => { shapes.pop(); redraw(); };
+            ov.querySelector('.ta-clear').onclick = () => { shapes.length = 0; redraw(); };
+            ov.querySelector('.ta-cancel').onclick = () => ov.remove();
+            ov.querySelector('.ta-apply').onclick = () => {
+                const out = document.createElement('canvas'); out.width = base.naturalWidth; out.height = base.naturalHeight;
+                const octx = out.getContext('2d'); octx.drawImage(base, 0, 0);
+                const k = base.naturalWidth / cw; // remise à l'échelle réelle
+                shapes.forEach(s => {
+                    const sc2 = { ...s, width: s.width * k };
+                    if (s.type === 'pen') sc2.pts = s.pts.map(p => ({ x: p.x * k, y: p.y * k }));
+                    else { sc2.x1 = s.x1 * k; sc2.y1 = s.y1 * k; sc2.x2 = s.x2 * k; sc2.y2 = s.y2 * k; }
+                    drawShape(octx, sc2);
+                });
+                let url; try { url = out.toDataURL('image/jpeg', 0.82); } catch (er) { url = src; }
+                img.setAttribute('src', url);
+                ov.remove();
+                if (tdBoxRef) tdPositionCtrls(tdBoxRef, img);
+            };
+            redraw();
+        };
+        base.onerror = () => showToast('Image illisible pour l\'annotation');
+        base.src = src;
+    }
+
     function openTradeDetail(fid) {
         const t = allTrades.find(x => x.firestoreId === fid);
         if (!t) return;
@@ -5126,7 +5350,8 @@
               '</div>' +
               (t.notes ? '<div class="td-notes"><span class="td-notes-lbl">Notes du formulaire :</span> ' + tdEsc(t.notes) + '</div>' : '') +
               '<div class="td-grid">' + dataGrid + '</div>' +
-              '<div class="td-journal-hd">📓 Journal du trade <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(texte libre + images, placées où tu veux)</span></div>' +
+              '<div class="td-visuals">' + tradeVisualsHTML(t) + '</div>' +
+              '<div class="td-journal-hd">📓 Journal du trade <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(texte libre + images redimensionnables et annotables)</span></div>' +
               '<div class="td-toolbar">' +
                 '<button type="button" class="td-tb" data-c="bold" title="Gras"><b>B</b></button>' +
                 '<button type="button" class="td-tb" data-c="italic" title="Italique"><i>I</i></button>' +
@@ -5163,8 +5388,14 @@
                 }
             }
         });
+        // Sélection d'image → redimensionnement + annotation
+        tdBoxRef = box; tdEdRef = ed;
+        ed.addEventListener('click', e => {
+            if (e.target && e.target.tagName === 'IMG') { e.stopPropagation(); tdSelectImg(e.target, box, ed); }
+            else tdClearImgSel(box);
+        });
         // Fermeture
-        const closeOv = () => { ov.remove(); document.removeEventListener('keydown', esc); };
+        const closeOv = () => { tdClearImgSel(box); ov.remove(); document.removeEventListener('keydown', esc); };
         function esc(e) { if (e.key === 'Escape') closeOv(); }
         ov.querySelector('.td-close').onclick = closeOv;
         ov.onclick = e => { if (e.target === ov) closeOv(); };

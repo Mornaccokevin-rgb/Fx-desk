@@ -2114,16 +2114,6 @@
     .ta-apply { background: var(--fx-vl); border-color: var(--fx-vl); color: #fff; font-weight: 600 }
     .ta-canvas-wrap { overflow: auto; display: flex; justify-content: center; background: #0a0a12; border-radius: 8px }
     .ta-canvas { display: block; touch-action: none; cursor: crosshair; max-width: 100%; }
-    /* MetaApi live */
-    #metaapi-card { border-color: rgba(139,124,246,0.35) }
-    .ma-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end }
-    .ma-fgrp { display: flex; flex-direction: column }
-    .ma-fbtns { display: flex; gap: 8px; align-items: flex-end }
-    .ma-stats { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-top: 14px }
-    .ma-stat { background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 8px; padding: 8px 11px }
-    .ma-stat-k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--fx-muted); margin-bottom: 3px }
-    .ma-stat-v { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; color: var(--fx-text) }
-    .ma-chart-wrap { height: 260px; margin-top: 14px }
     .mp-card-big { font-size: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) }
     .mp-card-big .mp-analysis { font-size: 15.5px; line-height: 1.7 }
     .mp-card-big .mp-evt { font-size: 17px }
@@ -3581,36 +3571,6 @@
 
                 <!-- TRADES -->
                 <div id="fx-trades" class="fx-pane">
-                    <div class="fx-capital-card" id="metaapi-card">
-                        <div style="font-size:13px;font-weight:600;color:var(--fx-vl);margin-bottom:4px">🔗 Compte live (MetaApi) — évolution totale du compte</div>
-                        <div style="font-size:11px;color:var(--fx-muted);margin-bottom:12px">Connecte ton compte MT5/FTMO via MetaApi pour tracer la courbe complète de ton capital, en direct.</div>
-                        <div class="ma-form">
-                            <div class="ma-fgrp" style="flex:2 1 240px">
-                                <label class="fx-flbl">Token MetaApi</label>
-                                <input type="password" id="ma-token" class="fx-fc" placeholder="colle ton token API" autocomplete="off">
-                            </div>
-                            <div class="ma-fgrp" style="flex:1 1 160px">
-                                <label class="fx-flbl">Account ID</label>
-                                <input type="text" id="ma-account" class="fx-fc" placeholder="ex: 0123abcd-…" autocomplete="off">
-                            </div>
-                            <div class="ma-fgrp" style="flex:0 1 130px">
-                                <label class="fx-flbl">Région</label>
-                                <select id="ma-region" class="fx-fc">
-                                    <option value="new-york">new-york</option>
-                                    <option value="london">london</option>
-                                    <option value="singapore">singapore</option>
-                                </select>
-                            </div>
-                            <div class="ma-fbtns">
-                                <button type="button" class="fx-submit" style="padding:9px 16px;font-size:12px" onclick="saveMetaApi()">Enregistrer</button>
-                                <button type="button" class="fx-submit" style="padding:9px 16px;font-size:12px" onclick="syncMetaApi()">🔄 Synchroniser</button>
-                            </div>
-                        </div>
-                        <div id="ma-status" style="font-size:12px;margin-top:10px;color:var(--fx-muted)"></div>
-                        <div id="ma-stats" class="ma-stats" style="display:none"></div>
-                        <div id="ma-chart-wrap" class="ma-chart-wrap" style="display:none"><canvas id="metaapiEquityChart"></canvas></div>
-                    </div>
-
                     <div class="fx-capital-card">
                         <div style="font-size:13px;font-weight:600;color:var(--fx-vl);margin-bottom:12px">💰 Mon capital de trading</div>
                         <div style="display:flex;align-items:flex-end;gap:10px">
@@ -4400,7 +4360,6 @@
         document.getElementById('userEmail').textContent = user.displayName || user.email;
         loadTrades(user.uid);
         loadCapitalFS(user.uid);
-        loadMetaApiConfig(user.uid);
     }
     function switchAuthTab(tab) {
         document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
@@ -4511,130 +4470,6 @@
         await db.collection('users').doc(user.uid).collection('trades').doc(fid).delete();
     }
 
-    // ── COMPTE LIVE MetaApi (MT5 / FTMO) ─────────────────────────
-    // Le token/accountId sont stockés dans le sous-doc de réglages de
-    // l'utilisateur (lisible par lui seul). Sur un site statique il n'est
-    // pas possible de vraiment cacher le token → OK tant que tu es seul,
-    // à durcir avec une Cloud Function quand tu ouvriras l'accès.
-    let metaApiCfg = { token: '', accountId: '', region: 'new-york' };
-    function maBase() {
-        return 'https://mt-client-api-v1.' + (metaApiCfg.region || 'new-york') + '.agiliumtrade.ai/users/current/accounts/' + metaApiCfg.accountId;
-    }
-    async function loadMetaApiConfig(uid) {
-        try {
-            const doc = await db.collection('users').doc(uid).collection('settings').doc('metaapi').get();
-            if (doc.exists) {
-                metaApiCfg = Object.assign({ token: '', accountId: '', region: 'new-york' }, doc.data());
-                const t = document.getElementById('ma-token'), a = document.getElementById('ma-account'), r = document.getElementById('ma-region');
-                if (t) t.value = metaApiCfg.token || '';
-                if (a) a.value = metaApiCfg.accountId || '';
-                if (r) r.value = metaApiCfg.region || 'new-york';
-                if (metaApiCfg.token && metaApiCfg.accountId) syncMetaApi(); // auto-sync si déjà configuré
-            }
-        } catch (e) { /* silencieux */ }
-    }
-    async function saveMetaApi() {
-        const user = auth.currentUser;
-        if (!user) { showToast('Connecte-toi d\'abord'); return; }
-        metaApiCfg = {
-            token: (document.getElementById('ma-token').value || '').trim(),
-            accountId: (document.getElementById('ma-account').value || '').trim(),
-            region: document.getElementById('ma-region').value || 'new-york'
-        };
-        try {
-            await db.collection('users').doc(user.uid).collection('settings').doc('metaapi').set(metaApiCfg);
-            showToast('Configuration MetaApi enregistrée ✅');
-        } catch (e) { showToast('Erreur: ' + e.message); }
-    }
-    async function maFetch(path) {
-        const r = await fetch(maBase() + path, { headers: { 'auth-token': metaApiCfg.token, 'Accept': 'application/json' } });
-        if (!r.ok) { let m = 'HTTP ' + r.status; try { const j = await r.json(); m = j.message || j.error || m; } catch (e) {} throw new Error(m); }
-        return r.json();
-    }
-    async function syncMetaApi() {
-        const statusEl = document.getElementById('ma-status');
-        // Prend les valeurs saisies si non encore enregistrées
-        metaApiCfg.token = (document.getElementById('ma-token').value || metaApiCfg.token || '').trim();
-        metaApiCfg.accountId = (document.getElementById('ma-account').value || metaApiCfg.accountId || '').trim();
-        metaApiCfg.region = document.getElementById('ma-region').value || metaApiCfg.region || 'new-york';
-        if (!metaApiCfg.token || !metaApiCfg.accountId) { statusEl.textContent = '⚠️ Renseigne le token et l\'Account ID.'; return; }
-        statusEl.style.color = 'var(--fx-muted)';
-        statusEl.textContent = '🔄 Synchronisation avec MetaApi…';
-        try {
-            const start = '2015-01-01T00:00:00.000Z';
-            const end = new Date().toISOString();
-            const [info, deals] = await Promise.all([
-                maFetch('/account-information').catch(() => null),
-                maFetch('/history-deals/time/' + start + '/' + end)
-            ]);
-            const list = (deals || []).filter(d => d && d.time).sort((a, b) => new Date(a.time) - new Date(b.time));
-            if (!list.length) { statusEl.textContent = 'Compte connecté mais aucun deal historique trouvé.'; return; }
-            // Courbe de solde = cumul de (profit + commission + swap), dépôts inclus (DEAL_TYPE_BALANCE)
-            let bal = 0; const pts = []; let tradeProfit = 0, nTrades = 0;
-            list.forEach(d => {
-                const p = (parseFloat(d.profit) || 0) + (parseFloat(d.commission) || 0) + (parseFloat(d.swap) || 0);
-                bal += p;
-                pts.push({ t: d.time, v: bal });
-                if (d.type !== 'DEAL_TYPE_BALANCE') { tradeProfit += p; nTrades++; }
-            });
-            drawMetaApiChart(pts);
-            renderMetaApiStats(info, pts[pts.length - 1].v, tradeProfit, nTrades);
-            statusEl.style.color = 'var(--fx-green)';
-            statusEl.textContent = '✅ Synchronisé — ' + list.length + ' opérations, ' + nTrades + ' trades.';
-        } catch (e) {
-            statusEl.style.color = 'var(--fx-red)';
-            statusEl.textContent = '❌ ' + e.message + ' — vérifie le token, l\'Account ID, la région, et que le compte est déployé/connecté sur MetaApi.';
-        }
-    }
-    function renderMetaApiStats(info, balCurve, tradeProfit, nTrades) {
-        const el = document.getElementById('ma-stats');
-        if (!el) return;
-        const cur = info && info.currency ? ' ' + info.currency : '$';
-        const cell = (k, v, c) => '<div class="ma-stat"><div class="ma-stat-k">' + k + '</div><div class="ma-stat-v"' + (c ? ' style="color:' + c + '"' : '') + '>' + v + '</div></div>';
-        let html = '';
-        if (info) {
-            html += cell('Solde', Math.round(info.balance).toLocaleString() + cur);
-            html += cell('Équity', Math.round(info.equity).toLocaleString() + cur);
-        } else {
-            html += cell('Solde (calc.)', Math.round(balCurve).toLocaleString() + cur);
-        }
-        html += cell('P&L trading', (tradeProfit >= 0 ? '+' : '') + Math.round(tradeProfit).toLocaleString() + cur, tradeProfit >= 0 ? '#22c55e' : '#ef4444');
-        html += cell('Trades', nTrades);
-        el.innerHTML = html;
-        el.style.display = 'grid';
-    }
-    function drawMetaApiChart(pts) {
-        const wrap = document.getElementById('ma-chart-wrap');
-        if (wrap) wrap.style.display = 'block';
-        dc('metaapiEquityChart');
-        const A = accVars();
-        chartsData['metaapiEquityChart'] = new Chart(document.getElementById('metaapiEquityChart'), {
-            type: 'line',
-            data: {
-                labels: pts.map(p => (p.t || '').slice(0, 10)),
-                datasets: [{
-                    data: pts.map(p => p.v),
-                    borderColor: A.accL,
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: true,
-                    backgroundColor: 'rgba(' + A.accRGB + ',0.1)',
-                    tension: 0.25
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => 'Solde : ' + Math.round(ctx.parsed.y).toLocaleString() } }
-                },
-                scales: {
-                    x: { ticks: { maxTicksLimit: 8, color: 'var(--fx-muted)' }, grid: { display: false } },
-                    y: { ticks: { color: 'var(--fx-muted)', callback: v => Math.round(v).toLocaleString() } }
-                }
-            }
-        });
-    }
     async function saveCapitalFS(uid, val) {
         if (val !== undefined) {
             await db.collection('users').doc(uid).collection('settings').doc('capital').set({

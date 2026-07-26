@@ -2014,6 +2014,64 @@
         background: var(--fx-card2); color: var(--fx-text); cursor: pointer;
         font-size: 15px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5)
     }
+    /* Fiche détaillée d'un trade */
+    .fx-trade-item { cursor: pointer; transition: border-color 0.15s, background 0.15s }
+    .fx-trade-item:hover { border-color: var(--fx-vl); background: var(--fx-card) }
+    .fx-t-jbadge { font-size: 12px }
+    .td-ov {
+        position: fixed; inset: 0; z-index: 99998;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+        display: flex; align-items: flex-start; justify-content: center;
+        padding: 44px 16px; overflow: auto
+    }
+    .td-box {
+        position: relative; width: 100%; max-width: 760px; margin: auto;
+        background: var(--fx-card); border: 1px solid var(--fx-bd);
+        border-radius: 14px; padding: 22px 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5)
+    }
+    .td-close {
+        position: absolute; top: -12px; right: -6px; z-index: 2;
+        width: 36px; height: 36px; border-radius: 50%; border: none;
+        background: var(--fx-card2); color: var(--fx-text); cursor: pointer;
+        font-size: 15px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5)
+    }
+    .td-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px }
+    .td-pair { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--fx-vl) }
+    .td-pnl { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700 }
+    .td-date { font-size: 12px; color: var(--fx-muted) }
+    .td-notes { font-size: 12.5px; color: var(--fx-text); background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 8px; padding: 9px 11px; margin-bottom: 14px; line-height: 1.5 }
+    .td-notes-lbl { color: var(--fx-muted); font-weight: 600 }
+    .td-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 18px }
+    .td-cell { background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 8px; padding: 7px 10px }
+    .td-k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--fx-muted); margin-bottom: 2px }
+    .td-v { font-size: 13px; font-weight: 600; color: var(--fx-text) }
+    .td-journal-hd { font-size: 14px; font-weight: 600; color: var(--fx-vl); margin-bottom: 8px }
+    .td-toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px }
+    .td-tb {
+        background: var(--fx-card2); border: 1px solid var(--fx-bd); color: var(--fx-text);
+        border-radius: 7px; padding: 5px 10px; font-size: 12px; cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif; transition: all 0.15s
+    }
+    .td-tb:hover { border-color: var(--fx-vl); color: var(--fx-vl) }
+    .td-img { font-weight: 600 }
+    .td-journal {
+        min-height: 200px; border: 1px solid var(--fx-bd); border-radius: 10px;
+        padding: 13px 15px; font-size: 13.5px; line-height: 1.65; color: var(--fx-text);
+        background: var(--fx-card2); outline: none; overflow-wrap: anywhere
+    }
+    .td-journal:empty:before { content: attr(data-ph); color: var(--fx-muted); pointer-events: none }
+    .td-journal img { max-width: 100%; border-radius: 8px }
+    .td-journal:focus { border-color: var(--fx-vl) }
+    .td-foot { display: flex; align-items: center; gap: 12px; margin-top: 12px }
+    .td-save {
+        background: var(--fx-vl); border: none; color: #fff; border-radius: 8px;
+        padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif
+    }
+    .td-save:hover { filter: brightness(1.08) }
+    .td-status { font-size: 12px }
     .mp-card-big { font-size: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) }
     .mp-card-big .mp-analysis { font-size: 15.5px; line-height: 1.7 }
     .mp-card-big .mp-evt { font-size: 17px }
@@ -5014,6 +5072,120 @@
         document.body.appendChild(ov);
     }
 
+    // ── FICHE DÉTAILLÉE D'UN TRADE (données + journal texte/images) ──
+    function tdEsc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    // Compresse/redimensionne une image → dataURL JPEG léger (base64 stocké dans Firestore)
+    function tjCompress(file, cb) {
+        const r = new FileReader();
+        r.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                const max = 1100; let w = img.width, h = img.height;
+                if (w > max || h > max) { const s = Math.min(max / w, max / h); w = Math.round(w * s); h = Math.round(h * s); }
+                const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+                cv.getContext('2d').drawImage(img, 0, 0, w, h);
+                let out; try { out = cv.toDataURL('image/jpeg', 0.72); } catch (er) { out = e.target.result; }
+                cb(out);
+            };
+            img.onerror = () => cb(e.target.result);
+            img.src = e.target.result;
+        };
+        r.readAsDataURL(file);
+    }
+    function tjExec(cmd, ed) { ed.focus(); try { document.execCommand('styleWithCSS', false, true); } catch (e) {} document.execCommand(cmd, false, null); }
+    function tjInsertImage(dataUrl, ed) {
+        ed.focus();
+        const html = '<img src="' + dataUrl + '" style="max-width:100%;border-radius:8px;margin:6px 0;display:block">';
+        try { document.execCommand('insertHTML', false, html); }
+        catch (e) { ed.insertAdjacentHTML('beforeend', html); }
+    }
+    function openTradeDetail(fid) {
+        const t = allTrades.find(x => x.firestoreId === fid);
+        if (!t) return;
+        const ov = document.createElement('div');
+        ov.className = 'td-ov';
+        const rows = [
+            ['Paire', t.pair], ['Direction', t.direction], ['Résultat', t.outcome],
+            ['P&L', (t.pnl != null ? fmtPnl(parseFloat(t.pnl) || 0) : '—')],
+            ['R:R', (t.rr != null && t.rr !== '' ? ((parseFloat(t.rr) || 0) > 0 ? '+' : '') + (parseFloat(t.rr) || 0) + 'R' : '—')],
+            ['Score', t.score ? t.score + '/10' : '—'], ['% risqué', t.riskPct ? t.riskPct + '%' : '—'],
+            ['Date ouverture', t.dateOpen], ['Date clôture', t.dateClose || '—'], ['Timeframe', t.timeframe],
+            ['Session', t.session], ['Type d\'ordre', t.orderType || '—'], ['Condition', t.entryCondition || '—'],
+            ['Sentiment', t.sentiment || '—'], ['Géopolitique', t.geopo || '—'], ['Psychologie', t.psychology || '—']
+        ];
+        const dataGrid = rows.map(([k, v]) => '<div class="td-cell"><div class="td-k">' + tdEsc(k) + '</div><div class="td-v">' + tdEsc(v || '—') + '</div></div>').join('');
+        const pnlColor = fmtC(parseFloat(t.pnl) || 0);
+        ov.innerHTML =
+            '<div class="td-box">' +
+              '<button type="button" class="td-close" title="Fermer">✕</button>' +
+              '<div class="td-head">' +
+                '<span class="td-pair">' + tdEsc(t.pair) + '</span>' +
+                '<span class="fx-t-dir ' + (t.direction === 'LONG' ? 'long' : 'short') + '">' + tdEsc(t.direction) + '</span>' +
+                '<span class="td-pnl" style="color:' + pnlColor + '">' + (t.pnl != null ? fmtPnl(parseFloat(t.pnl) || 0) : '') + '</span>' +
+                '<span class="td-date">' + tdEsc(t.dateOpen || '') + '</span>' +
+              '</div>' +
+              (t.notes ? '<div class="td-notes"><span class="td-notes-lbl">Notes du formulaire :</span> ' + tdEsc(t.notes) + '</div>' : '') +
+              '<div class="td-grid">' + dataGrid + '</div>' +
+              '<div class="td-journal-hd">📓 Journal du trade <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(texte libre + images, placées où tu veux)</span></div>' +
+              '<div class="td-toolbar">' +
+                '<button type="button" class="td-tb" data-c="bold" title="Gras"><b>B</b></button>' +
+                '<button type="button" class="td-tb" data-c="italic" title="Italique"><i>I</i></button>' +
+                '<button type="button" class="td-tb" data-c="underline" title="Souligné"><u>U</u></button>' +
+                '<button type="button" class="td-tb" data-c="insertUnorderedList" title="Liste">• Liste</button>' +
+                '<button type="button" class="td-tb td-img" title="Insérer une image">🖼️ Image</button>' +
+                '<input type="file" accept="image/*" multiple class="td-file" style="display:none">' +
+              '</div>' +
+              '<div class="td-journal" contenteditable="true" data-ph="Écris ici tes observations, ta gestion du trade, tes leçons… et insère des images où tu veux.">' + (t.journal || '') + '</div>' +
+              '<div class="td-foot">' +
+                '<button type="button" class="td-save">💾 Enregistrer la fiche</button>' +
+                '<span class="td-status"></span>' +
+              '</div>' +
+            '</div>';
+        const box = ov.querySelector('.td-box');
+        const ed = ov.querySelector('.td-journal');
+        const fileInput = ov.querySelector('.td-file');
+        const statusEl = ov.querySelector('.td-status');
+        // Toolbar
+        ov.querySelectorAll('.td-tb[data-c]').forEach(b => b.onclick = () => tjExec(b.getAttribute('data-c'), ed));
+        ov.querySelector('.td-img').onclick = () => fileInput.click();
+        fileInput.onchange = e => {
+            const files = Array.from(e.target.files || []);
+            files.forEach(f => { if (f.type.startsWith('image/')) tjCompress(f, url => tjInsertImage(url, ed)); });
+            fileInput.value = '';
+        };
+        // Coller une image depuis le presse-papiers
+        ed.addEventListener('paste', e => {
+            const items = (e.clipboardData || {}).items || [];
+            for (const it of items) {
+                if (it.type && it.type.startsWith('image/')) {
+                    const f = it.getAsFile();
+                    if (f) { e.preventDefault(); tjCompress(f, url => tjInsertImage(url, ed)); }
+                }
+            }
+        });
+        // Fermeture
+        const closeOv = () => { ov.remove(); document.removeEventListener('keydown', esc); };
+        function esc(e) { if (e.key === 'Escape') closeOv(); }
+        ov.querySelector('.td-close').onclick = closeOv;
+        ov.onclick = e => { if (e.target === ov) closeOv(); };
+        document.addEventListener('keydown', esc);
+        // Sauvegarde
+        ov.querySelector('.td-save').onclick = async () => {
+            const html = ed.innerHTML;
+            statusEl.textContent = 'Enregistrement…'; statusEl.style.color = 'var(--fx-muted)';
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('non connecté');
+                await db.collection('users').doc(user.uid).collection('trades').doc(fid).update({ journal: html });
+                const local = allTrades.find(x => x.firestoreId === fid); if (local) local.journal = html;
+                statusEl.textContent = '✅ Enregistré'; statusEl.style.color = 'var(--fx-green)';
+                setTimeout(() => { statusEl.textContent = ''; }, 2500);
+            } catch (err) { statusEl.textContent = '❌ ' + err.message; statusEl.style.color = 'var(--fx-red)'; }
+        };
+        document.body.appendChild(ov);
+        setTimeout(() => ed.focus(), 50);
+    }
+
     // ── CHAT DE L'ALLIANCE (collection `macroChat`) ───────────────
     // Lecture + écriture : tout utilisateur connecté. On ne garde que les
     // MAX_CHAT derniers messages (purge auto après envoi).
@@ -6685,7 +6857,7 @@
             emptyEl.style.display = 'none';
         if (listEl)
             listEl.innerHTML = [...filteredTrades].reverse().map(t => `
-    <div class="fx-trade-item">
+    <div class="fx-trade-item" onclick="openTradeDetail('${t.firestoreId}')" title="Cliquer pour ouvrir la fiche du trade">
       <span class="fx-t-pair">${
             t.pair}</span>
       <span class="fx-t-dir ${t.direction === 'LONG' ? 'long' : 'short'}">${t.direction}</span>
@@ -6695,10 +6867,11 @@
       <span class="fx-t-rr">${(parseFloat(t.rr) || 0) > 0 ? '+' : ''}${parseFloat(t.rr) || 0}R</span>
       <span class="fx-t-sess">${t.session || '—'}</span>
       <span class="fx-t-notes">${t.notes || '—'}</span>
+      ${t.journal && t.journal.trim() ? '<span class="fx-t-jbadge" title="Fiche renseignée">📓</span>' : ''}
       <div class="fx-trade-actions">
-        <button class="fx-t-edit" onclick="editTrade('${
+        <button class="fx-t-edit" onclick="event.stopPropagation();editTrade('${
             t.firestoreId}')">Éditer</button>
-        <button class="fx-t-del" onclick="deleteTrade('${t.firestoreId}')">Supprimer</button>
+        <button class="fx-t-del" onclick="event.stopPropagation();deleteTrade('${t.firestoreId}')">Supprimer</button>
       </div>
     </div>`
 

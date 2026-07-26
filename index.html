@@ -3683,6 +3683,29 @@
                                     <input type="number" name="riskPct" step="0.01" min="0" class="fx-fc" placeholder="ex: 0.5">
                                 </div>
                             </div>
+                            <div class="fx-fst">📊 Exécution (données MT5)</div>
+                            <div class="fx-fg">
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl">Volume (lots)</label>
+                                    <input type="text" name="volume" class="fx-fc" placeholder="ex: 0.10">
+                                </div>
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl">Prix d'entrée</label>
+                                    <input type="text" name="openPrice" class="fx-fc" placeholder="ex: 1.17018">
+                                </div>
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl">Prix de sortie</label>
+                                    <input type="text" name="closePrice" class="fx-fc" placeholder="ex: 1.17121">
+                                </div>
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl">Commission ($)</label>
+                                    <input type="number" name="commission" step="0.01" class="fx-fc" placeholder="ex: -3.91">
+                                </div>
+                                <div class="fx-fgrp">
+                                    <label class="fx-flbl">Swap ($)</label>
+                                    <input type="number" name="swap" step="0.01" class="fx-fc" placeholder="ex: 0.00">
+                                </div>
+                            </div>
                             <div class="fx-fst">🎯 Technique &amp; Macro</div>
                             <div class="fx-fg">
                                 <div class="fx-fgrp">
@@ -7035,6 +7058,11 @@
             psychology: fd.get('psychology'),
             orderType: fd.get('orderType') || 'Market',
             notes: fd.get('notes') || '',
+            volume: fd.get('volume') || '',
+            openPrice: fd.get('openPrice') || '',
+            closePrice: fd.get('closePrice') || '',
+            commission: parseFloat(fd.get('commission')) || 0,
+            swap: parseFloat(fd.get('swap')) || 0,
             month: MONTHS[dt.getMonth()] + ' ' + dt.getFullYear(),
             quarter: 'Q' + Math.ceil((dt.getMonth() + 1) / 3) + ' ' + dt.getFullYear(),
             createdAt: new Date().toISOString()
@@ -7074,6 +7102,11 @@
         s('riskPct', t.riskPct);
         s('session', t.session);
         s('orderType', t.orderType || 'Market');
+        s('volume', t.volume);
+        s('openPrice', t.openPrice);
+        s('closePrice', t.closePrice);
+        s('commission', t.commission);
+        s('swap', t.swap);
         s('entryCondition', t.entryCondition);
         s('sentiment', t.sentiment || 'Neutre');
         s('geopo', t.geopo || 'NON');

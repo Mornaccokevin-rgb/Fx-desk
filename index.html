@@ -1936,6 +1936,11 @@
         transition: all 0.15s
     }
     .mp-bias-chip:hover { border-color: var(--fx-vl); color: var(--fx-vl) }
+    .mp-bias-chip.active {
+        background: var(--fx-vl);
+        border-color: var(--fx-vl);
+        color: #fff
+    }
     .mp-bias-out {
         font-size: 13px;
         line-height: 1.6;
@@ -1944,6 +1949,7 @@
         padding-top: 12px
     }
     .mp-bias-out strong { color: var(--fx-vl) }
+    .mp-bias-out h3 { font-size: 13px; color: var(--fx-vl); margin: 10px 0 4px }
     .mp-bias-title {
         font-size: 12px;
         font-weight: 700;
@@ -3848,11 +3854,11 @@
                         </div>
                         <div class="mp-weeks" id="mp-weeks"></div>
 
-                        <!-- Biais par devise (IA) -->
+                        <!-- Biais par devise (IA, analyse profonde de toutes les synthèses) -->
                         <div class="mp-bias" id="mp-bias">
-                            <div class="mp-bias-hd">🧠 Biais par devise <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(IA — analyse tes synthèses taguées de la devise)</span></div>
+                            <div class="mp-bias-hd">🧠 Biais par devise <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(IA — analyse en profondeur TOUTES tes synthèses, pas seulement les tags)</span></div>
                             <div class="mp-bias-chips" id="mp-bias-chips"></div>
-                            <div class="mp-bias-out" id="mp-bias-out"><div style="font-size:12px;color:var(--fx-muted)">Choisis une devise : l'IA lit toutes tes synthèses taguées de cette devise et en dégage le biais.</div></div>
+                            <div class="mp-bias-out" id="mp-bias-out"><div style="font-size:12px;color:var(--fx-muted)">Choisis une devise : l'IA relit l'ensemble de tes synthèses, repère tout ce qui la concerne (directement ou via les paires, corrélations et comparaisons) et en dégage le biais.</div></div>
                         </div>
                     </div>
 
@@ -4637,7 +4643,7 @@
         else { if (mpView !== 'dash') setMpView('dash'); mpTagFilter = t; renderMacroNotes(); }
     }
 
-    // ── IA (Gemini) — biais par devise à partir des synthèses taguées ──
+    // ── IA (Gemini) — biais par devise, analyse profonde de TOUTES les synthèses ──
     const GEMINI_KEY = 'AQ.Ab8RN6Ifg1zGbECBJY_fVCl5Ag5Ky_bripuLqE9oZxC8RzvXsA';
     const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
     function mdToHtml(t) {
@@ -4654,7 +4660,7 @@
     }
     async function geminiOne(prompt, model, useSearch) {
         const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + GEMINI_KEY;
-        const body = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 900 } };
+        const body = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.35, maxOutputTokens: 1400 } };
         if (useSearch) body.tools = [{ google_search: {} }];
         const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const d = await r.json();
@@ -4665,7 +4671,7 @@
     async function geminiTry(prompt) {
         let lastErr = 'aucun modèle disponible';
         for (const model of GEMINI_MODELS) {
-            for (const useSearch of [false, true]) { // le biais se lit sur les synthèses → pas besoin du web d'abord
+            for (const useSearch of [false, true]) {
                 try { const t = await geminiOne(prompt, model, useSearch); if (t && t.trim()) return t; }
                 catch (e) { lastErr = e.message; if (useSearch && !/tool|search|grounding/i.test(e.message)) break; }
             }
@@ -4673,31 +4679,46 @@
         throw new Error(lastErr);
     }
 
-    const BIAS_CCY = [['🇺🇸', 'USD'], ['🇪🇺', 'EUR'], ['🇬🇧', 'GBP'], ['🇯🇵', 'JPY'], ['🇨🇭', 'CHF'], ['🇦🇺', 'AUD'], ['🇨🇦', 'CAD'], ['🇳🇿', 'NZD'], ['🇨🇳', 'CNH'], ['🥇', 'XAU']];
+    // Devises proposées (toujours affichées : l'IA lit TOUT, pas seulement les tags)
+    const BIAS_CCY = [['🇺🇸', 'USD'], ['🇪🇺', 'EUR'], ['🇬🇧', 'GBP'], ['🇯🇵', 'JPY'], ['🇨🇭', 'CHF'], ['🇦🇺', 'AUD'], ['🇨🇦', 'CAD'], ['🇳🇿', 'NZD'], ['🥇', 'XAU']];
+    let biasActiveCcy = '';
     function renderBiasChips() {
         const c = document.getElementById('mp-bias-chips');
         if (!c) return;
-        const tagset = new Set(allMacroTags().map(t => t.toUpperCase()));
-        const avail = BIAS_CCY.filter(([f, code]) => tagset.has(code));
-        if (!avail.length) { c.innerHTML = '<span style="font-size:12px;color:var(--fx-muted)">Tague tes synthèses avec le nom d\'une devise (ex : #USD) pour activer l\'analyse de biais.</span>'; return; }
-        c.innerHTML = avail.map(([f, code]) => '<button type="button" class="mp-bias-chip" onclick="analyzeBias(\'' + code + '\')">' + f + ' ' + code + '</button>').join('');
+        c.innerHTML = BIAS_CCY.map(([f, code]) => '<button type="button" class="mp-bias-chip' + (code === biasActiveCcy ? ' active' : '') + '" onclick="analyzeBias(\'' + code + '\')">' + f + ' ' + code + '</button>').join('');
     }
     async function analyzeBias(ccy) {
         const out = document.getElementById('mp-bias-out');
         if (!out) return;
-        const notes = allMacroNotes.filter(n => (n.tags || []).some(t => t.toLowerCase() === ccy.toLowerCase()));
-        if (!notes.length) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">Aucune synthèse taguée ' + ccy + '.</div>'; return; }
-        const corpus = notes.slice(0, 18).map(n => {
+        biasActiveCcy = ccy;
+        renderBiasChips();
+        // On envoie TOUTES les synthèses (pas de filtre par tag) — l'IA repère elle-même ce qui compte.
+        const notes = (allMacroNotes || []).slice()
+            .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+            .slice(0, 60);
+        if (!notes.length) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">Aucune synthèse enregistrée pour l\'instant.</div>'; return; }
+        const corpus = notes.map((n, i) => {
             const figs = [n.consensus ? 'cons. ' + n.consensus : '', n.actual ? 'réel ' + n.actual : '', n.previous ? 'préc. ' + n.previous : ''].filter(Boolean).join(', ');
-            return '• [' + (n.date || '') + '] ' + (n.event || '') + (figs ? ' (' + figs + ')' : '') + ' — ' + htmlToText(n.analysis).replace(/\s+/g, ' ').trim();
-        }).join('\n');
-        const prompt = "Tu es analyste macro FX. Voici mes synthèses personnelles taguées « " + ccy + " », de la plus récente à la plus ancienne :\n\n" + corpus +
-            "\n\nÀ partir de CES synthèses uniquement, résume en FRANÇAIS le BIAIS directionnel actuel sur " + ccy + " (haussier / baissier / neutre), son évolution récente, et les 2-3 catalyseurs clés qui ressortent. ~120 mots, direct, **gras** pour l'essentiel. Ne t'appuie que sur ces notes, n'invente rien.";
-        out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">L\'IA lit tes synthèses ' + ccy + '…</div>';
+            const tags = (n.tags || []).length ? ' [tags: ' + n.tags.join(', ') + ']' : '';
+            return '#' + (i + 1) + ' [' + (n.date || '?') + '] ' + (n.event || 'synthèse') + tags + (figs ? ' (' + figs + ')' : '') +
+                '\n' + htmlToText(n.analysis).replace(/\s+/g, ' ').trim();
+        }).join('\n\n');
+        const prompt = "Tu es analyste macro FX senior. Voici l'INTÉGRALITÉ de mes synthèses personnelles (les plus récentes en premier). Elles ne sont PAS forcément taguées avec la devise concernée.\n\n=== SYNTHÈSES ===\n" + corpus +
+            "\n\n=== TÂCHE ===\nAnalyse en PROFONDEUR le biais directionnel actuel sur le " + ccy + ". Ne te limite PAS aux synthèses taguées « " + ccy + " » : parcours TOUTES les synthèses ci-dessus et prends en compte tout ce qui influence " + ccy + ", y compris :\n" +
+            "- les mentions indirectes via les paires (ex : une synthèse EUR/USD renseigne aussi sur l'USD ; XAU/USD, GBP/USD, etc.) ;\n" +
+            "- les corrélations et comparaisons de force relative (une devise se juge face aux autres) ;\n" +
+            "- le contexte macro commun (Fed/BCE, risk-on/off, taux, matières premières) qui pèse sur " + ccy + " même sans le nommer.\n\n" +
+            "Réponds en FRANÇAIS, structuré et dense, avec ces sections en gras :\n" +
+            "**Biais** : haussier / baissier / neutre + degré de conviction.\n" +
+            "**Ce qui le porte** : 3-5 drivers concrets tirés des synthèses (cite les faits/chiffres/dates).\n" +
+            "**Contre / risques** : ce qui pourrait invalider le biais.\n" +
+            "**Évolution** : comment le biais a bougé sur les synthèses récentes.\n" +
+            "Base-toi UNIQUEMENT sur mes synthèses, n'invente aucune donnée. Sois précis et opérationnel.";
+        out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">🧠 L\'IA relit tes ' + notes.length + ' dernières synthèses pour ' + ccy + '…</div>';
         try {
             const txt = await geminiTry(prompt);
             if (!txt || !txt.trim()) throw new Error('réponse vide (quota ?)');
-            out.innerHTML = '<div class="mp-bias-title">Biais ' + ccy + ' — d\'après ' + notes.length + ' synthèse' + (notes.length > 1 ? 's' : '') + '</div>' + mdToHtml(txt.trim());
+            out.innerHTML = '<div class="mp-bias-title">Biais ' + ccy + ' — analyse de ' + notes.length + ' synthèse' + (notes.length > 1 ? 's' : '') + '</div>' + mdToHtml(txt.trim());
         } catch (e) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-red)">IA indisponible : ' + e.message + '</div>'; }
     }
 

@@ -3626,6 +3626,7 @@
                     </div>
 
                     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importTrades(event)">
+                    <input type="file" id="mt5File" accept=".html,.htm" style="display:none" onchange="importMT5Report(event)">
 
                     <div class="fx-form-card">
                         <div style="font-size:14px;font-weight:600;color:var(--fx-vl);margin-bottom:18px">📝 Formulaire de Trade</div>
@@ -3786,6 +3787,7 @@
                                 <button type="button" class="btn-checklist" onclick="openChecklist()">☑️ Checklist Pre-trade</button>
                                 <button type="submit" class="fx-submit" id="submitTradeBtn">Ajouter le trade →</button>
                                 <button type="button" class="fx-btn-reset" id="cancelEditBtn" style="display:none" onclick="cancelEdit()">✕ Annuler l'édition</button>
+                                <button type="button" class="fx-btn-export" onclick="document.getElementById('mt5File').click()">📊 Importer rapport MT5</button>
                                 <button type="button" class="fx-btn-export" onclick="document.getElementById('importFile').click()">⬆️ Import JSON</button>
                                 <button type="button" class="fx-btn-export" onclick="exportTrades()">⬇️ Export JSON</button>
                                 <button type="button" class="fx-btn-export" onclick="exportCSV()">⬇️ Export CSV</button>
@@ -4696,6 +4698,71 @@
         };
         reader.readAsText(file);
     }
+
+    // ── IMPORT RAPPORT MT5 (.html) — méthode gratuite ────────────
+    // Parse la table « Positions » d'un rapport d'historique MetaTrader 5
+    // (export : Historique → clic droit → Rapport → HTML). UTF-16.
+    function parseMT5Report(txt) {
+        const rows = txt.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
+        const cellsOf = r => (r.match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/gi) || [])
+            .map(c => c.replace(/<[^>]+>/g, '').replace(/&nbsp;| /g, ' ').replace(/&amp;/g, '&').trim());
+        const dISO = s => { const m = /^(\d{4})\.(\d{2})\.(\d{2})/.exec(s || ''); return m ? m[1] + '-' + m[2] + '-' + m[3] : ''; };
+        let sec = null; const trades = [];
+        for (const r of rows) {
+            const c = cellsOf(r);
+            if (c.length === 1 && ['Positions', 'Ordres', 'Transactions', 'Positions ouvertes'].includes(c[0])) { sec = c[0]; continue; }
+            if (sec !== 'Positions' || c.length < 13 || !/^\d{4}\.\d{2}\.\d{2} /.test(c[0] || '')) continue;
+            const num = v => { const f = parseFloat(String(v).replace(/\s/g, '').replace(',', '.')); return isNaN(f) ? 0 : f; };
+            const openTime = c[0], posId = c[1], sym = c[2], type = (c[3] || '').toLowerCase();
+            const profit = num(c[c.length - 1]), swap = num(c[c.length - 2]), comm = num(c[c.length - 3]);
+            const closePrice = c[c.length - 4], closeTime = c[c.length - 5], tp = c[c.length - 6], sl = c[c.length - 7], openPrice = c[c.length - 8], vol = c[c.length - 9];
+            const net = Math.round((profit + swap + comm) * 100) / 100;
+            const dir = type === 'buy' ? 'LONG' : 'SHORT';
+            const outcome = net > 0 ? 'WIN' : (net < 0 ? 'LOSS' : 'BE');
+            let rr = '';
+            const o = parseFloat(openPrice), x = parseFloat(closePrice), s = parseFloat(sl);
+            if (!isNaN(o) && !isNaN(x) && !isNaN(s)) { const risk = dir === 'LONG' ? (o - s) : (s - o); if (risk > 0) rr = Math.round(((dir === 'LONG' ? (x - o) : (o - x)) / risk) * 100) / 100; }
+            trades.push({
+                pair: sym, direction: dir, outcome,
+                dateOpen: dISO(openTime), dateClose: dISO(closeTime),
+                timeframe: '', pnl: net, rr: rr === '' ? '' : rr, score: '', riskPct: '',
+                session: '', orderType: 'Market', entryCondition: '', sentiment: 'Neutre', geopo: 'NON', psychology: 'OFF',
+                notes: 'Importé MT5 · pos #' + posId + ' · vol ' + vol + ' · entrée ' + openPrice + ' → sortie ' + closePrice + (sl ? ' · SL ' + sl : '') + ' · comm ' + comm + ' · swap ' + swap,
+                mt5PositionId: posId, volume: vol, openPrice, closePrice, commission: comm, swap
+            });
+        }
+        return trades;
+    }
+    function importMT5Report(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                let txt = e.target.result;
+                if (!/<tr/i.test(txt)) throw new Error('Fichier non reconnu (ce n\'est pas un rapport HTML MT5 ?).');
+                const parsed = parseMT5Report(txt);
+                if (!parsed.length) throw new Error('Aucune position trouvée dans le rapport.');
+                // Dédup : ignore les positions déjà importées
+                const existing = new Set((allTrades || []).map(t => t.mt5PositionId).filter(Boolean));
+                const fresh = parsed.filter(t => !existing.has(t.mt5PositionId));
+                if (!fresh.length) { showToast('Déjà à jour — ' + parsed.length + ' positions déjà importées.'); event.target.value = ''; return; }
+                document.getElementById('loadingScreen').style.display = 'flex';
+                const ref = db.collection('users').doc(auth.currentUser.uid).collection('trades');
+                const batch = db.batch();
+                fresh.forEach(t => batch.set(ref.doc(), t));
+                await batch.commit();
+                document.getElementById('loadingScreen').style.display = 'none';
+                showToast(fresh.length + ' trade(s) MT5 importé(s) ✅' + (parsed.length - fresh.length ? ' (' + (parsed.length - fresh.length) + ' déjà présents ignorés)' : ''));
+            } catch (err) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                showToast('Erreur import MT5 : ' + err.message);
+            }
+            event.target.value = '';
+        };
+        reader.readAsText(file, 'utf-16le'); // les rapports MT5 sont en UTF-16
+    }
+
     function exportTrades() {
         if (!allTrades.length) {
             showToast('Aucun trade.');

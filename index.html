@@ -3791,6 +3791,7 @@
                                 <button type="button" class="fx-btn-export" onclick="document.getElementById('importFile').click()">⬆️ Import JSON</button>
                                 <button type="button" class="fx-btn-export" onclick="exportTrades()">⬇️ Export JSON</button>
                                 <button type="button" class="fx-btn-export" onclick="exportCSV()">⬇️ Export CSV</button>
+                                <button type="button" class="fx-btn-reset" style="color:var(--fx-red);border-color:var(--fx-red)" onclick="resetTracker()">🗑️ Réinitialiser le tracker</button>
                             </div>
                         </form>
                     </div>
@@ -7349,6 +7350,34 @@
                 el.value = '';
         });
         applyFilters();
+    }
+
+    // Réinitialisation TOTALE du tracker : supprime tous les trades.
+    // Protégé par 3 confirmations pour éviter tout faux clic.
+    async function resetTracker() {
+        const user = auth.currentUser;
+        if (!user) { showToast('Connecte-toi d\'abord'); return; }
+        const n = (allTrades || []).length;
+        if (!n) { showToast('Aucun trade à supprimer.'); return; }
+        if (!confirm('⚠️ Réinitialiser le tracker ?\n\nCela va SUPPRIMER DÉFINITIVEMENT tes ' + n + ' trades enregistrés.\n\nConfirmation 1 / 3 — Continuer ?')) return;
+        if (!confirm('🚨 Es-tu vraiment sûr ?\n\nCette action est IRRÉVERSIBLE. Aucune récupération possible.\n\nConfirmation 2 / 3 — Continuer ?')) return;
+        const typed = prompt('Dernière étape — Confirmation 3 / 3.\n\nPour confirmer la suppression des ' + n + ' trades, tape SUPPRIMER en majuscules :');
+        if (typed !== 'SUPPRIMER') { showToast('Réinitialisation annulée.'); return; }
+        try {
+            document.getElementById('loadingScreen').style.display = 'flex';
+            const ref = db.collection('users').doc(user.uid).collection('trades');
+            const ids = (allTrades || []).map(t => t.firestoreId).filter(Boolean);
+            for (let i = 0; i < ids.length; i += 400) {
+                const batch = db.batch();
+                ids.slice(i, i + 400).forEach(id => batch.delete(ref.doc(id)));
+                await batch.commit();
+            }
+            document.getElementById('loadingScreen').style.display = 'none';
+            showToast(ids.length + ' trades supprimés — tracker réinitialisé ✅');
+        } catch (err) {
+            document.getElementById('loadingScreen').style.display = 'none';
+            showToast('Erreur: ' + err.message);
+        }
     }
 
     function fxTab(id, btn) {

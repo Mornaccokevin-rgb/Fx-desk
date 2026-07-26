@@ -3856,9 +3856,9 @@
 
                         <!-- Biais par devise (IA, analyse profonde de toutes les synthèses) -->
                         <div class="mp-bias" id="mp-bias">
-                            <div class="mp-bias-hd">🧠 Biais par devise <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(IA — analyse en profondeur TOUTES tes synthèses, pas seulement les tags)</span></div>
+                            <div class="mp-bias-hd">🧠 Biais par devise <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(IA — analyse en profondeur toutes tes synthèses de la semaine en cours, pas seulement les tags)</span></div>
                             <div class="mp-bias-chips" id="mp-bias-chips"></div>
-                            <div class="mp-bias-out" id="mp-bias-out"><div style="font-size:12px;color:var(--fx-muted)">Choisis une devise : l'IA relit l'ensemble de tes synthèses, repère tout ce qui la concerne (directement ou via les paires, corrélations et comparaisons) et en dégage le biais.</div></div>
+                            <div class="mp-bias-out" id="mp-bias-out"><div style="font-size:12px;color:var(--fx-muted)">Choisis une devise : l'IA relit toutes tes synthèses de la semaine en cours, repère tout ce qui la concerne (directement ou via les paires, corrélations et comparaisons) et en dégage le biais.</div></div>
                         </div>
                     </div>
 
@@ -4692,18 +4692,18 @@
         if (!out) return;
         biasActiveCcy = ccy;
         renderBiasChips();
-        // On envoie TOUTES les synthèses (pas de filtre par tag) — l'IA repère elle-même ce qui compte.
-        const notes = (allMacroNotes || []).slice()
-            .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
-            .slice(0, 60);
-        if (!notes.length) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">Aucune synthèse enregistrée pour l\'instant.</div>'; return; }
+        // Uniquement les synthèses de la SEMAINE EN COURS (pas de filtre par tag) — l'IA repère elle-même ce qui compte.
+        const wk = currentWeekKey();
+        const notes = (allMacroNotes || []).filter(n => weekStartKey(n.date) === wk)
+            .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+        if (!notes.length) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">Aucune synthèse cette semaine (' + weekLabel(wk) + ').</div>'; return; }
         const corpus = notes.map((n, i) => {
             const figs = [n.consensus ? 'cons. ' + n.consensus : '', n.actual ? 'réel ' + n.actual : '', n.previous ? 'préc. ' + n.previous : ''].filter(Boolean).join(', ');
             const tags = (n.tags || []).length ? ' [tags: ' + n.tags.join(', ') + ']' : '';
             return '#' + (i + 1) + ' [' + (n.date || '?') + '] ' + (n.event || 'synthèse') + tags + (figs ? ' (' + figs + ')' : '') +
                 '\n' + htmlToText(n.analysis).replace(/\s+/g, ' ').trim();
         }).join('\n\n');
-        const prompt = "Tu es analyste macro FX senior. Voici l'INTÉGRALITÉ de mes synthèses personnelles (les plus récentes en premier). Elles ne sont PAS forcément taguées avec la devise concernée.\n\n=== SYNTHÈSES ===\n" + corpus +
+        const prompt = "Tu es analyste macro FX senior. Voici TOUTES mes synthèses de la SEMAINE EN COURS (" + weekLabel(wk) + "), les plus récentes en premier. Elles ne sont PAS forcément taguées avec la devise concernée.\n\n=== SYNTHÈSES DE LA SEMAINE ===\n" + corpus +
             "\n\n=== TÂCHE ===\nAnalyse en PROFONDEUR le biais directionnel actuel sur le " + ccy + ". Ne te limite PAS aux synthèses taguées « " + ccy + " » : parcours TOUTES les synthèses ci-dessus et prends en compte tout ce qui influence " + ccy + ", y compris :\n" +
             "- les mentions indirectes via les paires (ex : une synthèse EUR/USD renseigne aussi sur l'USD ; XAU/USD, GBP/USD, etc.) ;\n" +
             "- les corrélations et comparaisons de force relative (une devise se juge face aux autres) ;\n" +
@@ -4714,11 +4714,11 @@
             "**Contre / risques** : ce qui pourrait invalider le biais.\n" +
             "**Évolution** : comment le biais a bougé sur les synthèses récentes.\n" +
             "Base-toi UNIQUEMENT sur mes synthèses, n'invente aucune donnée. Sois précis et opérationnel.";
-        out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">🧠 L\'IA relit tes ' + notes.length + ' dernières synthèses pour ' + ccy + '…</div>';
+        out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">🧠 L\'IA relit tes ' + notes.length + ' synthèse' + (notes.length > 1 ? 's' : '') + ' de la semaine pour ' + ccy + '…</div>';
         try {
             const txt = await geminiTry(prompt);
             if (!txt || !txt.trim()) throw new Error('réponse vide (quota ?)');
-            out.innerHTML = '<div class="mp-bias-title">Biais ' + ccy + ' — analyse de ' + notes.length + ' synthèse' + (notes.length > 1 ? 's' : '') + '</div>' + mdToHtml(txt.trim());
+            out.innerHTML = '<div class="mp-bias-title">Biais ' + ccy + ' — semaine ' + weekLabel(wk) + ' (' + notes.length + ' synthèse' + (notes.length > 1 ? 's' : '') + ')</div>' + mdToHtml(txt.trim());
         } catch (e) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-red)">IA indisponible : ' + e.message + '</div>'; }
     }
 

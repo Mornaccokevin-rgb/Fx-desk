@@ -2114,6 +2114,51 @@
     .ta-apply { background: var(--fx-vl); border-color: var(--fx-vl); color: #fff; font-weight: 600 }
     .ta-canvas-wrap { overflow: auto; display: flex; justify-content: center; background: #0a0a12; border-radius: 8px }
     .ta-canvas { display: block; touch-action: none; cursor: crosshair; max-width: 100%; }
+    /* Onglets journaux de trading */
+    .jr-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; align-items: center }
+    .jr-tab {
+        background: var(--fx-card2); border: 1px solid var(--fx-bd); color: var(--fx-muted2);
+        border-radius: 8px 8px 0 0; padding: 7px 15px; font-size: 12.5px; font-weight: 600;
+        cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: all 0.15s
+    }
+    .jr-tab:hover { color: var(--fx-vl) }
+    .jr-tab.active { background: var(--fx-vl); border-color: var(--fx-vl); color: #fff }
+    .jr-add {
+        width: 30px; height: 30px; border-radius: 8px; border: 1px dashed var(--fx-bd);
+        background: none; color: var(--fx-vl); font-size: 18px; line-height: 1; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; transition: all 0.15s
+    }
+    .jr-add:hover { border-color: var(--fx-vl); background: rgba(139,124,246,0.1) }
+    .jr-ov {
+        position: fixed; inset: 0; z-index: 99998;
+        background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        display: flex; align-items: flex-start; justify-content: center; padding: 60px 16px; overflow: auto
+    }
+    .jr-box {
+        position: relative; width: 100%; max-width: 460px; margin: auto;
+        background: var(--fx-card); border: 1px solid var(--fx-bd); border-radius: 14px;
+        padding: 22px 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.5)
+    }
+    .jr-close {
+        position: absolute; top: -12px; right: -6px; width: 34px; height: 34px; border-radius: 50%;
+        border: none; background: var(--fx-card2); color: var(--fx-text); cursor: pointer; font-size: 14px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.5)
+    }
+    .jr-title { font-size: 15px; font-weight: 700; color: var(--fx-vl); margin-bottom: 14px }
+    .jr-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px }
+    .jr-row {
+        display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 10px;
+        padding: 11px 13px; cursor: pointer; transition: all 0.15s
+    }
+    .jr-row:hover { border-color: var(--fx-vl) }
+    .jr-row.active { border-color: var(--fx-vl); box-shadow: 0 0 0 1px var(--fx-vl) inset }
+    .jr-row-name { font-size: 13.5px; font-weight: 600; color: var(--fx-text) }
+    .jr-cur { font-size: 10px; color: var(--fx-vl); font-weight: 600 }
+    .jr-row-sub { font-size: 11px; color: var(--fx-muted); margin-top: 2px }
+    .jr-row-pct { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700 }
+    .jr-create, .jr-limit { border-top: 1px solid var(--fx-bd); padding-top: 14px }
+    .jr-create-hd { font-size: 13px; font-weight: 600; color: var(--fx-vl); margin-bottom: 4px }
     .mp-card-big { font-size: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) }
     .mp-card-big .mp-analysis { font-size: 15.5px; line-height: 1.7 }
     .mp-card-big .mp-evt { font-size: 17px }
@@ -3362,6 +3407,7 @@
                         <span class="fx-user-email" id="userEmail">—</span>
                     </div>
                 </div>
+                <div class="jr-tabs" id="jr-tabs"></div>
                 <div class="fx-tabs">
                     <button class="fx-tab active" onclick="fxTab('dashboard',this)">Dashboard</button>
                     <button class="fx-tab" onclick="fxTab('analyse',this)">Analyse</button>
@@ -4244,6 +4290,10 @@
         unsubTrades = null;
     let allTrades = [],
         filteredTrades = [];
+    let rawTrades = [];                 // TOUS les trades (tous journaux)
+    let journals = [];                  // [{id, name, capital}]
+    let activeJournalId = 'main';       // journal affiché
+    const MAX_JOURNALS = 2;
     let userCapital = 0;
     let calYear = new Date().getFullYear(),
         calMonth = new Date().getMonth();
@@ -4298,7 +4348,8 @@
     // ── ACTIONS / INDICES (Alpha Vantage) ────────────────────────
     // Plan gratuit limité (25 req/jour, partagées par la clé) → cache 1×/jour
     // par navigateur, et repli silencieux si le quota est atteint.
-    const AV_KEY = 'OQCHXGPGEY9FAAPB';
+    // Proxy qui cache les clés API (voir cloudflare-worker/). Remplace par TON URL Worker.
+    const PROXY_BASE = 'https://sphinx-proxy.CHANGE-MOI.workers.dev';
     const AV_STOCKS = [['S&P 500', 'SPY'], ['Nasdaq', 'QQQ'], ['Dow', 'DIA'], ['Apple', 'AAPL'], ['Nvidia', 'NVDA']];
     async function fetchStockQuote(sym) {
         const key = 'av_q_' + sym, today = new Date().toISOString().slice(0, 10);
@@ -4307,7 +4358,7 @@
             if (c && c.day === today) return c.data;
         } catch (e) {}
         try {
-            const r = await fetch('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=' + sym + '&apikey=' + AV_KEY);
+            const r = await fetch(PROXY_BASE + '/alpha?p=' + encodeURIComponent('function=GLOBAL_QUOTE&symbol=' + sym));
             const j = await r.json();
             const q = j['Global Quote'];
             if (!q || !q['05. price']) return null; // quota atteint ou symbole vide
@@ -4382,7 +4433,7 @@
         document.getElementById('userAvatar').textContent = initials;
         document.getElementById('userEmail').textContent = user.displayName || user.email;
         loadTrades(user.uid);
-        loadCapitalFS(user.uid);
+        loadJournals(user.uid);
     }
     function switchAuthTab(tab) {
         document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
@@ -4470,12 +4521,18 @@
         unsubTrades = db.collection('users').doc(uid).collection('trades')
         .orderBy('dateOpen', 'asc')
         .onSnapshot(snap => {
-            allTrades = snap.docs.map(d => ({
+            rawTrades = snap.docs.map(d => ({
                 firestoreId: d.id,
                 ...d.data()
             }));
-            renderAll();
+            recomputeActiveJournal();
         }, err => showToast('Erreur: ' + err.message));
+    }
+    // allTrades = trades du journal actif (tout le reste du code s'appuie dessus)
+    function recomputeActiveJournal() {
+        allTrades = rawTrades.filter(t => (t.journalId || 'main') === activeJournalId);
+        renderJournalTabs();
+        renderAll();
     }
     async function saveTrade(trade) {
         const user = auth.currentUser;
@@ -4493,25 +4550,6 @@
         await db.collection('users').doc(user.uid).collection('trades').doc(fid).delete();
     }
 
-    async function saveCapitalFS(uid, val) {
-        if (val !== undefined) {
-            await db.collection('users').doc(uid).collection('settings').doc('capital').set({
-                amount: val
-            });
-        } else {
-            try {
-                const doc = await db.collection('users').doc(uid).collection('settings').doc('capital').get();
-                if (doc.exists) {
-                    userCapital = doc.data().amount;
-                    document.getElementById('capInput').value = userCapital;
-                    renderCapital();
-                }
-            } catch (e) {}
-        }
-    }
-    async function loadCapitalFS(uid) {
-        await saveCapitalFS(uid);
-    }
     async function saveCapital() {
         const val = parseFloat(document.getElementById('capInput').value);
         if (!val || val <= 0) {
@@ -4519,11 +4557,119 @@
             return;
         }
         userCapital = val;
+        const j = journals.find(x => x.id === activeJournalId);
+        if (j) j.capital = val;
         const user = auth.currentUser;
-        if (user)
-            await saveCapitalFS(user.uid, val);
+        if (user) await saveJournals(user.uid);
         renderCapital();
-        showToast('Capital enregistré : $' + val.toLocaleString());
+        renderJournalTabs();
+        showToast('Capital de ce journal enregistré : $' + val.toLocaleString());
+    }
+
+    // ── JOURNAUX DE TRADING (multi-journaux) ──────────────────────
+    function journalDocRef(uid) { return db.collection('users').doc(uid).collection('settings').doc('journals'); }
+    async function saveJournals(uid) {
+        await journalDocRef(uid).set({ list: journals, activeId: activeJournalId });
+    }
+    async function loadJournals(uid) {
+        let data = null;
+        try { const d = await journalDocRef(uid).get(); if (d.exists) data = d.data(); } catch (e) {}
+        if (data && Array.isArray(data.list) && data.list.length) {
+            journals = data.list.map(j => ({ id: j.id, name: j.name || 'Journal', capital: parseFloat(j.capital) || 0 }));
+            activeJournalId = (data.activeId && journals.some(j => j.id === data.activeId)) ? data.activeId : journals[0].id;
+        } else {
+            // Migration : 1er journal "Principal", capital repris de l'ancien réglage
+            let legacyCap = 0;
+            try { const c = await db.collection('users').doc(uid).collection('settings').doc('capital').get(); if (c.exists) legacyCap = parseFloat(c.data().amount) || 0; } catch (e) {}
+            journals = [{ id: 'main', name: 'Principal', capital: legacyCap }];
+            activeJournalId = 'main';
+            await saveJournals(uid);
+        }
+        const j = journals.find(x => x.id === activeJournalId) || journals[0];
+        userCapital = j ? j.capital : 0;
+        const ci = document.getElementById('capInput'); if (ci) ci.value = userCapital || '';
+        renderCapital();
+        renderJournalTabs();
+        recomputeActiveJournal();
+    }
+    function switchJournal(id) {
+        if (id === activeJournalId || !journals.some(j => j.id === id)) return;
+        activeJournalId = id;
+        const j = journals.find(x => x.id === id);
+        userCapital = j ? j.capital : 0;
+        const ci = document.getElementById('capInput'); if (ci) ci.value = userCapital || '';
+        const user = auth.currentUser; if (user) saveJournals(user.uid);
+        renderCapital();
+        recomputeActiveJournal();
+        closeJournalPanel();
+    }
+    function renderJournalTabs() {
+        const bar = document.getElementById('jr-tabs');
+        if (!bar) return;
+        let html = journals.map(j =>
+            '<button type="button" class="jr-tab' + (j.id === activeJournalId ? ' active' : '') + '" onclick="switchJournal(\'' + j.id + '\')">' + tdEsc(j.name) + '</button>'
+        ).join('');
+        html += '<button type="button" class="jr-add" title="Nouveau journal" onclick="openJournalPanel()">+</button>';
+        bar.innerHTML = html;
+    }
+    // Performance % d'un journal = P&L net / capital de départ
+    function journalPerf(id) {
+        const j = journals.find(x => x.id === id);
+        const trs = rawTrades.filter(t => (t.journalId || 'main') === id);
+        const net = trs.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0);
+        const cap = j ? j.capital : 0;
+        return { net, cap, nTrades: trs.length, pct: cap > 0 ? (net / cap * 100) : null };
+    }
+    function openJournalPanel() {
+        closeJournalPanel();
+        const ov = document.createElement('div');
+        ov.className = 'jr-ov'; ov.id = 'jr-ov';
+        const rows = journals.map(j => {
+            const p = journalPerf(j.id);
+            const pctTxt = p.pct == null ? '<span style="color:var(--fx-muted)">définis un capital</span>'
+                : '<span style="color:' + (p.pct >= 0 ? '#22c55e' : '#ef4444') + '">' + (p.pct >= 0 ? '+' : '') + p.pct.toFixed(2) + '%</span>';
+            return '<div class="jr-row' + (j.id === activeJournalId ? ' active' : '') + '" onclick="switchJournal(\'' + j.id + '\')">' +
+                '<div><div class="jr-row-name">' + tdEsc(j.name) + (j.id === activeJournalId ? ' <span class="jr-cur">(actif)</span>' : '') + '</div>' +
+                '<div class="jr-row-sub">' + p.nTrades + ' trade(s) · ' + fmtPnl(p.net) + '</div></div>' +
+                '<div class="jr-row-pct">' + pctTxt + '</div></div>';
+        }).join('');
+        let creator;
+        if (journals.length < MAX_JOURNALS) {
+            creator = '<div class="jr-create">' +
+                '<div class="jr-create-hd">➕ Nouveau journal</div>' +
+                '<div style="font-size:11px;color:var(--fx-muted);margin-bottom:8px">Vierge, identique à l\'actuel (réel, démo, backtest…). Choisis un nom :</div>' +
+                '<div style="display:flex;gap:8px"><input type="text" id="jr-new-name" class="fx-fc" placeholder="ex: Backtest" maxlength="24" style="flex:1">' +
+                '<button type="button" class="fx-submit" style="padding:9px 16px;font-size:12px" onclick="createJournal()">Créer</button></div></div>';
+        } else {
+            creator = '<div class="jr-limit">' +
+                '<div style="font-weight:600;color:var(--fx-vl);margin-bottom:6px">🔒 Limite atteinte (' + MAX_JOURNALS + ' journaux)</div>' +
+                '<div style="font-size:12.5px;line-height:1.6;color:var(--fx-text)">Pour créer un journal supplémentaire, une dérogation est nécessaire. ' +
+                'Contacte le support : <a href="mailto:mornaccokevin@gmail.com?subject=Demande%20de%20journal%20supplémentaire" style="color:var(--fx-vl);font-weight:600">mornaccokevin@gmail.com</a>.</div></div>';
+        }
+        ov.innerHTML = '<div class="jr-box">' +
+            '<button type="button" class="jr-close" onclick="closeJournalPanel()">✕</button>' +
+            '<div class="jr-title">📓 Mes journaux de trading</div>' +
+            '<div class="jr-list">' + rows + '</div>' +
+            creator + '</div>';
+        ov.onclick = e => { if (e.target === ov) closeJournalPanel(); };
+        document.body.appendChild(ov);
+        const inp = document.getElementById('jr-new-name'); if (inp) setTimeout(() => inp.focus(), 40);
+    }
+    function closeJournalPanel() { const ov = document.getElementById('jr-ov'); if (ov) ov.remove(); }
+    async function createJournal() {
+        if (journals.length >= MAX_JOURNALS) { openJournalPanel(); return; }
+        const inp = document.getElementById('jr-new-name');
+        const name = (inp && inp.value.trim()) || ('Journal ' + (journals.length + 1));
+        const id = 'j' + Date.now().toString(36);
+        journals.push({ id, name: name.slice(0, 24), capital: 0 });
+        activeJournalId = id;
+        userCapital = 0;
+        const user = auth.currentUser; if (user) await saveJournals(user.uid);
+        const ci = document.getElementById('capInput'); if (ci) ci.value = '';
+        closeJournalPanel();
+        renderCapital();
+        recomputeActiveJournal();
+        showToast('Journal « ' + name + ' » créé ✅');
     }
 
     // ── IMPORT / EXPORT ───────────────────────────────────────────
@@ -4543,6 +4689,7 @@
                 arr.forEach(t => {
                     const d = ref.doc();
                     delete t.firestoreId;
+                    t.journalId = activeJournalId;
                     batch.set(d, t);
                 });
                 await batch.commit();
@@ -4608,7 +4755,7 @@
                 document.getElementById('loadingScreen').style.display = 'flex';
                 const ref = db.collection('users').doc(auth.currentUser.uid).collection('trades');
                 const batch = db.batch();
-                fresh.forEach(t => batch.set(ref.doc(), t));
+                fresh.forEach(t => { t.journalId = activeJournalId; batch.set(ref.doc(), t); });
                 await batch.commit();
                 document.getElementById('loadingScreen').style.display = 'none';
                 showToast(fresh.length + ' trade(s) MT5 importé(s) ✅' + (parsed.length - fresh.length ? ' (' + (parsed.length - fresh.length) + ' déjà présents ignorés)' : ''));
@@ -4834,8 +4981,7 @@
         else { if (mpView !== 'dash') setMpView('dash'); mpTagFilter = t; renderMacroNotes(); }
     }
 
-    // ── IA (Gemini) — biais par devise, analyse profonde de TOUTES les synthèses ──
-    const GEMINI_KEY = 'AQ.Ab8RN6Ifg1zGbECBJY_fVCl5Ag5Ky_bripuLqE9oZxC8RzvXsA';
+    // ── IA (Gemini via proxy) — biais par devise, analyse profonde de TOUTES les synthèses ──
     const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
     function mdToHtml(t) {
         let s = (t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -4850,10 +4996,9 @@
         catch (e) { return (html || '').replace(/<[^>]+>/g, ' '); }
     }
     async function geminiOne(prompt, model, useSearch) {
-        const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + GEMINI_KEY;
         const body = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.35, maxOutputTokens: 1400 } };
         if (useSearch) body.tools = [{ google_search: {} }];
-        const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const r = await fetch(PROXY_BASE + '/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, payload: body }) });
         const d = await r.json();
         if (!r.ok) throw new Error((d.error && d.error.message) || ('HTTP ' + r.status));
         const c = d.candidates && d.candidates[0], parts = c && c.content && c.content.parts;
@@ -7063,6 +7208,7 @@
             closePrice: fd.get('closePrice') || '',
             commission: parseFloat(fd.get('commission')) || 0,
             swap: parseFloat(fd.get('swap')) || 0,
+            journalId: activeJournalId,
             month: MONTHS[dt.getMonth()] + ' ' + dt.getFullYear(),
             quarter: 'Q' + Math.ceil((dt.getMonth() + 1) / 3) + ' ' + dt.getFullYear(),
             createdAt: new Date().toISOString()
@@ -7226,7 +7372,8 @@
         if (!user) { showToast('Connecte-toi d\'abord'); return; }
         const n = (allTrades || []).length;
         if (!n) { showToast('Aucun trade à supprimer.'); return; }
-        if (!confirm('⚠️ Réinitialiser le tracker ?\n\nCela va SUPPRIMER DÉFINITIVEMENT tes ' + n + ' trades enregistrés.\n\nConfirmation 1 / 3 — Continuer ?')) return;
+        const jName = (journals.find(j => j.id === activeJournalId) || {}).name || 'ce journal';
+        if (!confirm('⚠️ Réinitialiser le journal « ' + jName + ' » ?\n\nCela va SUPPRIMER DÉFINITIVEMENT ses ' + n + ' trades (les autres journaux ne sont pas touchés).\n\nConfirmation 1 / 3 — Continuer ?')) return;
         if (!confirm('🚨 Es-tu vraiment sûr ?\n\nCette action est IRRÉVERSIBLE. Aucune récupération possible.\n\nConfirmation 2 / 3 — Continuer ?')) return;
         const typed = prompt('Dernière étape — Confirmation 3 / 3.\n\nPour confirmer la suppression des ' + n + ' trades, tape SUPPRIMER en majuscules :');
         if (typed !== 'SUPPRIMER') { showToast('Réinitialisation annulée.'); return; }

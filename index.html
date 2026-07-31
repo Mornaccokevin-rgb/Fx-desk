@@ -15,6 +15,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
@@ -3633,6 +3634,7 @@
 
                     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importTrades(event)">
                     <input type="file" id="mt5File" accept=".html,.htm" style="display:none" onchange="importMT5Report(event)">
+                    <input type="file" id="tvFile" accept=".xlsx,.xls" style="display:none" onchange="importTVReport(event)">
 
                     <div class="fx-form-card">
                         <div style="font-size:14px;font-weight:600;color:var(--fx-vl);margin-bottom:18px">📝 Formulaire de Trade</div>
@@ -3817,6 +3819,7 @@
                                 <button type="submit" class="fx-submit" id="submitTradeBtn">Ajouter le trade →</button>
                                 <button type="button" class="fx-btn-reset" id="cancelEditBtn" style="display:none" onclick="cancelEdit()">✕ Annuler l'édition</button>
                                 <button type="button" class="fx-btn-export" onclick="document.getElementById('mt5File').click()">📊 Importer rapport MT5</button>
+                                <button type="button" class="fx-btn-export" onclick="document.getElementById('tvFile').click()">📈 Importer TradingView</button>
                                 <button type="button" class="fx-btn-export" onclick="document.getElementById('importFile').click()">⬆️ Import JSON</button>
                                 <button type="button" class="fx-btn-export" onclick="exportTrades()">⬇️ Export JSON</button>
                                 <button type="button" class="fx-btn-export" onclick="exportCSV()">⬇️ Export CSV</button>
@@ -4766,6 +4769,100 @@
             event.target.value = '';
         };
         reader.readAsText(file, 'utf-16le'); // les rapports MT5 sont en UTF-16
+    }
+
+    // ── IMPORT TRADINGVIEW (.xlsx) — export "Liste des transactions" ──
+    // Feuille « Trades » : 1 trade = 2 lignes (entrée + sortie) même n°.
+    // Le symbole est déduit du nom de fichier (ex: ..._EURGBP_...).
+    function tvPairFromName(name) {
+        const base = String(name || '').replace(/\.[^.]+$/, '');
+        const skip = new Set(['REPLAY', 'TRADING', 'FX', 'EXPORT', 'LIST', 'TRADES', 'STRATEGY', 'TESTER', 'BACKTEST']);
+        for (const t of base.split(/[_\-\s]+/)) { const u = t.toUpperCase(); if (/^[A-Z]{6,7}$/.test(u) && !skip.has(u)) return u; }
+        const m = base.toUpperCase().match(/(XAU|XAG|[A-Z]{3})(USD|GBP|JPY|CHF|CAD|AUD|NZD|EUR)/);
+        return m ? m[0] : '';
+    }
+    function parseTVWorkbook(wb, fileName) {
+        const pair = tvPairFromName(fileName) || 'N/A';
+        let ws = wb.Sheets['Trades'];
+        if (!ws) {
+            for (const nm of wb.SheetNames) {
+                const rr = XLSX.utils.sheet_to_json(wb.Sheets[nm], { header: 1 });
+                if (rr[0] && rr[0].some(h => /num[eé]ro de trade|trade #|date et heure|date\/time/i.test(String(h)))) { ws = wb.Sheets[nm]; break; }
+            }
+        }
+        if (!ws) return [];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        if (rows.length < 2) return [];
+        const H = rows[0].map(x => String(x == null ? '' : x));
+        const find = (...keys) => { for (let i = 0; i < H.length; i++) { const h = H[i].toLowerCase(); if (keys.some(k => h.includes(k))) return i; } return -1; };
+        const cNum = find('numéro de trade', 'trade #', 'trade num');
+        const cType = H.findIndex(h => /^\s*type\s*$/i.test(h));
+        const cDate = find('date et heure', 'date/time', 'date', 'heure');
+        const cPrice = find('prix', 'price');
+        const cQty = find('taille (qté)', 'qté', 'quantity', 'qty', 'contrats', 'contracts');
+        const cPnl = find('p&l net', 'net p&l', 'profit net');
+        const cComm = find('commission');
+        const iNum = cNum >= 0 ? cNum : 0;
+        const dISO = d => { if (d instanceof Date && !isNaN(d)) return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); const m = /(\d{4})[-/.](\d{2})[-/.](\d{2})/.exec(String(d || '')); return m ? m[1] + '-' + m[2] + '-' + m[3] : ''; };
+        const numOf = v => { const f = parseFloat(String(v).replace(/\s/g, '').replace(',', '.')); return isNaN(f) ? 0 : f; };
+        const groups = {};
+        for (let r = 1; r < rows.length; r++) { const row = rows[r]; if (!row || !row.length) continue; const num = row[iNum]; if (num == null || num === '') continue; (groups[num] = groups[num] || []).push(row); }
+        const out = [];
+        Object.keys(groups).forEach(k => {
+            const g = groups[k];
+            const typeOf = row => cType >= 0 ? String(row[cType] || '') : '';
+            let entry = g.find(row => /entr|entry/i.test(typeOf(row))) || g[g.length - 1];
+            const exits = g.filter(row => /sort|exit|clos/i.test(typeOf(row)));
+            const lastExit = exits.length ? exits[exits.length - 1] : g[0];
+            const et = typeOf(entry);
+            const dir = /short|sell/i.test(et) ? 'SHORT' : 'LONG';
+            let pnl = exits.length ? exits.reduce((s, row) => s + numOf(row[cPnl]), 0) : numOf(entry[cPnl]);
+            pnl = Math.round(pnl * 100) / 100;
+            const comm = Math.round(g.reduce((s, row) => s + (cComm >= 0 ? numOf(row[cComm]) : 0), 0) * 100) / 100;
+            const dateOpen = dISO(cDate >= 0 ? entry[cDate] : '');
+            const dateClose = dISO(cDate >= 0 ? lastExit[cDate] : '') || dateOpen;
+            const openP = cPrice >= 0 ? entry[cPrice] : '';
+            const closeP = cPrice >= 0 ? lastExit[cPrice] : '';
+            const vol = cQty >= 0 ? entry[cQty] : '';
+            const outcome = pnl > 0 ? 'WIN' : (pnl < 0 ? 'LOSS' : 'BE');
+            out.push({
+                pair, direction: dir, outcome, dateOpen, dateClose,
+                timeframe: '', pnl, rr: '', score: '', riskPct: '',
+                session: '', orderType: 'Market', entryCondition: '', sentiment: 'Neutre', geopo: 'NON', psychology: 'OFF',
+                notes: 'Importé TradingView · #' + k + ' · ' + dir + ' · entrée ' + openP + ' → sortie ' + closeP + ' · comm ' + comm,
+                tvId: pair + '#' + k + '@' + dateOpen, volume: String(vol), openPrice: String(openP), closePrice: String(closeP), commission: comm, swap: 0
+            });
+        });
+        out.sort((a, b) => String(a.dateOpen).localeCompare(String(b.dateOpen)));
+        return out;
+    }
+    function importTVReport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (typeof XLSX === 'undefined') { showToast('Librairie xlsx non chargée — recharge la page.'); event.target.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+                const parsed = parseTVWorkbook(wb, file.name);
+                if (!parsed.length) throw new Error('Aucun trade trouvé (feuille « Trades » introuvable ou vide).');
+                const existing = new Set((allTrades || []).map(t => t.tvId).filter(Boolean));
+                const fresh = parsed.filter(t => !existing.has(t.tvId));
+                if (!fresh.length) { showToast('Déjà à jour — ' + parsed.length + ' trades déjà importés.'); event.target.value = ''; return; }
+                document.getElementById('loadingScreen').style.display = 'flex';
+                const ref = db.collection('users').doc(auth.currentUser.uid).collection('trades');
+                const batch = db.batch();
+                fresh.forEach(t => { t.journalId = activeJournalId; batch.set(ref.doc(), t); });
+                await batch.commit();
+                document.getElementById('loadingScreen').style.display = 'none';
+                showToast(fresh.length + ' trade(s) TradingView importé(s) ✅' + (parsed.length - fresh.length ? ' (' + (parsed.length - fresh.length) + ' déjà présents)' : ''));
+            } catch (err) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                showToast('Erreur import TradingView : ' + err.message);
+            }
+            event.target.value = '';
+        };
+        reader.readAsArrayBuffer(file);
     }
 
     function exportTrades() {

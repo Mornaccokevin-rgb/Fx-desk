@@ -2000,6 +2000,8 @@
         margin-left: auto
     }
     .mp-expand:hover { border-color: var(--fx-vl); color: var(--fx-vl) }
+    .mp-tools { display: flex; gap: 6px; margin-left: auto; align-items: flex-start }
+    .mp-tools .mp-expand { margin-left: 0 }
     /* Agrandissement au premier plan */
     .mp-note-ov {
         position: fixed; inset: 0; z-index: 99998;
@@ -4683,24 +4685,35 @@
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
-                const arr = JSON.parse(e.target.result);
-                if (!Array.isArray(arr))
-                    throw new Error('Format JSON invalide.');
-                document.getElementById('loadingScreen').style.display = 'flex';
-                const batch = db.batch();
-                const ref = db.collection('users').doc(auth.currentUser.uid).collection('trades');
-                arr.forEach(t => {
-                    const d = ref.doc();
-                    delete t.firestoreId;
-                    t.journalId = activeJournalId;
-                    batch.set(d, t);
+                if (!auth.currentUser) throw new Error('connecte-toi d\'abord.');
+                let raw;
+                try { raw = JSON.parse(e.target.result); }
+                catch (pe) { throw new Error('fichier JSON illisible (' + pe.message + ').'); }
+                // Tolère : tableau direct, ou objet { trades: [...] }
+                const arr = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.trades) ? raw.trades : null);
+                if (!arr) throw new Error('le fichier ne contient pas un tableau de trades.');
+                if (!arr.length) throw new Error('le fichier ne contient aucun trade.');
+                // Nettoyage : retire firestoreId + toute valeur undefined (refusée par Firestore)
+                const clean = arr.filter(t => t && typeof t === 'object').map(t => {
+                    const o = {};
+                    Object.keys(t).forEach(k => { if (k !== 'firestoreId' && t[k] !== undefined) o[k] = t[k]; });
+                    o.journalId = activeJournalId;
+                    return o;
                 });
-                await batch.commit();
+                if (!clean.length) throw new Error('aucun trade valide trouvé.');
+                document.getElementById('loadingScreen').style.display = 'flex';
+                const ref = db.collection('users').doc(auth.currentUser.uid).collection('trades');
+                // Batchs de 400 (limite Firestore = 500)
+                for (let i = 0; i < clean.length; i += 400) {
+                    const batch = db.batch();
+                    clean.slice(i, i + 400).forEach(t => batch.set(ref.doc(), t));
+                    await batch.commit();
+                }
                 document.getElementById('loadingScreen').style.display = 'none';
-                showToast(arr.length + ' trades importés ✅');
+                showToast(clean.length + ' trade(s) importé(s) dans « ' + ((journals.find(j => j.id === activeJournalId) || {}).name || 'ce journal') + ' » ✅');
             } catch (err) {
                 document.getElementById('loadingScreen').style.display = 'none';
-                showToast('Erreur import: ' + err.message);
+                showToast('Erreur import JSON : ' + err.message);
             }
             event.target.value = '';
         };
@@ -5447,6 +5460,76 @@
         document.body.appendChild(ov);
     }
 
+    // ── COPIER / TÉLÉCHARGER une synthèse (mise en forme conservée) ──
+    function noteContentHTML(n) {
+        const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        let h = '';
+        h += '<h1 style="font-family:Arial,Helvetica,sans-serif;font-size:22px;color:#111;margin:0 0 4px">' + esc(n.event || 'Synthèse') + '</h1>';
+        h += '<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#777;margin-bottom:14px">' + esc(fmtMacroDate(n.date)) + (n.authorEmail ? ' · ' + esc(n.authorEmail.split('@')[0]) : '') + '</div>';
+        const figs = [];
+        if (n.consensus) figs.push('Consensus : <b>' + esc(n.consensus) + '</b>');
+        if (n.actual) figs.push('Réel : <b>' + esc(n.actual) + '</b>');
+        if (n.previous) figs.push('Précédent : <b>' + esc(n.previous) + '</b>');
+        if (figs.length) h += '<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#333;margin-bottom:12px">' + figs.join(' &nbsp;·&nbsp; ') + '</div>';
+        if (Array.isArray(n.subs) && n.subs.length) {
+            h += '<table style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:12px;margin-bottom:14px"><thead><tr>' +
+                ['Sous-composante', 'Cons.', 'Réel', 'Préc.'].map(x => '<th style="border:1px solid #ddd;padding:5px 9px;background:#f4f4f4;text-align:left">' + x + '</th>').join('') + '</tr></thead><tbody>';
+            n.subs.forEach(s => { h += '<tr>' + [s.name, s.consensus, s.actual, s.previous].map(v => '<td style="border:1px solid #ddd;padding:5px 9px">' + esc(v || '—') + '</td>').join('') + '</tr>'; });
+            h += '</tbody></table>';
+        }
+        h += '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#222">' + sanitizeRich(n.analysis || '') + '</div>';
+        const imgs = Array.isArray(n.images) && n.images.length ? n.images : (n.image ? [n.image] : []);
+        imgs.forEach(src => { h += '<div style="margin-top:12px"><img src="' + src + '" style="max-width:100%;border-radius:8px"/></div>'; });
+        if (Array.isArray(n.tags) && n.tags.length) h += '<div style="margin-top:16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#8b7cf6">' + n.tags.map(t => '#' + esc(t)).join(' &nbsp;') + '</div>';
+        return h;
+    }
+    function noteStandaloneHTML(n) {
+        return '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+            '<title>' + String(n.event || 'Synthèse').replace(/[<>]/g, '') + '</title></head>' +
+            '<body style="max-width:760px;margin:32px auto;padding:0 22px;background:#fff;color:#111">' + noteContentHTML(n) + '</body></html>';
+    }
+    async function copyNote(fid) {
+        const n = allMacroNotes.find(x => x.firestoreId === fid);
+        if (!n) return;
+        const html = noteContentHTML(n);
+        const tmp = document.createElement('div'); tmp.innerHTML = html;
+        const text = tmp.innerText;
+        try {
+            if (navigator.clipboard && window.ClipboardItem) {
+                await navigator.clipboard.write([new ClipboardItem({
+                    'text/html': new Blob([html], { type: 'text/html' }),
+                    'text/plain': new Blob([text], { type: 'text/plain' })
+                })]);
+            } else {
+                await navigator.clipboard.writeText(text);
+            }
+            showToast('Synthèse copiée (mise en forme) ✅');
+        } catch (e) {
+            // Repli : sélection + execCommand('copy')
+            try {
+                const holder = document.createElement('div');
+                holder.style.cssText = 'position:fixed;left:-9999px;top:0';
+                holder.innerHTML = html;
+                document.body.appendChild(holder);
+                const sel = window.getSelection(), r = document.createRange();
+                r.selectNodeContents(holder); sel.removeAllRanges(); sel.addRange(r);
+                document.execCommand('copy');
+                sel.removeAllRanges(); holder.remove();
+                showToast('Synthèse copiée (mise en forme) ✅');
+            } catch (e2) { showToast('Copie impossible : ' + e.message); }
+        }
+    }
+    function downloadNote(fid) {
+        const n = allMacroNotes.find(x => x.firestoreId === fid);
+        if (!n) return;
+        const blob = new Blob([noteStandaloneHTML(n)], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob), a = document.createElement('a');
+        const safe = (n.event || 'synthese').replace(/[^\w\-]+/g, '_').slice(0, 50);
+        a.href = url; a.download = 'synthese_' + (n.date || '') + '_' + safe + '.html'; a.click();
+        URL.revokeObjectURL(url);
+        showToast('Synthèse téléchargée ✅');
+    }
+
     // ── FICHE DÉTAILLÉE D'UN TRADE (données + journal texte/images) ──
     function tdEsc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     // Compresse/redimensionne une image → dataURL JPEG léger (base64 stocké dans Firestore)
@@ -6161,6 +6244,17 @@
 
         head.append(time, evt);
 
+        const tools = document.createElement('div');
+        tools.className = 'mp-tools';
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'mp-expand'; copyBtn.type = 'button'; copyBtn.textContent = '📋';
+        copyBtn.title = 'Copier la synthèse (mise en forme conservée)';
+        copyBtn.onclick = (e) => { e.stopPropagation(); copyNote(n.firestoreId); };
+        const dlBtn = document.createElement('button');
+        dlBtn.className = 'mp-expand'; dlBtn.type = 'button'; dlBtn.textContent = '⬇️';
+        dlBtn.title = 'Télécharger la synthèse (.html, même mise en page)';
+        dlBtn.onclick = (e) => { e.stopPropagation(); downloadNote(n.firestoreId); };
+        tools.append(copyBtn, dlBtn);
         if (!expanded) {
             const exp = document.createElement('button');
             exp.className = 'mp-expand';
@@ -6168,8 +6262,9 @@
             exp.textContent = '⤢';
             exp.title = 'Agrandir';
             exp.onclick = (e) => { e.stopPropagation(); expandNote(n.firestoreId); };
-            head.appendChild(exp);
+            tools.appendChild(exp);
         }
+        head.appendChild(tools);
 
         if (isMacroEditor()) {
             const actions = document.createElement('div');

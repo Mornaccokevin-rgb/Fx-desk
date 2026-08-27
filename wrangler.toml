@@ -1,0 +1,7 @@
+# Déploiement du site statique Sphinx Alliance via Cloudflare Workers (Static Assets).
+# Sert simplement les fichiers du repo (index.html) — aucun code serveur.
+name = "sphinx-alliance"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "."

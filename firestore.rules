@@ -42,10 +42,17 @@ service cloud.firestore {
     //  messages côté client + modération).
     match /macroChat/{msgId} {
       allow read:   if isSignedIn();
+      // Création : uniquement pour soi-même (authorUid == son propre uid),
+      // texte non vide et borné. Empêche l'usurpation d'auteur.
       allow create: if isSignedIn()
                     && request.resource.data.text is string
-                    && request.resource.data.text.size() <= 500;
-      allow delete: if isSignedIn();
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 500
+                    && request.resource.data.authorUid == request.auth.uid;
+      // Suppression : son propre message OU un rédacteur (modération/purge).
+      allow delete: if isSignedIn()
+                    && (isMacroEditor()
+                        || resource.data.authorUid == request.auth.uid);
       // Modification réservée aux rédacteurs (épinglage des messages).
       allow update: if isMacroEditor();
     }

@@ -1904,62 +1904,6 @@
         padding: 0;
         margin-bottom: 14px
     }
-    /* Biais par devise (IA) */
-    .mp-bias {
-        margin-top: 26px;
-        background: var(--fx-card);
-        border: 1px solid var(--fx-bd);
-        border-radius: 12px;
-        padding: 16px 18px
-    }
-    .mp-bias-hd {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--fx-vl);
-        margin-bottom: 12px
-    }
-    .mp-bias-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 7px;
-        margin-bottom: 12px
-    }
-    .mp-bias-chip {
-        background: var(--fx-card2);
-        border: 1px solid var(--fx-bd);
-        color: var(--fx-text);
-        border-radius: 20px;
-        padding: 5px 12px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: 'Space Grotesk', sans-serif;
-        transition: all 0.15s
-    }
-    .mp-bias-chip:hover { border-color: var(--fx-vl); color: var(--fx-vl) }
-    .mp-bias-chip.active {
-        background: var(--fx-vl);
-        border-color: var(--fx-vl);
-        color: #fff
-    }
-    .mp-bias-out {
-        font-size: 13px;
-        line-height: 1.6;
-        color: var(--fx-text);
-        border-top: 1px solid var(--fx-bd);
-        padding-top: 12px
-    }
-    .mp-bias-out strong { color: var(--fx-vl) }
-    .mp-bias-out h3 { font-size: 13px; color: var(--fx-vl); margin: 10px 0 4px }
-    .mp-bias-title {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--fx-vl);
-        margin-bottom: 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.03em
-    }
-
     .mp-count {
         font-size: 11px;
         color: var(--fx-muted);
@@ -3196,12 +3140,6 @@
             <!-- Portail d'accueil -->
             <div class="landing-intro" id="landing-intro">
 
-                <!-- BANDEAU MARCHÉS (cours FX live via Frankfurter) -->
-                <div class="sa-ticker" id="sa-ticker">
-                    <div class="sa-ticker-lbl"><span class="sa-ticker-dot"></span> MARCHÉS</div>
-                    <div class="sa-ticker-view"><div class="sa-ticker-track" id="sa-ticker-track">Chargement des cours…</div></div>
-                </div>
-
                 <!-- HERO -->
                 <section class="sa-hero">
                     <div class="sa-hero-inner">
@@ -3220,14 +3158,8 @@
                 <!-- MODULES -->
                 <section class="sa-section" id="sa-modules">
                     <p class="sa-sec-eyebrow">La plateforme</p>
-                    <h2 class="sa-sec-title">Trois modules, un seul edge</h2>
+                    <h2 class="sa-sec-title">Deux modules, un seul edge</h2>
                     <div class="sa-mods">
-                        <div class="sa-mod">
-                            <div class="sa-mod-badge"><span></span>ACTIF</div>
-                            <div class="sa-mod-icon">🌍</div>
-                            <h3>FX Macro Compass</h3>
-                            <p>Terminal macro forex façon Bloomberg : 9 devises notées /100 sur la croissance, l'inflation, la politique monétaire et la géopolitique — avec news live et attentes de taux.</p>
-                        </div>
                         <div class="sa-mod">
                             <div class="sa-mod-badge"><span></span>ACTIF</div>
                             <div class="sa-mod-icon">📈</div>
@@ -3339,18 +3271,6 @@
             <div class="hub-rule"></div>
             <p class="hub-eye">Modules</p>
             <div class="hub-grid">
-
-                <!-- FX Macro Compass — ACTIF -->
-                <div class="mod-card live" onclick="openScreen('fxmacro')">
-                    <div class="mod-status">
-                        <span class="dot"></span>
-                        Actif
-                    </div>
-                    <div class="mod-icon">🌍</div>
-                    <div class="mod-name">FX Macro Compass</div>
-                    <div class="mod-desc">Terminal macro forex façon Bloomberg : 9 devises notées /100 (croissance, inflation, politique monétaire, géopolitique) &amp; news live.</div>
-                    <div class="mod-arr">→</div>
-                </div>
 
                 <!-- Performance Tracker — ACTIF -->
                 <div class="mod-card live" onclick="openScreen('fxdesk')">
@@ -3868,18 +3788,7 @@
         </div>
     </div>
 
-    <!-- ══════ FX MACRO COMPASS ══════ -->
-    <div id="fxmacro" class="screen">
-        <nav class="fx-topbar">
-            <button class="fx-topbar-back" onclick="openScreen('hub')">← Hub</button>
-            <div class="topbar-sep"></div>
-            <span class="topbar-emb">⚜</span>
-            <span class="topbar-brand">Sphinx Alliance</span>
-            <div class="topbar-sep"></div>
-            <span class="topbar-mod" style="color:var(--fx-vl)">FX Macro Compass</span>
-        </nav>
-        <iframe id="fxMacroFrame" title="FX Macro Terminal" style="width:100%;height:calc(100vh - 52px);border:0;display:block;background:#05050c" src="fx-terminal.html"></iframe>
-    </div>
+    <!-- FX Macro Compass retiré du site en ligne (gardé en local : fx-terminal.html) -->
 
     <!-- ══════ JOURNAL DE SYNTHÈSE MACRO (Macro Prep) ══════ -->
     <div id="macroprep" class="screen">
@@ -4029,13 +3938,6 @@
                             <h2 style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0">📚 Historique — par semaine</h2>
                         </div>
                         <div class="mp-weeks" id="mp-weeks"></div>
-
-                        <!-- Biais par devise (IA, analyse profonde de toutes les synthèses) -->
-                        <div class="mp-bias" id="mp-bias">
-                            <div class="mp-bias-hd">🧠 Biais par devise <span style="font-weight:400;color:var(--fx-muted);font-size:11px">(IA — analyse en profondeur toutes tes synthèses de la semaine en cours, pas seulement les tags)</span></div>
-                            <div class="mp-bias-chips" id="mp-bias-chips"></div>
-                            <div class="mp-bias-out" id="mp-bias-out"><div style="font-size:12px;color:var(--fx-muted)">Choisis une devise : l'IA relit toutes tes synthèses de la semaine en cours, repère tout ce qui la concerne (directement ou via les paires, corrélations et comparaisons) et en dégage le biais.</div></div>
-                        </div>
                     </div>
 
                     <!-- Détail d'une semaine -->
@@ -4241,7 +4143,7 @@
 
     // ── NAVIGATION ────────────────────────────────────────────────
     // Tout le site est derrière la connexion : ces écrans exigent un user authentifié.
-    const PROTECTED_SCREENS = ['hub', 'fxdesk', 'fxmacro', 'macroprep'];
+    const PROTECTED_SCREENS = ['hub', 'fxdesk', 'macroprep'];
     function openScreen(id) {
         if (PROTECTED_SCREENS.includes(id) && !(auth && auth.currentUser))
             id = 'landing';
@@ -4307,8 +4209,6 @@
 
     window.addEventListener('load', function() {
         initThemeGlobal();
-        fetchLandingTicker();
-        setInterval(fetchLandingTicker, 15 * 60 * 1000); // rafraîchi toutes les 15 min
         if (typeof firebase === 'undefined')
             return;
         try {
@@ -4350,88 +4250,6 @@
         hideAuthErr();
     }
 
-    // ── ACTIONS / INDICES (Alpha Vantage) ────────────────────────
-    // Plan gratuit limité (25 req/jour, partagées par la clé) → cache 1×/jour
-    // par navigateur, et repli silencieux si le quota est atteint.
-    // Proxy qui cache les clés API (voir cloudflare-worker/). Remplace par TON URL Worker.
-    const PROXY_BASE = 'https://sphinx-proxy.CHANGE-MOI.workers.dev';
-    const AV_STOCKS = [['S&P 500', 'SPY'], ['Nasdaq', 'QQQ'], ['Dow', 'DIA'], ['Apple', 'AAPL'], ['Nvidia', 'NVDA']];
-    async function fetchStockQuote(sym) {
-        const key = 'av_q_' + sym, today = new Date().toISOString().slice(0, 10);
-        try {
-            const c = JSON.parse(localStorage.getItem(key) || 'null');
-            if (c && c.day === today) return c.data;
-        } catch (e) {}
-        try {
-            const r = await fetch(PROXY_BASE + '/alpha?p=' + encodeURIComponent('function=GLOBAL_QUOTE&symbol=' + sym));
-            const j = await r.json();
-            const q = j['Global Quote'];
-            if (!q || !q['05. price']) return null; // quota atteint ou symbole vide
-            const data = { price: parseFloat(q['05. price']), chg: parseFloat(q['10. change percent']) };
-            localStorage.setItem(key, JSON.stringify({ day: today, data: data }));
-            return data;
-        } catch (e) { return null; }
-    }
-    async function buildStockItems() {
-        try {
-            const res = await Promise.all(AV_STOCKS.map(([lbl, sym]) => fetchStockQuote(sym).then(d => [lbl, d])));
-            return res.map(([lbl, d]) => {
-                if (!d || isNaN(d.price)) return '';
-                const up = (d.chg || 0) >= 0, cls = up ? 'sa-up' : 'sa-down', arr = up ? ' ▲' : ' ▼';
-                const chg = isNaN(d.chg) ? '' : ' ' + (up ? '+' : '') + d.chg.toFixed(2) + '%';
-                return '<span class="sa-tk">' + lbl + ' <b class="' + cls + '">' + d.price.toFixed(2) + chg + arr + '</b></span>';
-            }).filter(Boolean).join('');
-        } catch (e) { return ''; }
-    }
-
-    // ── BANDEAU MARCHÉS (landing) — cours FX via Frankfurter (gratuit, sans clé) ──
-    async function fetchLandingTicker() {
-        const track = document.getElementById('sa-ticker-track');
-        if (!track) return;
-        const BASE = 'https://api.frankfurter.dev/v2/rates?base=USD';
-        const toMap = arr => {
-            const m = {};
-            (Array.isArray(arr) ? arr : []).forEach(r => { m[r.quote] = r.rate; });
-            return m;
-        };
-        const val = (map, ccy, inv) => {
-            const r = map[ccy];
-            if (!r) return null;
-            return inv ? 1 / r : r;
-        };
-        try {
-            const prevDate = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
-            const [lr, pr] = await Promise.all([
-                fetch(BASE),
-                fetch(BASE + '&date=' + prevDate)
-            ]);
-            const L = toMap(await lr.json()), P = toMap(await pr.json());
-            // [label, devise, inverser(USD→X), décimales]
-            const pairs = [
-                ['EUR/USD', 'EUR', true, 4], ['GBP/USD', 'GBP', true, 4], ['USD/JPY', 'JPY', false, 2],
-                ['USD/CHF', 'CHF', false, 4], ['AUD/USD', 'AUD', true, 4], ['USD/CAD', 'CAD', false, 4],
-                ['NZD/USD', 'NZD', true, 4], ['USD/CNH', 'CNH', false, 4],
-                ['XAU/USD', 'XAU', true, 1], ['XAG/USD', 'XAG', true, 2]
-            ];
-            const fxItems = pairs.map(([lbl, ccy, inv, dp]) => {
-                const v = val(L, ccy, inv), pv = val(P, ccy, inv);
-                if (v == null) return '';
-                let cls = '', arr = '';
-                if (pv != null && Math.abs(v - pv) > 1e-9) {
-                    const up = v > pv;
-                    cls = up ? 'sa-up' : 'sa-down';
-                    arr = up ? ' ▲' : ' ▼';
-                }
-                return '<span class="sa-tk">' + lbl + ' <b class="' + cls + '">' + v.toFixed(dp) + arr + '</b></span>';
-            }).filter(Boolean).join('');
-            // Actions/indices (Alpha Vantage) — n'empêche pas le FX si indisponible
-            const stockItems = await buildStockItems();
-            const all = fxItems + stockItems;
-            track.innerHTML = all ? (all + all) : 'Cours indisponibles';
-        } catch (e) {
-            track.textContent = 'Cours de marché momentanément indisponibles';
-        }
-    }
     function showFxApp(user) {
         document.getElementById('fx-main').classList.add('active');
         const initials = (user.displayName || user.email || '?')[0].toUpperCase();
@@ -5091,82 +4909,6 @@
         else { if (mpView !== 'dash') setMpView('dash'); mpTagFilter = t; renderMacroNotes(); }
     }
 
-    // ── IA (Gemini via proxy) — biais par devise, analyse profonde de TOUTES les synthèses ──
-    const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
-    function mdToHtml(t) {
-        let s = (t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        s = s.replace(/^\s*###?\s+(.+)$/gm, '<h3>$1</h3>');
-        s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-        s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
-        s = s.replace(/\r?\n/g, '<br>');
-        return s;
-    }
-    function htmlToText(html) {
-        try { return new DOMParser().parseFromString(html || '', 'text/html').body.innerText || ''; }
-        catch (e) { return (html || '').replace(/<[^>]+>/g, ' '); }
-    }
-    async function geminiOne(prompt, model, useSearch) {
-        const body = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.35, maxOutputTokens: 1400 } };
-        if (useSearch) body.tools = [{ google_search: {} }];
-        const r = await fetch(PROXY_BASE + '/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, payload: body }) });
-        const d = await r.json();
-        if (!r.ok) throw new Error((d.error && d.error.message) || ('HTTP ' + r.status));
-        const c = d.candidates && d.candidates[0], parts = c && c.content && c.content.parts;
-        return parts ? parts.map(p => p.text || '').join('') : '';
-    }
-    async function geminiTry(prompt) {
-        let lastErr = 'aucun modèle disponible';
-        for (const model of GEMINI_MODELS) {
-            for (const useSearch of [false, true]) {
-                try { const t = await geminiOne(prompt, model, useSearch); if (t && t.trim()) return t; }
-                catch (e) { lastErr = e.message; if (useSearch && !/tool|search|grounding/i.test(e.message)) break; }
-            }
-        }
-        throw new Error(lastErr);
-    }
-
-    // Devises proposées (toujours affichées : l'IA lit TOUT, pas seulement les tags)
-    const BIAS_CCY = [['🇺🇸', 'USD'], ['🇪🇺', 'EUR'], ['🇬🇧', 'GBP'], ['🇯🇵', 'JPY'], ['🇨🇭', 'CHF'], ['🇦🇺', 'AUD'], ['🇨🇦', 'CAD'], ['🇳🇿', 'NZD'], ['🥇', 'XAU']];
-    let biasActiveCcy = '';
-    function renderBiasChips() {
-        const c = document.getElementById('mp-bias-chips');
-        if (!c) return;
-        c.innerHTML = BIAS_CCY.map(([f, code]) => '<button type="button" class="mp-bias-chip' + (code === biasActiveCcy ? ' active' : '') + '" onclick="analyzeBias(\'' + code + '\')">' + f + ' ' + code + '</button>').join('');
-    }
-    async function analyzeBias(ccy) {
-        const out = document.getElementById('mp-bias-out');
-        if (!out) return;
-        biasActiveCcy = ccy;
-        renderBiasChips();
-        // Uniquement les synthèses de la SEMAINE EN COURS (pas de filtre par tag) — l'IA repère elle-même ce qui compte.
-        const wk = currentWeekKey();
-        const notes = (allMacroNotes || []).filter(n => weekStartKey(n.date) === wk)
-            .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
-        if (!notes.length) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">Aucune synthèse cette semaine (' + weekLabel(wk) + ').</div>'; return; }
-        const corpus = notes.map((n, i) => {
-            const figs = [n.consensus ? 'cons. ' + n.consensus : '', n.actual ? 'réel ' + n.actual : '', n.previous ? 'préc. ' + n.previous : ''].filter(Boolean).join(', ');
-            const tags = (n.tags || []).length ? ' [tags: ' + n.tags.join(', ') + ']' : '';
-            return '#' + (i + 1) + ' [' + (n.date || '?') + '] ' + (n.event || 'synthèse') + tags + (figs ? ' (' + figs + ')' : '') +
-                '\n' + htmlToText(n.analysis).replace(/\s+/g, ' ').trim();
-        }).join('\n\n');
-        const prompt = "Tu es analyste macro FX senior. Voici TOUTES mes synthèses de la SEMAINE EN COURS (" + weekLabel(wk) + "), les plus récentes en premier. Elles ne sont PAS forcément taguées avec la devise concernée.\n\n=== SYNTHÈSES DE LA SEMAINE ===\n" + corpus +
-            "\n\n=== TÂCHE ===\nAnalyse en PROFONDEUR le biais directionnel actuel sur le " + ccy + ". Ne te limite PAS aux synthèses taguées « " + ccy + " » : parcours TOUTES les synthèses ci-dessus et prends en compte tout ce qui influence " + ccy + ", y compris :\n" +
-            "- les mentions indirectes via les paires (ex : une synthèse EUR/USD renseigne aussi sur l'USD ; XAU/USD, GBP/USD, etc.) ;\n" +
-            "- les corrélations et comparaisons de force relative (une devise se juge face aux autres) ;\n" +
-            "- le contexte macro commun (Fed/BCE, risk-on/off, taux, matières premières) qui pèse sur " + ccy + " même sans le nommer.\n\n" +
-            "Réponds en FRANÇAIS, structuré et dense, avec ces sections en gras :\n" +
-            "**Biais** : haussier / baissier / neutre + degré de conviction.\n" +
-            "**Ce qui le porte** : 3-5 drivers concrets tirés des synthèses (cite les faits/chiffres/dates).\n" +
-            "**Contre / risques** : ce qui pourrait invalider le biais.\n" +
-            "**Évolution** : comment le biais a bougé sur les synthèses récentes.\n" +
-            "Base-toi UNIQUEMENT sur mes synthèses, n'invente aucune donnée. Sois précis et opérationnel.";
-        out.innerHTML = '<div style="font-size:12px;color:var(--fx-muted)">🧠 L\'IA relit tes ' + notes.length + ' synthèse' + (notes.length > 1 ? 's' : '') + ' de la semaine pour ' + ccy + '…</div>';
-        try {
-            const txt = await geminiTry(prompt);
-            if (!txt || !txt.trim()) throw new Error('réponse vide (quota ?)');
-            out.innerHTML = '<div class="mp-bias-title">Biais ' + ccy + ' — semaine ' + weekLabel(wk) + ' (' + notes.length + ' synthèse' + (notes.length > 1 ? 's' : '') + ')</div>' + mdToHtml(txt.trim());
-        } catch (e) { out.innerHTML = '<div style="font-size:12px;color:var(--fx-red)">IA indisponible : ' + e.message + '</div>'; }
-    }
 
     // ── Éditeur de texte enrichi (barre flottante façon Notion) ───
     // Normalise n'importe quelle couleur en "r,g,b" (pour comparer)
@@ -6433,7 +6175,6 @@
 
     // Vue « Historique » — accueil : liste des semaines passées
     function renderHistoryLanding() {
-        renderBiasChips();
         const wrap = document.getElementById('mp-weeks');
         if (!wrap) return;
         const cur = currentWeekKey();

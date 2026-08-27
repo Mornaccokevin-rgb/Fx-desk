@@ -5978,6 +5978,10 @@
         const m = String(s).replace(',', '.').match(/-?\d+(?:\.\d+)?/);
         return m ? parseFloat(m[0]) : NaN;
     }
+    // Données "plus bas = mieux" → couleur inversée (bleu quand le réel est SOUS le consensus).
+    function isInvertedMacro(n) {
+        return /jobless\s*claims|initial\s*claims|continuing\s*claims/i.test((n && n.event) || '');
+    }
 
     async function deleteMacroNote(fid) {
         if (!isMacroEditor()) {
@@ -6092,11 +6096,13 @@
                 a.querySelector('b').textContent = n.actual;
                 const cv = macroNum(n.consensus), av = macroNum(n.actual);
                 if (!isNaN(cv) && !isNaN(av) && av !== cv) {
-                    const up = av > cv;
-                    a.classList.add(up ? 'mp-up' : 'mp-down');
+                    const higher = av > cv;
+                    // Jobless claims : plus BAS = meilleur → on inverse la couleur (bleu si plus bas)
+                    const good = isInvertedMacro(n) ? !higher : higher;
+                    a.classList.add(good ? 'mp-up' : 'mp-down');
                     const arr = document.createElement('span');
                     arr.className = 'mp-arrow';
-                    arr.textContent = up ? '▲' : '▼';
+                    arr.textContent = higher ? '▲' : '▼';
                     a.querySelector('b').appendChild(arr);
                 }
                 figs.appendChild(a);
@@ -6127,8 +6133,10 @@
                         b.textContent = val || '—';
                         if (i === 2) {
                             const cv = macroNum(s.consensus), av = macroNum(s.actual);
-                            if (!isNaN(cv) && !isNaN(av) && av !== cv)
-                                b.style.color = av > cv ? 'var(--fx-blue)' : 'var(--fx-red)';
+                            if (!isNaN(cv) && !isNaN(av) && av !== cv) {
+                                const good = isInvertedMacro(n) ? av < cv : av > cv;
+                                b.style.color = good ? 'var(--fx-blue)' : 'var(--fx-red)';
+                            }
                         }
                         td.appendChild(b);
                     }

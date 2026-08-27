@@ -3893,6 +3893,9 @@
                             <button type="submit" class="fx-submit" id="mp-submit-btn">💾 Enregistrer l'analyse</button>
                             <button type="button" class="fx-submit" id="mp-cancel-btn" onclick="cancelMacroEdit()"
                                 style="display:none;background:var(--fx-card2);color:var(--fx-muted2)">Annuler la modification</button>
+                            <input type="file" id="macroImportFile" accept=".json" style="display:none" onchange="importMacroNotes(event)">
+                            <button type="button" class="fx-submit" onclick="document.getElementById('macroImportFile').click()"
+                                style="background:var(--fx-card2);color:var(--fx-muted2)">⬆️ Importer des synthèses (JSON)</button>
                         </div>
                     </form>
                 </section>
@@ -5864,6 +5867,54 @@
         } catch (err) {
             showToast('Erreur: ' + err.message);
         }
+    }
+
+    // Import de synthèses en JSON (réservé rédacteurs). Dédup par date+événement.
+    function importMacroNotes(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!isMacroEditor()) { showToast('Réservé aux rédacteurs'); event.target.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                if (!auth.currentUser) throw new Error('connexion requise.');
+                let raw;
+                try { raw = JSON.parse(e.target.result); } catch (pe) { throw new Error('JSON illisible (' + pe.message + ').'); }
+                const arr = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.notes) ? raw.notes : null);
+                if (!arr || !arr.length) throw new Error('aucune synthèse dans le fichier.');
+                const existing = new Set((allMacroNotes || []).map(n => (n.date || '') + '||' + (n.event || '')));
+                const fresh = arr.filter(n => n && n.date && n.event && !existing.has((n.date || '') + '||' + (n.event || '')));
+                if (!fresh.length) { showToast('Déjà à jour — ces synthèses sont déjà présentes.'); event.target.value = ''; return; }
+                document.getElementById('loadingScreen').style.display = 'flex';
+                const col = db.collection('macroNotes'), now = new Date().toISOString();
+                for (let i = 0; i < fresh.length; i += 400) {
+                    const batch = db.batch();
+                    fresh.slice(i, i + 400).forEach(n => {
+                        const o = {
+                            date: String(n.date || ''),
+                            event: String(n.event || ''),
+                            consensus: String(n.consensus || ''),
+                            actual: String(n.actual || ''),
+                            previous: String(n.previous || ''),
+                            subs: Array.isArray(n.subs) ? n.subs.map(s => ({ name: String(s.name || ''), consensus: String(s.consensus || ''), actual: String(s.actual || ''), previous: String(s.previous || '') })) : [],
+                            tags: Array.isArray(n.tags) ? n.tags.map(String) : [],
+                            images: [], image: '',
+                            analysis: String(n.analysis || ''),
+                            createdAt: now, authorEmail: auth.currentUser.email || '', authorUid: auth.currentUser.uid
+                        };
+                        batch.set(col.doc(), o);
+                    });
+                    await batch.commit();
+                }
+                document.getElementById('loadingScreen').style.display = 'none';
+                showToast(fresh.length + ' synthèse(s) importée(s) ✅');
+            } catch (err) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                showToast('Erreur import : ' + err.message);
+            }
+            event.target.value = '';
+        };
+        reader.readAsText(file);
     }
 
     function editMacroNote(fid) {

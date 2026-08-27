@@ -568,12 +568,14 @@
     }
     .sa-mods {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 340px));
         gap: 18px;
+        justify-content: center;
     }
     @media (max-width: 820px) {
         .sa-mods {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 380px);
+            justify-content: center;
         }
     }
     .sa-mod {
@@ -3147,7 +3149,6 @@
                         <h1 class="sa-brand">Sphinx Alliance</h1>
                         <p class="sa-tag">Intelligence · Discipline · Edge</p>
                         <div class="sa-rule"></div>
-                        <p class="sa-lead">La plateforme de trading FX qui réunit terminal macro, journal de performance et mémoire des marchés. Un seul objectif : construire votre edge.</p>
                     </div>
                     <div class="sa-scroll" onclick="document.getElementById('sa-modules').scrollIntoView({behavior:'smooth'})" style="cursor:pointer">
                         <span>Scrollez pour rejoindre l'Alliance</span>
@@ -3164,24 +3165,14 @@
                             <div class="sa-mod-badge"><span></span>ACTIF</div>
                             <div class="sa-mod-icon">📈</div>
                             <h3>Performance Tracker</h3>
-                            <p>Journal de trading complet : statistiques, courbe de capital, profit factor, espérance et ratio de Kelly, analyses avancées et historique détaillé.</p>
+                            <p>Votre journal de trading : statistiques, courbe de capital et suivi des performances.</p>
                         </div>
                         <div class="sa-mod">
                             <div class="sa-mod-badge"><span></span>ACTIF</div>
                             <div class="sa-mod-icon">🧠</div>
                             <h3>Daily FX</h3>
-                            <p>Journal de synthèse macro : rédigez vos analyses post-annonces (NFP, CPI, FOMC) pour garder une mémoire de la réaction des marchés et affiner votre lecture.</p>
+                            <p>Les synthèses macro post-annonces (NFP, CPI, FOMC) : la mémoire des marchés, à consulter au quotidien.</p>
                         </div>
-                    </div>
-                </section>
-
-                <!-- STATS -->
-                <section class="sa-stats">
-                    <div class="sa-stats-inner">
-                        <div><div class="sa-stat-num">9</div><p class="sa-stat-lbl">Devises notées en continu</p></div>
-                        <div><div class="sa-stat-num">4</div><p class="sa-stat-lbl">Dimensions macro par devise</p></div>
-                        <div><div class="sa-stat-num">4</div><p class="sa-stat-lbl">Sessions suivies 24/5</p></div>
-                        <div><div class="sa-stat-num">100%</div><p class="sa-stat-lbl">Discipline mesurée</p></div>
                     </div>
                 </section>
 
@@ -3190,7 +3181,7 @@
                     <div class="sa-cta-inner">
                         <span class="sa-emblem" style="font-size:40px;animation:none">⚜</span>
                         <h2>Rejoignez l'Alliance</h2>
-                        <p class="sa-cta-lead">Accédez au terminal, au journal de performance et à la synthèse macro. Créez votre compte ou connectez-vous.</p>
+                        <p class="sa-cta-lead">Accédez au journal de performance et à la synthèse macro. Créez votre compte ou connectez-vous.</p>
                         <div class="sa-btns">
                             <button class="sa-join" onclick="showAuthCard('signup')">Rejoindre Sphinx Alliance</button>
                             <button class="sa-login" onclick="showAuthCard('login')">Se connecter</button>
@@ -3280,7 +3271,7 @@
                     </div>
                     <div class="mod-icon">📈</div>
                     <div class="mod-name">Performance Tracker</div>
-                    <div class="mod-desc">Journal de trading complet : statistiques, courbe de capital, analyses avancées et historique détaillé.</div>
+                    <div class="mod-desc">Votre journal de trading : statistiques, courbe de capital et suivi des performances.</div>
                     <div class="mod-arr">→</div>
                 </div>
 
@@ -3292,7 +3283,7 @@
                     </div>
                     <div class="mod-icon">🧠</div>
                     <div class="mod-name">Daily FX</div>
-                    <div class="mod-desc">Journal de synthèse macro : rédigez vos analyses post-annonces (NFP, CPI, FOMC) pour construire votre propre edge et garder une mémoire de la réaction des marchés.</div>
+                    <div class="mod-desc">Les synthèses macro post-annonces (NFP, CPI, FOMC) : la mémoire des marchés, à consulter au quotidien.</div>
                     <div class="mod-arr">→</div>
                 </div>
 

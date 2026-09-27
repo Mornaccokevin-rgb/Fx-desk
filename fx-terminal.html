@@ -400,6 +400,15 @@ a{color:inherit;text-decoration:none}
 .these-p strong{color:var(--t1)}
 .these-callout{margin-top:16px;padding:11px 14px;background:var(--panel2);border:1px solid var(--bd);border-left:3px solid var(--accent);border-radius:var(--r2);font-size:12.5px;line-height:1.6;color:var(--t2)}
 .these-callout strong{color:var(--t1)}
+/* Dimensions cliquables + détail rapport hebdo */
+.sb-click{cursor:pointer;border-radius:8px;padding:4px 6px;margin:-4px -6px;transition:background .15s}
+.sb-click:hover{background:var(--panel2)}
+.sb-active{background:var(--panel2);box-shadow:inset 0 0 0 1px var(--accent)}
+.dim-detail{margin:4px 0 18px;background:var(--panel2);border:1px solid var(--bd);border-left:3px solid var(--accent);border-radius:var(--r2);padding:12px 14px}
+.dim-detail-h{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
+.dim-detail-body{font-size:12.5px;line-height:1.65;color:var(--t2)}
+.dim-detail-body strong{color:var(--t1)}
+.dim-detail-body h3{font-size:12.5px;color:var(--t1);margin:8px 0 3px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -1002,6 +1011,38 @@ async function buildFromNotion(){
   if(activeCcy) renderDetail();
   if(up) up.textContent='Notion · MAJ '+(NOTION_UPDATED||'');
 }
+// ── Rapport hebdo Notion : détail par dimension (live, depuis le Worker) ──
+let REPORT_BY_CCY={}, REPORT_GLOBAL='', REPORT_TITLE='', activeDim=null;
+const DIM_KW={
+  croissance:/PMI|PIB|GDP|croissance|emploi|jobless|claims|retail|ventes|production|activit|ch[oô]mage|NFP|labour|labor/i,
+  inflation:/inflation|CPI|PPI|\bprix\b|core|d[ée]flation|IPC|d[ée]sinflation|deflator/i,
+  monetaire:/\bFed\b|BCE|\bBoE\b|\bBoJ\b|\bRBA\b|RBNZ|\bBNS\b|\bBoC\b|banque centrale|\btaux\b|hike|hausse|dot plot|hawkish|dovish|resserr|assoupl|gouverneur|Bullock|Bailey|Lagarde|Ueda|Warsh|Macklem|Schlegel|Fedspeak|SNB/i
+};
+async function loadReport(){
+  let d=null;
+  try{ const r=await fetch(NOTION_API+'/?source=hebdo',{cache:'no-store'}); d=await r.json(); if(d&&d.content) localStorage.setItem('fxmt_notion_hebdo',JSON.stringify(d)); }
+  catch(e){}
+  if(!d||!d.content){ try{ d=JSON.parse(localStorage.getItem('fxmt_notion_hebdo')); }catch(e){} }
+  if(!d||!d.content) return;
+  REPORT_TITLE=d.title||'';
+  const parts=d.content.split(/\n(?=\*\*(?:USD|EUR|GBP|JPY|CHF|AUD|NZD|CAD|CNH)\s*(?:→|->))/);
+  REPORT_BY_CCY={}; REPORT_GLOBAL='';
+  parts.forEach((seg,i)=>{
+    const m=seg.match(/^\*\*(USD|EUR|GBP|JPY|CHF|AUD|NZD|CAD|CNH)\s*(?:→|->)/);
+    if(m) REPORT_BY_CCY[m[1]]=seg.trim();
+    else if(i===0) REPORT_GLOBAL=seg.trim();
+  });
+  if(activeCcy) renderDetail();
+}
+function dimExcerpt(code,dim){
+  if(dim==='geo') return REPORT_GLOBAL||'';
+  const seg=REPORT_BY_CCY[code]; if(!seg) return '';
+  const kw=DIM_KW[dim]; if(!kw) return seg;
+  const paras=seg.split(/\n\n+/).filter(p=>kw.test(p));
+  return paras.length?paras.join('\n\n'):seg;
+}
+function openDimDetail(dim){ activeDim=(activeDim===dim?null:dim); renderDetail(); }
+
 function signalOfBias(bias){
   if(bias==='haussier') return {cls:'buy-side',sCls:'s-buy',txt:'Acheter',short:'ACHAT'};
   if(bias==='baissier') return {cls:'sell-side',sCls:'s-sell',txt:'Vendre',short:'VENTE'};
@@ -1065,7 +1106,7 @@ const SECTIONS=[
 ];
 
 function openDetail(code){
-  activeCcy=code;activeSection='croissance';
+  activeCcy=code;activeSection='croissance';activeDim=null;
   renderGrid();renderDetail();
   document.getElementById('detail-mount').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -1081,12 +1122,15 @@ function renderDetail(){
   const sig=signalOfBias(n.bias);
   const col=biasColorOf(n.bias);
 
-  const sbCell=(lbl,o)=>{
+  const sbCell=(lbl,o,key)=>{
     const v=o&&o.score!=null?o.score:'—';
     const cc=o&&o.score!=null?scoreColor(o.score):'var(--t4)';
     const w=o&&o.score!=null?o.score:0;
-    return `<div class="sb-cell"><div class="sb-top"><span class="sb-name">${lbl}</span><span class="sb-val" style="color:${cc}">${v}</span></div><div class="sb-bar-bg"><div class="sb-bar" style="width:${w}%;background:${cc}"></div></div></div>`;
+    const act=activeDim===key?' sb-active':'';
+    return `<div class="sb-cell sb-click${act}" onclick="openDimDetail('${key}')"><div class="sb-top"><span class="sb-name">${lbl}</span><span class="sb-val" style="color:${cc}">${v}</span></div><div class="sb-bar-bg"><div class="sb-bar" style="width:${w}%;background:${cc}"></div></div></div>`;
   };
+  const dimLbls={croissance:'Croissance',inflation:'Inflation',monetaire:'Politique monétaire',geo:'Géopolitique / contexte'};
+  const dimPanel=activeDim?`<div class="dim-detail"><div class="dim-detail-h">📄 ${dimLbls[activeDim]} — extrait de ${REPORT_TITLE||'ton rapport hebdo'}</div><div class="dim-detail-body">${(()=>{const md=dimExcerpt(activeCcy,activeDim);return md?mdToHtmlFx(md):'<span style="color:var(--t3)">Pas de détail pour cette dimension cette semaine (ou rapport hebdo non chargé).</span>';})()}</div></div>`:'';
 
   const these=(n.actuelle||n.avenir||n.mois)?`
     <div class="these-wrap">
@@ -1117,11 +1161,13 @@ function renderDetail(){
     </div>
     <div class="detail-body">
       <div class="score-break">
-        ${sbCell('Croissance',d.dims.croissance)}
-        ${sbCell('Inflation',d.dims.inflation)}
-        ${sbCell('Monétaire',d.dims.monetaire)}
-        ${sbCell('Géopolitique',d.dims.geo)}
+        ${sbCell('Croissance',d.dims.croissance,'croissance')}
+        ${sbCell('Inflation',d.dims.inflation,'inflation')}
+        ${sbCell('Monétaire',d.dims.monetaire,'monetaire')}
+        ${sbCell('Géopolitique',d.dims.geo,'geo')}
       </div>
+      <div style="font-size:10.5px;color:var(--t3);margin:-8px 0 14px">💡 Clique une dimension pour le détail tiré de ton rapport hebdo.</div>
+      ${dimPanel}
       ${these}
     </div>
   </div>`;
@@ -1877,6 +1923,7 @@ async function refreshAll(){
   toast('Rafraîchissement des données…');
   CCY_DATA={};renderGrid();
   buildFromNotion();
+  loadReport();
   await loadNews();
   if(activeCcy)renderDetail();
   toast('Données à jour ✅');
@@ -2036,6 +2083,7 @@ function init(){
   renderGrid();
   renderRateExpectations();
   buildFromNotion();
+  loadReport();
   loadNews();
   startNewsAutoRefresh();
   fetchFxTicker(); setInterval(fetchFxTicker, 15*60*1000);

@@ -409,6 +409,31 @@ a{color:inherit;text-decoration:none}
 .dim-detail-body{font-size:12.5px;line-height:1.65;color:var(--t2)}
 .dim-detail-body strong{color:var(--t1)}
 .dim-detail-body h3{font-size:12.5px;color:var(--t1);margin:8px 0 3px}
+/* Garde-fous anti-débordement */
+.detail-id{min-width:0}
+.detail-body{overflow-wrap:anywhere}
+.these-p,.these-driver,.these-callout,.dim-detail-body{overflow-wrap:anywhere;word-break:break-word}
+.dash-main,.dash-side{min-width:0}
+.detail-body img,.dim-detail-body img,.these-p img{max-width:100%;height:auto}
+/* Drill-down données (synthèses Daily FX) */
+.emploi-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 14px}
+.emploi-btn{background:var(--panel2);border:1px solid var(--bd);color:var(--t2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s}
+.emploi-btn:hover{border-color:var(--accent);color:var(--accent)}
+.emploi-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.sub-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.sub-chip{background:var(--panel3);border:1px solid var(--bd);color:var(--t1);border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s}
+.sub-chip:hover{border-color:var(--accent)}
+.sub-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.sub-chip-date{opacity:.6;font-weight:400;font-size:10px}
+.sub-recap{background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-top:6px}
+.sub-recap-h{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:6px}
+.sub-date{font-family:var(--mono);font-size:10.5px;color:var(--t3);font-weight:400;margin-left:6px}
+.sub-figs{font-family:var(--mono);font-size:12px;color:var(--t2);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.sub-analysis{font-size:12.5px;line-height:1.6;color:var(--t2);overflow-wrap:anywhere}
+.sub-analysis strong{color:var(--t1)} .sub-analysis h1,.sub-analysis h2,.sub-analysis h3{font-size:13px;color:var(--t1);margin:8px 0 3px}
+.sub-analysis img{max-width:100%;height:auto;border-radius:6px}
+.sub-context{margin-top:14px;padding-top:12px;border-top:1px dashed var(--bd)}
+.sub-context-h{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -1041,7 +1066,55 @@ function dimExcerpt(code,dim){
   const paras=seg.split(/\n\n+/).filter(p=>kw.test(p));
   return paras.length?paras.join('\n\n'):seg;
 }
-function openDimDetail(dim){ activeDim=(activeDim===dim?null:dim); renderDetail(); }
+// ── Synthèses Daily FX (Firestore) : sous-composantes datées par dimension ──
+let MACRO_NOTES=[], macroNotesLoaded=false, activeSub=null;
+const NOTE_MAX_AGE=50; // jours : au-delà, on n'affiche pas (pas de vieux chiffre)
+const DIM_NOTE_KW={
+  croissance:/GDP|PIB|PMI|ISM|retail|ventes au d[ée]tail|durable goods|production industrielle|activit/i,
+  emploi:/NFP|non.?farm|payroll|ch[oô]mage|unemployment|jobless|claims|emploi|labour|labor|JOLTS|temps partiel|temps plein|part.?time|full.?time/i,
+  inflation:/CPI|PPI|PCE|inflation|\bIPC\b|prix/i,
+  monetaire:/\bFed\b|FOMC|BCE|\bBoE\b|\bBoJ\b|\bRBA\b|RBNZ|\bBNS\b|\bBoC\b|d[ée]cision de taux|meeting|minutes|rate decision/i
+};
+function loadMacroNotes(){
+  if(!fxDb||!fxAuthUser||macroNotesLoaded) return;
+  macroNotesLoaded=true;
+  try{
+    fxDb.collection('macroNotes').onSnapshot(snap=>{
+      MACRO_NOTES=snap.docs.map(d=>({id:d.id,...d.data()}));
+      if(activeCcy&&activeDim) renderDetail();
+    }, e=>{ macroNotesLoaded=false; console.warn('macroNotes',e.message); });
+  }catch(e){ macroNotesLoaded=false; }
+}
+function noteAgeDays(n){ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(n.date||''); if(!m) return 1e9; return (Date.now()-new Date(+m[1],+m[2]-1,+m[3]).getTime())/864e5; }
+function dimNotes(code,dim){
+  const kw=DIM_NOTE_KW[dim]; if(!kw) return [];
+  return MACRO_NOTES.filter(n=>{
+    const tags=(n.tags||[]).map(t=>String(t).toUpperCase());
+    if(!tags.includes(code)) return false;
+    if(!kw.test((n.event||'')+' '+(n.tags||[]).join(' '))) return false;
+    return noteAgeDays(n)<=NOTE_MAX_AGE;
+  }).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+}
+function subLabel(ev){
+  ev=ev||'';
+  const map=[['CPI',/CPI|inflation rate|\bIPC\b/i],['PPI',/PPI/i],['PCE',/PCE/i],['NFP',/NFP|non.?farm|payroll/i],['Jobless Claims',/jobless|claims/i],['Chômage',/ch[oô]mage|unemployment/i],['Emploi',/emploi|labour|labor|temps p/i],['PIB',/GDP|PIB/i],['ISM',/ISM/i],['PMI',/PMI/i],['Retail',/retail|ventes au d/i],['Durable Goods',/durable goods/i],['Banque centrale',/taux|FOMC|minutes|rate|décision|RBA|BCE|Fed|BoE|BoJ|BNS|BoC|RBNZ/i]];
+  for(const [lbl,re] of map) if(re.test(ev)) return lbl;
+  return (ev.split(/[—·]|-\s/)[0]||'Donnée').trim().slice(0,20);
+}
+function noteRecapHTML(n){
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const inv=/jobless|claims|ch[oô]mage|unemployment/i.test(n.event||'');
+  const cv=parseFloat(String(n.consensus).replace(',','.')), av=parseFloat(String(n.actual).replace(',','.'));
+  let col='var(--t1)';
+  if(!isNaN(cv)&&!isNaN(av)&&av!==cv){ const good=inv?av<cv:av>cv; col=good?'var(--buy)':'var(--sell)'; }
+  const figs=[];
+  if(n.consensus) figs.push('Cons. '+esc(n.consensus));
+  if(n.actual) figs.push('<b style="color:'+col+'">Réel '+esc(n.actual)+'</b>');
+  if(n.previous) figs.push('Préc. '+esc(n.previous));
+  return `<div class="sub-recap"><div class="sub-recap-h">${esc(n.event)} <span class="sub-date">${esc(n.date||'')}</span></div>${figs.length?'<div class="sub-figs">'+figs.join(' · ')+'</div>':''}<div class="sub-analysis">${n.analysis||''}</div></div>`;
+}
+function openDimDetail(dim){ activeDim=(activeDim===dim?null:dim); activeSub=null; renderDetail(); }
+function openSub(id){ activeSub=(activeSub===id?null:id); renderDetail(); }
 
 function signalOfBias(bias){
   if(bias==='haussier') return {cls:'buy-side',sCls:'s-buy',txt:'Acheter',short:'ACHAT'};
@@ -1129,8 +1202,24 @@ function renderDetail(){
     const act=activeDim===key?' sb-active':'';
     return `<div class="sb-cell sb-click${act}" onclick="openDimDetail('${key}')"><div class="sb-top"><span class="sb-name">${lbl}</span><span class="sb-val" style="color:${cc}">${v}</span></div><div class="sb-bar-bg"><div class="sb-bar" style="width:${w}%;background:${cc}"></div></div></div>`;
   };
-  const dimLbls={croissance:'Croissance',inflation:'Inflation',monetaire:'Politique monétaire',geo:'Géopolitique / contexte'};
-  const dimPanel=activeDim?`<div class="dim-detail"><div class="dim-detail-h">📄 ${dimLbls[activeDim]} — extrait de ${REPORT_TITLE||'ton rapport hebdo'}</div><div class="dim-detail-body">${(()=>{const md=dimExcerpt(activeCcy,activeDim);return md?mdToHtmlFx(md):'<span style="color:var(--t3)">Pas de détail pour cette dimension cette semaine (ou rapport hebdo non chargé).</span>';})()}</div></div>`:'';
+  const dimLbls={croissance:'Croissance',emploi:'Marché du travail',inflation:'Inflation',monetaire:'Politique monétaire',geo:'Géopolitique / contexte'};
+  let dimPanel='';
+  if(activeDim){
+    let inner='';
+    if(activeDim!=='geo'){
+      const notes=dimNotes(activeCcy,activeDim);
+      if(notes.length){
+        inner+='<div class="sub-chips">'+notes.map(n=>`<button class="sub-chip${activeSub===n.id?' active':''}" onclick="openSub('${n.id}')">${subLabel(n.event)} <span class="sub-chip-date">${(n.date||'').slice(5)}</span></button>`).join('')+'</div>';
+        if(activeSub){ const n=notes.find(x=>x.id===activeSub); if(n) inner+=noteRecapHTML(n); }
+        else inner+='<div style="font-size:11px;color:var(--t3)">👆 Clique une sous-composante pour son recap daté.</div>';
+      } else {
+        inner+='<div style="font-size:12px;color:var(--t3)">Aucune donnée récente ('+NOTE_MAX_AGE+' j max) pour cette dimension'+(MACRO_NOTES.length?'':' — synthèses non chargées (ouvre le Compass connecté au site)')+'.</div>';
+      }
+    }
+    const ex=dimExcerpt(activeCcy, activeDim==='emploi'?'croissance':activeDim);
+    const ctx=ex?`<div class="sub-context"><div class="sub-context-h">📄 Contexte — ${REPORT_TITLE||'rapport hebdo'}</div><div class="dim-detail-body">${mdToHtmlFx(ex)}</div></div>`:'';
+    dimPanel=`<div class="dim-detail"><div class="dim-detail-h">${dimLbls[activeDim]}</div>${inner}${ctx}</div>`;
+  }
 
   const these=(n.actuelle||n.avenir||n.mois)?`
     <div class="these-wrap">
@@ -1166,7 +1255,10 @@ function renderDetail(){
         ${sbCell('Monétaire',d.dims.monetaire,'monetaire')}
         ${sbCell('Géopolitique',d.dims.geo,'geo')}
       </div>
-      <div style="font-size:10.5px;color:var(--t3);margin:-8px 0 14px">💡 Clique une dimension pour le détail tiré de ton rapport hebdo.</div>
+      <div class="emploi-row">
+        <button class="emploi-btn${activeDim==='emploi'?' active':''}" onclick="openDimDetail('emploi')">💼 Marché du travail</button>
+        <span style="font-size:10.5px;color:var(--t3)">💡 Clique une dimension (ou l'emploi) → sous-composantes datées + contexte hebdo.</span>
+      </div>
       ${dimPanel}
       ${these}
     </div>
@@ -1471,7 +1563,7 @@ function initRateSync(){
   try{firebase.initializeApp(RATE_FB_CONFIG);}catch(e){}
   try{
     fxDb=firebase.firestore();
-    firebase.auth().onAuthStateChanged(u=>{fxAuthUser=u;renderRateExpectations();});
+    firebase.auth().onAuthStateChanged(u=>{fxAuthUser=u;renderRateExpectations();loadMacroNotes();});
     fxDb.collection('config').doc('rateExpectations').onSnapshot(doc=>{
       if(doc.exists){
         const data=doc.data()||{};

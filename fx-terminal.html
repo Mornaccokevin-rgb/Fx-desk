@@ -434,6 +434,26 @@ a{color:inherit;text-decoration:none}
 .sub-analysis img{max-width:100%;height:auto;border-radius:6px}
 .sub-context{margin-top:14px;padding-top:12px;border-top:1px dashed var(--bd)}
 .sub-context-h{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+/* ── Tiroir latéral droit ── */
+#side-hotzone{position:fixed;top:0;right:0;width:16px;height:100vh;z-index:190}
+#side-drawer{position:fixed;top:0;right:0;height:100vh;width:min(440px,92vw);background:var(--panel);border-left:1px solid var(--bd2);box-shadow:-10px 0 34px rgba(0,0,0,.4);transform:translateX(100%);transition:transform .25s ease;z-index:200;display:flex;flex-direction:column;overflow:hidden}
+#side-drawer.open{transform:translateX(0)}
+.drawer-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.drawer-title{font-size:13px;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:8px}
+.drawer-pin{background:none;border:1px solid var(--bd);border-radius:8px;padding:4px 9px;cursor:pointer;font-size:14px}
+.drawer-nav{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--bd);flex-wrap:wrap;flex-shrink:0}
+.dw-tab{background:var(--panel2);border:1px solid var(--bd);color:var(--t2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s}
+.dw-tab:hover{color:var(--accent)}
+.dw-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.drawer-body{flex:1;overflow-y:auto;padding:16px;min-height:0}
+.drawer-body .sec-hdr:first-child{margin-top:0}
+.drawer-edge-hint{position:fixed;top:50%;right:0;transform:translateY(-50%);writing-mode:vertical-rl;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:8px 3px;border-radius:6px 0 0 6px;z-index:189;opacity:.55;pointer-events:none}
+body.drawer-pinned .drawer-edge-hint{display:none}
+/* épinglé : tout le contenu se redimensionne */
+body{transition:padding-right .25s ease}
+body.drawer-pinned{padding-right:min(440px,92vw)}
+body.drawer-pinned #side-hotzone{display:none}
+@media(max-width:768px){ body.drawer-pinned{padding-right:0} }
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -450,16 +470,10 @@ a{color:inherit;text-decoration:none}
       <div class="logo-sub">FOREX INTELLIGENCE DESK</div>
     </div>
   </div>
-  <div class="cmd-nav">
-    <button class="cmd-tab active" id="tab-btn-dash" onclick="switchTab('dash')">Dashboard</button>
-    <button class="cmd-tab" id="tab-btn-sessions" onclick="switchTab('sessions')">Sessions</button>
-    <button class="cmd-tab" id="tab-btn-rates" onclick="switchTab('rates')">Attentes de taux</button>
-    <button class="cmd-tab" id="tab-btn-cot" onclick="switchTab('cot')">Positionnement</button>
-    <button class="cmd-tab" id="tab-btn-market" onclick="switchTab('market')">Analyse Marché</button>
-  </div>
   <div class="cmd-right">
     <div class="live-badge"><span class="live-dot"></span>LIVE</div>
     <div class="clock" id="clock">--:--:--</div>
+    <button class="icon-btn" id="drawer-btn" onclick="toggleDrawerPin()" title="Afficher/masquer les panneaux"><i class="ti ti-layout-sidebar-right"></i></button>
     <button class="icon-btn" onclick="toggleTheme()" title="Thème"><i class="ti ti-sun" id="theme-icon"></i></button>
   </div>
 </div>
@@ -489,31 +503,6 @@ a{color:inherit;text-decoration:none}
     <div class="ccy-grid" id="ccy-grid"></div>
     <div id="detail-mount"></div>
 
-    <!-- ANALYSE IA DU MARCHÉ (Gemini) -->
-    <div class="sec-hdr">
-      <i class="ti ti-sparkles"></i><h2>Analyse IA du marché</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" id="ai-brief-meta" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)"></span>
-      <button class="ai-brief-btn" id="ai-brief-btn" onclick="generateAiBrief(true)">✨ Générer</button>
-    </div>
-    <div class="ai-brief" id="ai-brief-out"><div class="empty-mini">Clique sur « ✨ Générer » : l'IA lit les scores de force des devises et l'actualité macro, puis rédige un brief FX du jour.</div></div>
-
-    <!-- TENDANCES FX (sparklines Polygon) -->
-    <div class="sec-hdr">
-      <i class="ti ti-chart-line"></i><h2>Tendances FX &mdash; 30 jours</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)">Polygon.io</span>
-    </div>
-    <div class="tr-grid" id="tr-grid"></div>
-
-    <!-- MARCHÉS DE PRÉDICTION (Polymarket) -->
-    <div class="sec-hdr">
-      <i class="ti ti-chart-arrows-vertical"></i><h2>Marchés de prédiction</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)">LIVE · Polymarket</span>
-    </div>
-    <div class="pm-grid" id="pm-grid"><div class="empty-mini">Chargement des marchés…</div></div>
-
     <!-- NEWS FEED -->
     <div class="sec-hdr">
       <i class="ti ti-news"></i><h2>News Feed &mdash; Squawk temps réel</h2>
@@ -526,8 +515,25 @@ a{color:inherit;text-decoration:none}
     <div class="news-feed" id="news-feed"><div class="news-loading"><div class="spinner"></div><div style="margin-top:12px">Chargement du flux…</div></div></div>
   </div>
 
-  <!-- ═══════ SESSIONS TAB ═══════ -->
-  <div id="tab-sessions" class="tab-pane">
+  </div>
+
+<!-- ═══════ TIROIR LATÉRAL DROIT ═══════ -->
+<div id="side-hotzone" title="Panneaux (survole)"></div>
+<div class="drawer-edge-hint">‹ PANNEAUX</div>
+<aside id="side-drawer">
+  <div class="drawer-hd">
+    <span class="drawer-title"><i class="ti ti-layout-sidebar-right"></i> Panneaux</span>
+    <button class="drawer-pin" id="drawer-pin" onclick="toggleDrawerPin()" title="Épingler / détacher">📌</button>
+  </div>
+  <div class="drawer-nav">
+    <button class="dw-tab active" onclick="drawerTab('sessions',this)">Sessions</button>
+    <button class="dw-tab" onclick="drawerTab('rates',this)">Taux</button>
+    <button class="dw-tab" onclick="drawerTab('cot',this)">Positionnement</button>
+    <button class="dw-tab" onclick="drawerTab('extras',this)">Marché</button>
+  </div>
+  <div class="drawer-body">
+    <!-- ═══════ SESSIONS TAB ═══════ -->
+  <div id="tab-sessions" class="tab-pane active">
     <div class="sess-tab-grid">
       <aside>
         <div class="sess-panel">
@@ -607,8 +613,34 @@ Fed: 26 bps (90% probability of no change at the next meeting)
       <div class="maint-desc">L'analyse de marché globale (corrélations cross-asset, risk sentiment, positionnement COT, flux) est en cours de développement. Disponible prochainement.</div>
     </div>
   </div>
+    <div id="tab-extras" class="tab-pane">
+      <!-- ANALYSE IA DU MARCHÉ (Gemini) -->
+    <div class="sec-hdr">
+      <i class="ti ti-sparkles"></i><h2>Analyse IA du marché</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est" id="ai-brief-meta" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)"></span>
+      <button class="ai-brief-btn" id="ai-brief-btn" onclick="generateAiBrief(true)">✨ Générer</button>
+    </div>
+    <div class="ai-brief" id="ai-brief-out"><div class="empty-mini">Clique sur « ✨ Générer » : l'IA lit les scores de force des devises et l'actualité macro, puis rédige un brief FX du jour.</div></div>
 
-</div>
+    <!-- TENDANCES FX (sparklines Polygon) -->
+    <div class="sec-hdr">
+      <i class="ti ti-chart-line"></i><h2>Tendances FX &mdash; 30 jours</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)">Polygon.io</span>
+    </div>
+    <div class="tr-grid" id="tr-grid"></div>
+
+    <!-- MARCHÉS DE PRÉDICTION (Polymarket) -->
+    <div class="sec-hdr">
+      <i class="ti ti-chart-arrows-vertical"></i><h2>Marchés de prédiction</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)">LIVE · Polymarket</span>
+    </div>
+    <div class="pm-grid" id="pm-grid"><div class="empty-mini">Chargement des marchés…</div></div>
+    </div>
+  </div>
+</aside>
 
 <div class="toast" id="toast"></div>
 
@@ -2169,8 +2201,30 @@ async function generateAiBrief(force){
   finally{ if(btn){btn.disabled=false;btn.innerHTML=old;} }
 }
 
+/* ── Tiroir latéral droit (sessions, taux, COT, marché) ── */
+function drawerTab(id,btn){
+  document.querySelectorAll('#side-drawer .tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.dw-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const pane=document.getElementById('tab-'+id); if(pane) pane.classList.add('active');
+}
+function toggleDrawerPin(){
+  const pinned=document.body.classList.toggle('drawer-pinned');
+  const dw=document.getElementById('side-drawer'); if(dw) dw.classList.toggle('open',pinned);
+  const b=document.getElementById('drawer-pin'); if(b) b.style.color=pinned?'var(--accent)':'';
+  const hb=document.getElementById('drawer-btn'); if(hb) hb.style.color=pinned?'var(--accent)':'';
+}
+function setupDrawer(){
+  const hot=document.getElementById('side-hotzone'), dw=document.getElementById('side-drawer');
+  if(!hot||!dw) return;
+  const pinned=()=>document.body.classList.contains('drawer-pinned');
+  hot.addEventListener('mouseenter',()=>{ if(!pinned()) dw.classList.add('open'); });
+  dw.addEventListener('mouseleave',()=>{ if(!pinned()) dw.classList.remove('open'); });
+}
+
 function init(){
   if(localStorage.getItem('fxmt_theme')==='light'){document.body.classList.add('light');document.getElementById('theme-icon').className='ti ti-moon';}
+  setupDrawer();
   tickClock();setInterval(tickClock,1000);
   renderGrid();
   renderRateExpectations();

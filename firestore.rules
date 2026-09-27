@@ -64,6 +64,15 @@ service cloud.firestore {
       allow write: if isMacroEditor();
     }
 
+    // ── MACRO COMPASS — scoring par devise (source : Notion) ─────
+    //  Lecture : tout utilisateur connecté. Écriture : rédacteurs
+    //  (en pratique, écrit via le compte de service admin, qui
+    //  contourne ces règles — restriction gardée en défense en profondeur).
+    match /macroCompass/{docId} {
+      allow read:  if isSignedIn();
+      allow write: if isMacroEditor();
+    }
+
     // ── DONNÉES PRIVÉES — Performance Tracker ────────────────────
     //  Chaque utilisateur n'accède qu'à ses propres trades / capital.
     match /users/{uid}/{document=**} {

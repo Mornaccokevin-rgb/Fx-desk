@@ -653,15 +653,12 @@ Fed: 26 bps (90% probability of no change at the next meeting)
 const CONFIG = {
   // ─── DÉPLOIEMENT PUBLIC ───────────────────────────────────────
   // Mets ici l'URL de ton proxy Cloudflare Worker (voir fx-proxy-worker.js).
-  // Si renseigné : les clés restent CÔTÉ SERVEUR (rien d'exposé) ET FRED se débloque.
+  // Si renseigné : les clés restent CÔTÉ SERVEUR (rien d'exposé).
   // Si vide : appels directs depuis le navigateur avec les clés ci-dessous (dev local).
   API_BASE: "",   // ex: "https://fx-proxy.ton-compte.workers.dev"
 
-  // Clés utilisées UNIQUEMENT en mode dev local (API_BASE vide).
-  // En public avec API_BASE renseigné, tu peux les laisser vides.
+  // Clé utilisée UNIQUEMENT en mode dev local (API_BASE vide).
   FINNHUB_KEY: "d8njp6hr01qvvn98gudgd8njp6hr01qvvn98gue0",  // FX Squawk (news) — conservé
-  BLS_KEY:     "",   // plus utilisé : la force des devises vient de Notion
-  FRED_KEY:    "",   // plus utilisé : la force des devises vient de Notion
 
   CACHE_TTL_MS: 6 * 60 * 60 * 1000,   // 6h
   // Poids du score composite (somme = 1)
@@ -669,71 +666,24 @@ const CONFIG = {
 };
 
 /* ══════════════════════════════════════════════════════════════
-   DEVISES — métadonnées + codes zone OCDE
+   DEVISES — métadonnées
 ═══════════════════════════════════════════════════════════════ */
 const CURRENCIES = [
-  { code:'USD', flag:'🇺🇸', name:'Dollar US',          country:'États-Unis',     oecd:'USA', cpiArea:'USA', us:true },
-  { code:'EUR', flag:'🇪🇺', name:'Euro',               country:'Zone Euro',      oecd:'EA20',cpiArea:'EA', gdpArea:'EA' },
-  { code:'GBP', flag:'🇬🇧', name:'Livre Sterling',     country:'Royaume-Uni',    oecd:'GBR', cpiArea:'GBR' },
-  { code:'JPY', flag:'🇯🇵', name:'Yen Japonais',       country:'Japon',          oecd:'JPN', cpiArea:'JPN' },
-  { code:'CHF', flag:'🇨🇭', name:'Franc Suisse',       country:'Suisse',         oecd:'CHE', cpiArea:'CHE' },
-  { code:'AUD', flag:'🇦🇺', name:'Dollar Australien',  country:'Australie',      oecd:'AUS', cpiArea:'AUS' },
-  { code:'NZD', flag:'🇳🇿', name:'Dollar Néo-Zélandais',country:'Nouvelle-Zélande',oecd:'NZL',cpiArea:'NZL' },
-  { code:'CAD', flag:'🇨🇦', name:'Dollar Canadien',    country:'Canada',         oecd:'CAN', cpiArea:'CAN' },
-  { code:'CNH', flag:'🇨🇳', name:'Yuan (offshore)',    country:'Chine',          oecd:'CHN', cpiArea:'CHN' },
+  { code:'USD', flag:'🇺🇸', name:'Dollar US',          country:'États-Unis' },
+  { code:'EUR', flag:'🇪🇺', name:'Euro',               country:'Zone Euro' },
+  { code:'GBP', flag:'🇬🇧', name:'Livre Sterling',     country:'Royaume-Uni' },
+  { code:'JPY', flag:'🇯🇵', name:'Yen Japonais',       country:'Japon' },
+  { code:'CHF', flag:'🇨🇭', name:'Franc Suisse',       country:'Suisse' },
+  { code:'AUD', flag:'🇦🇺', name:'Dollar Australien',  country:'Australie' },
+  { code:'NZD', flag:'🇳🇿', name:'Dollar Néo-Zélandais',country:'Nouvelle-Zélande' },
+  { code:'CAD', flag:'🇨🇦', name:'Dollar Canadien',    country:'Canada' },
+  { code:'CNH', flag:'🇨🇳', name:'Yuan (offshore)',    country:'Chine' },
 ];
 
-/* ══════════════════════════════════════════════════════════════
-   DONNÉES MAINTENUES À LA MAIN (pas d'API gratuite fiable)
-   → politique monétaire, géopolitique, attentes de taux.
-   ⚠️ À ACTUALISER. Dernière révision : voir LAST_MANUAL_UPDATE.
-═══════════════════════════════════════════════════════════════ */
-const LAST_MANUAL_UPDATE = "2026-06-16";
-
-// Politique monétaire : taux directeur actuel + biais (-100 dovish … +100 hawkish)
-const MONETARY = {
-  USD:{ rate:'4.25–4.50%', bias:+20, stance:'Hold prudent',     note:'Fed en pause, dépendante des données ; biais légèrement restrictif tant que l\'inflation des services reste collante.' },
-  EUR:{ rate:'2.40%',      bias:-25, stance:'Assouplissement',  note:'BCE en cycle de baisse, croissance atone ; le différentiel de taux pèse sur l\'euro.' },
-  GBP:{ rate:'4.00%',      bias:+5,  stance:'Hold',             note:'BoE prudente, inflation des services au-dessus de la cible ; assouplissement graduel attendu.' },
-  JPY:{ rate:'0.75%',      bias:+45, stance:'Normalisation',    note:'BoJ en resserrement progressif — seule grande banque centrale hawkish, catalyseur structurel pour le yen.' },
-  CHF:{ rate:'0.00%',      bias:-30, stance:'Plancher',         note:'BNS proche de zéro, inflation très basse ; tolère un franc moins fort.' },
-  AUD:{ rate:'3.60%',      bias:-10, stance:'Assouplissement',  note:'RBA en baisse graduelle, sensible au cycle chinois et aux matières premières.' },
-  NZD:{ rate:'3.00%',      bias:-20, stance:'Assouplissement',  note:'RBNZ en détente après resserrement agressif ; économie fragile.' },
-  CAD:{ rate:'2.75%',      bias:-15, stance:'Assouplissement',  note:'BoC accommodante, marché du travail mou ; exposée au pétrole et aux tarifs US.' },
-  CNH:{ rate:'3.00% (LPR1A)',bias:-35,stance:'Stimulus',        note:'PBoC en soutien (baisses ciblées, RRR) face à la déflation et à la crise immobilière.' },
-};
-
-// Géopolitique / risque structurel : score 0–100 (50 neutre)
-// note = vue d'ensemble · impl = implication trading (cohérente avec le régime de marché actuel)
-const GEO = {
-  USD:{ score:70,
-    note:'Statut de première monnaie de réserve et refuge de référence : le dollar reste la destination des flux en stress de marché. Bémols structurels : trajectoire budgétaire dégradée, recours à l\'arme tarifaire et politisation de la Fed qui entament progressivement la prime de confiance.',
-    impl:'Le USD demeure le refuge le plus fiable : il s\'apprécie quand la liquidité mondiale se tend (sell-off actions, choc géopolitique). Reste la jambe « longue » par défaut des paniers risk-off. Vigilance : sur les chocs d\'origine US (crise budgétaire, tarifs), le dollar peut paradoxalement baisser — distinguez stress « exogène » (USD up) du stress « made in USA » (USD down).' },
-  EUR:{ score:43,
-    note:'Prime de risque pénalisée par la fragmentation politique (montée des extrêmes, instabilité budgétaire française), la dépendance énergétique et la proximité directe du conflit en Ukraine.',
-    impl:'L\'euro n\'a aucune qualité refuge : il sous-performe en risk-off et lors des pics de tension géopolitique européenne. Jouez-le plutôt sur le différentiel de taux et le flux risk-on ; méfiez-vous des fenêtres électorales/budgétaires qui élargissent les spreads souverains (OAT-Bund, BTP-Bund) et pèsent mécaniquement sur l\'EUR.' },
-  GBP:{ score:50,
-    note:'Stabilité institutionnelle correcte mais dette publique élevée, croissance faible et dépendance aux flux financiers internationaux rendent la livre sensible à l\'appétit pour le risque.',
-    impl:'Profil neutre à légèrement cyclique : la livre se comporte davantage comme un actif risqué que comme un refuge. Elle profite des phases de risk-on et souffre des chocs de financement (épisode « mini-budget » type). Pas de biais géopolitique structurel fort — réagit surtout aux taux et au flux.' },
-  JPY:{ score:52,
-    note:'⚠️ Le statut historique de valeur refuge du yen s\'est largement érodé. Depuis le creusement des différentiels de taux, le JPY est devenu la principale monnaie de financement du carry trade : il évolue désormais au rythme des taux (surtout US 10 ans) bien plus qu\'au rythme de l\'aversion au risque. La normalisation de la BoJ lui redonne un soutien structurel partiel, mais il ne joue plus son rôle de refuge de manière fiable.',
-    impl:'Ne traitez plus le yen comme un refuge automatique : sur un sell-off classique, il peut ne pas monter, voire baisser si les rendements US grimpent. Son driver dominant est le différentiel de taux JP/US et la trajectoire de la BoJ. Le JPY ne rallie violemment qu\'en cas de débouclage brutal du carry (chute conjointe des rendements US et des actions) — c\'est ce scénario précis, pas un risk-off ordinaire, qu\'il faut guetter pour le jouer à la hausse.' },
-  CHF:{ score:73,
-    note:'Refuge par excellence : neutralité politique, note AAA, excédent courant et place financière solide. Première destination des flux de fuite, BNS susceptible d\'intervenir pour limiter une appréciation excessive.',
-    impl:'Le franc est aujourd\'hui le refuge le plus « pur » du G10, plus fiable que le yen pour couvrir le risque géopolitique européen. Privilégiez-le comme jambe longue en risk-off (ex. long CHF vs devises cycliques). Seul garde-fou : le risque d\'intervention/verbal de la BNS quand le franc devient trop fort.' },
-  AUD:{ score:41,
-    note:'Proxy du cycle chinois et des matières premières industrielles ; très exposée au ralentissement asiatique, aux tensions commerciales et à la demande de minerai de fer.',
-    impl:'Devise à haut bêta du risque : à éviter à l\'achat en risk-off et lors des tensions US-Chine. L\'AUD est un baromètre du sentiment global — il surperforme en risk-on confirmé (relance chinoise, hausse des matières premières) et décroche dès que la Chine ou les actions faiblissent.' },
-  NZD:{ score:39,
-    note:'Petite économie ouverte ultra-dépendante de la Chine et des produits laitiers ; la plus haute bêta du risque parmi les G10.',
-    impl:'Même logique que l\'AUD, en plus extrême : amplificateur du sentiment de risque, à fuir en stress de marché. Les rebonds se jouent uniquement en risk-on franc avec catalyseur (stimulus chinois, envolée des prix laitiers GDT). Souvent utilisé en paire avec l\'AUD (AUDNZD) pour isoler le différentiel de politique monétaire.' },
-  CAD:{ score:52,
-    note:'Ancrage nord-américain stable, mais devise pétrolière exposée au prix du brut et très sensible à la politique commerciale américaine (tarifs, renégociations).',
-    impl:'Profil cyclique modéré, corrélé au pétrole et au USD. Moins haute bêta que l\'AUD/NZD grâce à la proximité US. Driver géopolitique clé : toute escalade tarifaire américaine vis-à-vis du Canada pèse directement sur le CAD — surveillez le calendrier commercial US autant que le baril.' },
-  CNH:{ score:30,
-    note:'Risques élevés et structurels : rivalité stratégique US-Chine, dossier taïwanais, sorties de capitaux, opacité statistique et gestion administrée du change par la PBoC (fixing quotidien).',
-    impl:'Devise sous contrôle, à manier avec prudence : la PBoC pilote le fixing et peut figer ou inverser une tendance du jour au lendemain. Biais structurellement défensif. Toute escalade US-Chine (tarifs, Taïwan, sanctions tech) provoque une dépréciation du CNH et contamine l\'AUD/NZD par corrélation — le CNH sert souvent de signal avancé du risque asiatique.' },
-};
+// Politique monétaire / géopolitique ne sont plus maintenues à la main ici :
+// elles arrivent en direct via Firestore (collection macroCompass), alimentée
+// depuis Notion. Voir loadMacroCompassScores() et NOTION_DIMS plus bas.
+const LAST_MANUAL_UPDATE = "2026-06-16"; // fallback d'affichage pour les attentes de taux tant que Firestore n'a pas encore répondu
 
 // Attentes de taux pour la PROCHAINE réunion (probabilités %, somme=100)
 const RATE_EXPECTATIONS = {
@@ -753,25 +703,48 @@ const RATE_EXPECTATIONS = {
    demande depuis les rapports hebdo Notion (voir NOTION_DIMS).
 ═══════════════════════════════════════════════════════════════ */
 const NOTION_API = 'https://notion-compass.fx-desk.workers.dev';
-let NOTION_UPDATED = '20/09/2026';
-// Dimensions 0-100 par devise — calculées depuis le rapport hebdo (sem. 21-27/09/2026).
-const NOTION_DIMS = {
-  USD:{croissance:80,inflation:72,monetaire:85,geo:70},
-  EUR:{croissance:62,inflation:58,monetaire:60,geo:43},
-  GBP:{croissance:42,inflation:60,monetaire:52,geo:48},
-  JPY:{croissance:52,inflation:55,monetaire:52,geo:52},
-  CHF:{croissance:52,inflation:42,monetaire:40,geo:72},
-  AUD:{croissance:50,inflation:65,monetaire:72,geo:41},
-  NZD:{croissance:46,inflation:50,monetaire:45,geo:39},
-  CAD:{croissance:44,inflation:48,monetaire:40,geo:50},
-  CNH:{croissance:45,inflation:45,monetaire:35,geo:30},
-};
+let NOTION_UPDATED = '';
+// Dimensions 0-100 par devise + notes de verdict par pilier : chargées EN LIVE
+// depuis Firestore (collection macroCompass), écrite par Claude à partir du
+// jugement porté sur les pages Notion (Biais & Force Relative + Track Record
+// Fondamental). Rien n'est en dur ici — voir loadMacroCompassScores().
+let NOTION_DIMS = {};
+let PILLAR_NOTES = {}; // code -> {croissance,inflation,monetaire,geo}: texte de verdict
+let macroCompassLoaded = false;
+function loadMacroCompassScores(){
+  if(!fxDb||!fxAuthUser||macroCompassLoaded) return;
+  macroCompassLoaded = true;
+  fxDb.collection('macroCompass').onSnapshot(snap=>{
+    snap.docs.forEach(doc=>{
+      const code=doc.id; if(code==='_meta'){
+        const meta=doc.data()||{};
+        if(meta.updatedAt) NOTION_UPDATED=new Date(meta.updatedAt).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+        return;
+      }
+      const data=doc.data()||{}; const p=data.pillars||{};
+      NOTION_DIMS[code]={
+        croissance: p.croissance ? p.croissance.score : null,
+        inflation:  p.inflation ? p.inflation.score : null,
+        monetaire:  p.politiqueMonetaire ? p.politiqueMonetaire.score : null,
+        geo:        p.geopolitique ? p.geopolitique.score : null,
+      };
+      PILLAR_NOTES[code]={
+        croissance: p.croissance ? p.croissance.note : '',
+        inflation:  p.inflation ? p.inflation.note : '',
+        monetaire:  p.politiqueMonetaire ? p.politiqueMonetaire.note : '',
+        geo:        p.geopolitique ? p.geopolitique.note : '',
+      };
+    });
+    buildFromNotion();
+    if(activeCcy) renderDetail();
+  }, e=>{ macroCompassLoaded=false; console.warn('macroCompass',e.message); });
+}
 
 /* ══════════════════════════════════════════════════════════════
    ÉTAT
 ═══════════════════════════════════════════════════════════════ */
-let CCY_DATA = {};        // code -> { growth, inflation, unemp, score, dims, ... }
-let activeCcy = null, activeSection = 'croissance';
+let CCY_DATA = {};        // code -> { score, dims, notion }
+let activeCcy = null;
 let allNews = [], newsFilter = 'ALL';
 let lastNewsTs = 0, newsTimer = null;
 const NEWS_REFRESH_MS = 15 * 60 * 1000; // auto-refresh toutes les 15 min
@@ -796,240 +769,12 @@ async function fetchJSON(url,opts){
   return r.json();
 }
 
-/* ── Parseur SDMX-JSON (OCDE) : renvoie {value, period} le plus récent ── */
-function parseSDMXLatest(json){
-  const data=json.data||json;
-  const struct=(data.structures&&data.structures[0])||json.structure;
-  const ds=(data.dataSets&&data.dataSets[0])||(json.dataSets&&json.dataSets[0]);
-  if(!struct||!ds)return null;
-  const obsDims=(struct.dimensions&&struct.dimensions.observation)||[];
-  const timeIdx=obsDims.findIndex(d=>d.id==='TIME_PERIOD');
-  const obs=ds.observations||{};
-  let best=null,bestTime=-1,bestLabel=null;
-  for(const key in obs){
-    const idxs=key.split(':').map(Number);
-    const ti=timeIdx>=0?idxs[timeIdx]:0;
-    if(ti>bestTime){
-      bestTime=ti;
-      const val=obs[key][0];
-      best=(val===null||val===undefined)?null:parseFloat(val);
-      if(timeIdx>=0&&obsDims[timeIdx].values[ti])
-        bestLabel=obsDims[timeIdx].values[ti].name||obsDims[timeIdx].values[ti].id;
-    }
-  }
-  return best===null?null:{value:best,period:bestLabel};
-}
-
-async function oecd(url){
-  if(CONFIG.API_BASE) return fetchJSON(CONFIG.API_BASE+'/oecd?url='+encodeURIComponent(url));
-  // Direct navigateur : NE PAS envoyer d'en-tête Accept (valeur non-safelistée → preflight
-  // OPTIONS que l'OCDE refuse car il n'autorise pas le header "accept"). On négocie le
-  // SDMX-JSON via le query param → requête "simple", aucun preflight.
-  const sep=url.includes('?')?'&':'?';
-  return fetchJSON(url+sep+'format=jsondata');
-}
-// BLS : le client envoie seriesid+années ; la clé est injectée par le proxy (ou inline en dev)
-async function blsFetch(seriesid){
-  const y=new Date().getFullYear();
-  const body={seriesid,startyear:String(y-1),endyear:String(y)};
-  if(CONFIG.API_BASE) return fetchJSON(CONFIG.API_BASE+'/bls',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  body.registrationkey=CONFIG.BLS_KEY;
-  return fetchJSON('https://api.bls.gov/publicAPI/v2/timeseries/data/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-}
 async function finnhubNews(category){
   if(CONFIG.API_BASE) return fetchJSON(CONFIG.API_BASE+'/finnhub?category='+category);
   return fetchJSON(`https://finnhub.io/api/v1/news?category=${category}&token=${CONFIG.FINNHUB_KEY}`);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   RÉCUPÉRATION DES DONNÉES MACRO (live)
-═══════════════════════════════════════════════════════════════ */
-async function fetchGrowth(c){
-  const area=c.gdpArea||c.oecd;
-  const ck='growth_'+area;const cached=cacheGet(ck);if(cached!==null)return cached;
-  try{
-    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.NAD,DSD_NAAG@DF_NAAG_I,1.0/A.${area}.B1GQ_R_GR..?startPeriod=2022&dimensionAtObservation=AllDimensions`;
-    const j=await oecd(url);const r=parseSDMXLatest(j);
-    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE'};cacheSet(ck,out);return out;}
-  }catch(e){console.warn('growth',c.code,e.message);}
-  return null;
-}
-
-// Indicateur avancé composite OCDE (CLI) — équivalent libre du PMI (100 = tendance LT)
-async function fetchCLI(c){
-  const ck='cli_'+c.oecd;const cached=cacheGet(ck);if(cached!==null)return cached;
-  try{
-    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI,4.1/${c.oecd}.M.LI...AA...H?startPeriod=${isoMonth(-8)}&dimensionAtObservation=AllDimensions`;
-    const j=await oecd(url);const r=parseSDMXLatest(j);
-    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE CLI'};cacheSet(ck,out);return out;}
-  }catch(e){console.warn('cli',c.code,e.message);}
-  return null;
-}
-
-// Core CPI (hors alim. & énergie) — US via BLS ; pas de série libre cross-pays fiable
-async function fetchCoreCPI(c){
-  if(!c.us)return null;
-  const ck='core_'+c.cpiArea;const cached=cacheGet(ck);if(cached!==null)return cached;
-  const b=await fetchBLS_YoY('CUUR0000SA0L1E');
-  if(b){cacheSet(ck,b);return b;}
-  return null;
-}
-
-async function fetchInflation(c){
-  const ck='infl_'+c.cpiArea;const cached=cacheGet(ck);if(cached!==null)return cached;
-  // 1) US → BLS (CPI-U, YoY calculé)
-  if(c.us){
-    const b=await fetchBLS_CPI();if(b){cacheSet(ck,b);return b;}
-  }
-  // 2) OCDE G20 prices (variation annuelle, PA)
-  try{
-    const start=isoMonth(-14);
-    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_G20_PRICES@DF_G20_PRICES,1.0/${c.cpiArea}.M...PA...?startPeriod=${start}&dimensionAtObservation=AllDimensions`;
-    const j=await oecd(url);const r=parseSDMXLatest(j);
-    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE'};cacheSet(ck,out);return out;}
-  }catch(e){console.warn('infl',c.code,e.message);}
-  return null;
-}
-
-async function fetchUnemp(c){
-  const ck='unemp_'+c.oecd;const cached=cacheGet(ck);if(cached!==null)return cached;
-  if(c.us){const b=await fetchBLS_UNEMP();if(b){cacheSet(ck,b);return b;}}
-  try{
-    const start=isoMonth(-6);
-    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_LFS@DF_IALFS_INDIC,1.0/${c.oecd}.UNE_LF_M...Y._T.Y_GE15..M?startPeriod=${start}&dimensionAtObservation=AllDimensions`;
-    const j=await oecd(url);const r=parseSDMXLatest(j);
-    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE'};cacheSet(ck,out);return out;}
-  }catch(e){console.warn('unemp',c.code,e.message);}
-  return null;
-}
-
-function isoMonth(offset){
-  const d=new Date();d.setMonth(d.getMonth()+offset);
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-}
-
-/* ── BLS (US) ── */
-async function fetchBLS_YoY(seriesId){           // variation annuelle d'un indice (CPI, core…)
-  try{
-    const j=await blsFetch([seriesId]);
-    const series=j.Results.series[0].data;
-    if(series.length<13)return null;
-    const latest=series[0];
-    const yearAgo=series.find(d=>d.period===latest.period&&+d.year===+latest.year-1);
-    if(!yearAgo)return null;
-    const yoy=((+latest.value-+yearAgo.value)/+yearAgo.value)*100;
-    return {value:round2(yoy),period:latest.periodName+' '+latest.year,src:'BLS'};
-  }catch(e){console.warn('BLS YoY',seriesId,e.message);return null;}
-}
-async function fetchBLS_CPI(){ return fetchBLS_YoY('CUUR0000SA0'); }
-async function fetchBLS_UNEMP(){
-  try{
-    const j=await blsFetch(['LNS14000000']);
-    const d=j.Results.series[0].data[0];
-    return {value:round2(+d.value),period:d.periodName+' '+d.year,src:'BLS'};
-  }catch(e){console.warn('BLS UNEMP',e.message);return null;}
-}
-async function fetchNFP(){   // NFP variation mensuelle (en milliers) — US only
-  try{
-    const j=await blsFetch(['CES0000000001']);
-    const s=j.Results.series[0].data;
-    if(s.length<2)return null;
-    const chg=Math.round((+s[0].value-(+s[1].value)));
-    return {value:chg,period:s[0].periodName+' '+s[0].year,src:'BLS'};
-  }catch(e){console.warn('BLS NFP',e.message);return null;}
-}
-async function fetchAHE(){   // Average Hourly Earnings YoY % — US only
-  try{return await fetchBLS_YoY('CES0500000003');}
-  catch(e){console.warn('BLS AHE',e.message);return null;}
-}
-async function fetchLFP(){   // Labor Force Participation Rate — US only
-  try{
-    const j=await blsFetch(['LNS11300000']);
-    const d=j.Results.series[0].data[0];
-    return {value:round2(+d.value),period:d.periodName+' '+d.year,src:'BLS'};
-  }catch(e){console.warn('BLS LFP',e.message);return null;}
-}
-async function fetchEmpRate(c){   // Taux d'emploi OCDE (non-US)
-  if(c.us)return null;
-  const ck='emprate_'+c.oecd;const cached=cacheGet(ck);if(cached!==null)return cached;
-  try{
-    const start=isoMonth(-6);
-    const url=`https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_LFS@DF_IALFS_INDIC,1.0/${c.oecd}.EMP_LF_M...Y._T.Y_GE15..M?startPeriod=${start}&dimensionAtObservation=AllDimensions`;
-    const j=await oecd(url);const r=parseSDMXLatest(j);
-    if(r){const out={value:round2(r.value),period:r.period,src:'OCDE'};cacheSet(ck,out);return out;}
-  }catch(e){console.warn('emprate',c.code,e.message);}
-  return null;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   SCORING — chaque dimension 0..100 (50 neutre)
-═══════════════════════════════════════════════════════════════ */
-function scoreGrowth(g,cli){
-  if(g==null&&cli==null)return null;
-  let base=g!=null?clamp(50+g*8,5,95):50;           // PIB a/a : 0%→50, +3%→74
-  if(cli!=null)base+=clamp((cli-100)*6,-15,15);      // CLI avancé : 100 neutre, >100 expansion
-  return Math.round(clamp(base,5,95));
-}
-function scoreInflation(p){
-  if(p==null)return null;
-  // FX : modérément au-dessus de la cible (2%) = pression haussière taux = soutien.
-  // Trop chaud (>5) ou déflation = pénalité.
-  if(p<0)   return Math.round(clamp(30+p*4,5,40));        // déflation → bearish
-  if(p<1.5) return Math.round(clamp(40+p*6,40,50));        // sous cible → légèrement dovish
-  if(p<=4)  return Math.round(clamp(50+(p-1.5)*8,50,72));  // zone hawkish-friendly
-  return Math.round(clamp(72-(p-4)*7,40,72));              // surchauffe → on retire
-}
-function scoreMonetary(code){
-  const m=MONETARY[code];if(!m)return 50;
-  return Math.round(clamp(50+m.bias*0.45,8,92));
-}
-function scoreGeo(code){ return GEO[code]?GEO[code].score:50; }
-
-function computeScore(code,growth,cli,inflation){
-  const g=scoreGrowth(growth?growth.value:null,cli?cli.value:null);
-  const i=scoreInflation(inflation?inflation.value:null);
-  const mo=scoreMonetary(code);
-  const ge=scoreGeo(code);
-  const dims={
-    croissance:{score:g,live:!!(growth||cli)},
-    inflation:{score:i,live:!!inflation},
-    monetaire:{score:mo,live:false},
-    geo:{score:ge,live:false}
-  };
-  const W=CONFIG.WEIGHTS;
-  let sum=0,wsum=0;
-  const add=(s,w)=>{if(s!=null){sum+=s*w;wsum+=w;}};
-  add(g,W.growth);add(i,W.inflation);add(mo,W.monetary);add(ge,W.geo);
-  const composite=wsum>0?Math.round(sum/wsum):50;
-  return {composite,dims};
-}
-
-function signalOf(score){
-  if(score>=58)return{cls:'buy-side',sCls:'s-buy',txt:'Acheter',short:'BUY'};
-  if(score>=50)return{cls:'buy-side',sCls:'s-buy',txt:'Biais acheteur',short:'BUY'};
-  if(score>=42)return{cls:'sell-side',sCls:'s-sell',txt:'Biais vendeur',short:'SELL'};
-  return{cls:'sell-side',sCls:'s-sell',txt:'Vendre',short:'SELL'};
-}
 function scoreColor(s){return s>=50?'var(--buy)':'var(--sell)';}
-
-/* ══════════════════════════════════════════════════════════════
-   CHARGEMENT GLOBAL
-═══════════════════════════════════════════════════════════════ */
-async function loadAllCurrencies(){
-  await Promise.all(CURRENCIES.map(async c=>{
-    const [growth,cli,inflation,coreCpi,unemp,nfp,ahe,lfp,empRate]=await Promise.all([
-      fetchGrowth(c),fetchCLI(c),fetchInflation(c),fetchCoreCPI(c),fetchUnemp(c),
-      c.us?fetchNFP():Promise.resolve(null),
-      c.us?fetchAHE():Promise.resolve(null),
-      c.us?fetchLFP():Promise.resolve(null),
-      fetchEmpRate(c)
-    ]);
-    const {composite,dims}=computeScore(c.code,growth,cli,inflation);
-    CCY_DATA[c.code]={growth,cli,inflation,coreCpi,unemp,nfp,ahe,lfp,empRate,score:composite,dims};
-    renderGrid(); // re-render progressif au fur et à mesure
-  }));
-  document.getElementById('dash-updated').textContent='Maj : '+new Date().toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-}
 
 /* ══════════════════════════════════════════════════════════════
    SOURCE PRINCIPALE : NOTION (remplace les API pour la force des devises)
@@ -1048,18 +793,24 @@ async function buildFromNotion(){
   const up=document.getElementById('dash-updated');
   if(!data||!data.currencies){ if(up) up.textContent='Notion indisponible'; return; }
   NOTION_UPDATED=data.updated||NOTION_UPDATED;
-  const W=CONFIG.WEIGHTS, wsum=W.growth+W.inflation+W.monetary+W.geo;
+  const W=CONFIG.WEIGHTS;
   CURRENCIES.forEach(c=>{
     const n=data.currencies[c.code];
-    const dm=NOTION_DIMS[c.code]||{croissance:50,inflation:50,monetaire:50,geo:50};
-    const score=Math.round((dm.croissance*W.growth+dm.inflation*W.inflation+dm.monetaire*W.monetary+dm.geo*W.geo)/wsum);
+    const dm=NOTION_DIMS[c.code]||null; // null tant que Firestore n'a pas répondu
+    let score=null;
+    if(dm){
+      let sum=0,wsum=0;
+      const add=(v,w)=>{if(v!=null){sum+=v*w;wsum+=w;}};
+      add(dm.croissance,W.growth);add(dm.inflation,W.inflation);add(dm.monetaire,W.monetary);add(dm.geo,W.geo);
+      score=wsum>0?Math.round(sum/wsum):null;
+    }
     CCY_DATA[c.code]={
       score,
       dims:{
-        croissance:{score:dm.croissance,live:false},
-        inflation:{score:dm.inflation,live:false},
-        monetaire:{score:dm.monetaire,live:false},
-        geo:{score:dm.geo,live:false}
+        croissance:{score:dm?dm.croissance:null,live:false},
+        inflation:{score:dm?dm.inflation:null,live:false},
+        monetaire:{score:dm?dm.monetaire:null,live:false},
+        geo:{score:dm?dm.geo:null,live:false}
       },
       notion:Object.assign({bias:'neutre',rank:null}, n||{})
     };
@@ -1184,11 +935,11 @@ function renderGrid(){
         <div class="ccy-flag">${c.flag}</div>
         <div class="ccy-id"><div class="ccy-code">${c.code}</div><div class="ccy-name">${c.name}</div></div>
         <div class="ccy-score-wrap">
-          <div class="ccy-score" style="color:${col}">${d.score}</div>
-          <div class="ccy-signal ${sig.sCls}">${sig.short}</div>
+          <div class="ccy-score" style="color:${col}">${d.score!=null?d.score:'—'}</div>
+          <div class="ccy-signal ${sig.sCls}">${d.score!=null?sig.short:'N/A'}</div>
         </div>
       </div>
-      <div class="ccy-bar-bg"><div class="ccy-bar-mid"></div><div class="ccy-bar-fill" style="width:${d.score}%;background:${col}"></div></div>
+      <div class="ccy-bar-bg"><div class="ccy-bar-mid"></div><div class="ccy-bar-fill" style="width:${d.score||0}%;background:${col}"></div></div>
       <div class="ccy-dims">
         ${dimChip('Crois.',d.dims.croissance)}
         ${dimChip('Infl.',d.dims.inflation)}
@@ -1202,21 +953,12 @@ function renderGrid(){
 /* ══════════════════════════════════════════════════════════════
    RENDU — PANNEAU DÉTAIL
 ═══════════════════════════════════════════════════════════════ */
-const SECTIONS=[
-  {key:'croissance',lbl:'Croissance',   icon:'ti-chart-line'},
-  {key:'emploi',    lbl:'Emploi',       icon:'ti-users'},
-  {key:'inflation', lbl:'Inflation',    icon:'ti-flame'},
-  {key:'monetaire', lbl:'Pol. Monétaire',icon:'ti-building-bank'},
-  {key:'geo',       lbl:'Géopolitique', icon:'ti-world'},
-];
-
 function openDetail(code){
-  activeCcy=code;activeSection='croissance';activeDim=null;
+  activeCcy=code;activeDim=null;
   renderGrid();renderDetail();
   document.getElementById('detail-mount').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function closeDetail(){activeCcy=null;document.getElementById('detail-mount').innerHTML='';renderGrid();}
-function switchSection(k){activeSection=k;renderDetail();}
 
 function dimDot(s){const c=s==null?'var(--t4)':scoreColor(s);return c;}
 
@@ -1250,7 +992,10 @@ function renderDetail(){
     }
     const ex=dimExcerpt(activeCcy, activeDim==='emploi'?'croissance':activeDim);
     const ctx=ex?`<div class="sub-context"><div class="sub-context-h">📄 Contexte — ${REPORT_TITLE||'rapport hebdo'}</div><div class="dim-detail-body">${mdToHtmlFx(ex)}</div></div>`:'';
-    dimPanel=`<div class="dim-detail"><div class="dim-detail-h">${dimLbls[activeDim]}</div>${inner}${ctx}</div>`;
+    const noteKey=activeDim==='emploi'?'croissance':activeDim;
+    const verdict=(PILLAR_NOTES[activeCcy]||{})[noteKey];
+    const verdictHtml=verdict?`<div class="these-callout" style="border-left-color:${col}">🧭 <b>Verdict :</b> ${mdToHtmlFx(verdict)}</div>`:'';
+    dimPanel=`<div class="dim-detail"><div class="dim-detail-h">${dimLbls[activeDim]}</div>${verdictHtml}${inner}${ctx}</div>`;
   }
 
   const these=(n.actuelle||n.avenir||n.mois)?`
@@ -1271,11 +1016,11 @@ function renderDetail(){
         <div class="detail-name">${c.name} · ${c.country}</div>
         <div class="detail-meta">
           <span class="detail-sig ${sig.cls}" style="color:${col}">${n.biasLabel||sig.txt}</span>
-          <span style="font-size:11px;color:var(--t3);font-family:var(--mono)">Source : ta thèse Notion · dimensions estimées</span>
+          <span style="font-size:11px;color:var(--t3);font-family:var(--mono)">Source : Notion (Biais &amp; Force Relative + Track Record Fondamental)${NOTION_UPDATED?' · MAJ '+NOTION_UPDATED:''}</span>
         </div>
       </div>
       <div class="detail-scorebox">
-        <div class="num" style="color:${col}">${d.score}</div>
+        <div class="num" style="color:${col}">${d.score!=null?d.score:'—'}</div>
         <div class="lbl">/ 100</div>
       </div>
       <button class="detail-close" onclick="closeDetail()"><i class="ti ti-x"></i></button>
@@ -1295,191 +1040,6 @@ function renderDetail(){
       ${these}
     </div>
   </div>`;
-}
-
-function srcBadge(o){
-  if(!o)return '<span class="src-tag src-na">N/A</span>';
-  return `<span class="src-tag src-live">LIVE · ${o.src}</span>`;
-}
-function kpi(lbl,val,sub,cls,badge){
-  return `<div class="kpi"><div class="kpi-lbl"><span>${lbl}</span>${badge||''}</div><div class="kpi-val ${cls||'kv-neu'}">${val}</div>${sub?`<div class="kpi-sub">${sub}</div>`:''}</div>`;
-}
-
-function renderSectionContent(c,d){
-  const code=c.code;
-  if(activeSection==='croissance'){
-    const g=d.growth,u=d.unemp;
-    const gv=g?(g.value>=0?'+':'')+g.value+'%':'Indisponible';
-    const gcls=g?(g.value>=2?'kv-pos':g.value>=0?'kv-neu':'kv-neg'):'';
-    const uv=u?u.value+'%':'Indisponible';
-    const ov=g?(g.value>=2.5?'Croissance solide':g.value>=1?'Croissance modérée':g.value>=0?'Croissance atone':'Contraction'):'Donnée OCDE indisponible';
-    return `
-      <div class="dsec-overview">
-        <div class="dsec-ovh"><i class="ti ti-chart-line"></i> Croissance · ${g?'dernier point : '+g.period:'—'} <span class="dsec-sig-tag" style="color:${g?scoreColor(d.dims.croissance.score):'var(--t3)'}">${ov}</span></div>
-        <div class="dsec-ovtxt">${growthNarrative(code,g,d)}</div>
-      </div>
-      <div class="kpi-row">
-        ${kpi('Croissance PIB (a/a)',gv,g?g.period:'',gcls,srcBadge(g))}
-        ${(()=>{const cl=d.cli;const cv=cl?cl.value:null;return kpi('Indicateur avancé (CLI)',cl?cv:'Indisponible',cl?cl.period+' · 100 = tendance':'Équivalent PMI (libre)',cl?(cv>=100?'kv-pos':'kv-neg'):'',srcBadge(cl));})()}
-        ${kpi('Taux de chômage',uv,u?u.period:'',u&&u.value<=5?'kv-pos':u&&u.value>=7?'kv-neg':'kv-neu',srcBadge(u))}
-        ${kpi('Sous-score croissance',(d.dims.croissance.score??'—')+(d.dims.croissance.score!=null?'/100':''),'Impact sur la note',d.dims.croissance.score>=50?'kv-pos':'kv-neg')}
-      </div>
-      <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${growthImplication(code,g,d)}</div></div>
-      ${watchBlock(['Publication PIB trimestriel','PMI Manufacturier & Services','Ventes au détail'])}`;
-  }
-  if(activeSection==='emploi'){
-    const u=d.unemp,nfp=d.nfp,ahe=d.ahe,lfp=d.lfp,empRate=d.empRate;
-    const uv=u?u.value+'%':'N/A';
-    const ucls=u?(u.value<=5?'kv-pos':u.value>=7?'kv-neg':'kv-neu'):'';
-    return `
-      <div class="dsec-overview">
-        <div class="dsec-ovh"><i class="ti ti-users"></i> Marché du travail · ${u?'chômage : '+u.period:empRate?'emploi : '+empRate.period:'—'}</div>
-        <div class="dsec-ovtxt">${emploiNarrative(code,d)}</div>
-      </div>
-      <div class="kpi-row">
-        ${kpi('Taux de chômage',uv,u?u.period:'',ucls,srcBadge(u))}
-        ${(()=>{if(code==='USD'&&lfp)return kpi('Participation (LFP)',lfp.value+'%',lfp.period,lfp.value>=62?'kv-pos':lfp.value>=60?'kv-neu':'kv-neg',srcBadge(lfp));if(empRate)return kpi('Taux d\'emploi',empRate.value+'%',empRate.period,empRate.value>=70?'kv-pos':empRate.value>=60?'kv-neu':'kv-neg',srcBadge(empRate));return kpi('Taux d\'emploi','N/A','Source OCDE indispo','kv-neu','<span class="src-tag src-na">N/A</span>');})()}
-        ${code==='USD'&&nfp?kpi('NFP (variation mensuelle)',(nfp.value>0?'+':'')+nfp.value+'k',nfp.period,nfp.value>=150?'kv-pos':nfp.value>=0?'kv-neu':'kv-neg',srcBadge(nfp)):kpi('NFP','—','US uniquement','kv-neu','')}
-        ${code==='USD'&&ahe?kpi('Salaires horaires (AHE a/a)',(ahe.value>=0?'+':'')+ahe.value+'%',ahe.period,ahe.value>4?'kv-neg':ahe.value>=2.5?'kv-pos':'kv-neu',srcBadge(ahe)):kpi('Salaires (AHE)','—','US uniquement','kv-neu','')}
-      </div>
-      <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${emploiImplication(code,d)}</div></div>
-      ${watchBlock(['NFP (Non-Farm Payrolls)','Taux de chômage mensuel','Salaires horaires moyens (AHE)','Taux de participation / JOLTS'])}`;
-  }
-  if(activeSection==='inflation'){
-    const p=d.inflation;
-    const pv=p?(p.value>=0?'+':'')+p.value+'%':'Indisponible';
-    const pcls=p?(p.value>4?'kv-neg':p.value>=1.5?'kv-pos':'kv-neu'):'';
-    const ov=p?(p.value>4?'Inflation élevée':p.value>=1.5?'Proche / au-dessus de la cible':p.value>=0?'Sous la cible':'Déflation'):'Donnée indisponible';
-    return `
-      <div class="dsec-overview">
-        <div class="dsec-ovh"><i class="ti ti-flame"></i> Inflation · ${p?'dernier point : '+p.period:'—'} <span class="dsec-sig-tag" style="color:${p?scoreColor(d.dims.inflation.score):'var(--t3)'}">${ov}</span></div>
-        <div class="dsec-ovtxt">${inflationNarrative(code,p)}</div>
-      </div>
-      <div class="kpi-row">
-        ${kpi('Inflation CPI (a/a)',pv,p?p.period:'',pcls,srcBadge(p))}
-        ${(()=>{const cc=d.coreCpi;if(cc)return kpi('Core CPI (hors alim/énergie)',(cc.value>=0?'+':'')+cc.value+'%',cc.period,cc.value>4?'kv-neg':cc.value>=1.5?'kv-pos':'kv-neu',srcBadge(cc));return kpi('Core CPI (hors alim/énergie)','N/A',c.us?'—':'Source libre cross-pays indispo.','kv-neu','<span class="src-tag src-na">N/A</span>');})()}
-        ${kpi('Cible banque centrale','≈ 2%','Standard',pcls)}
-        ${kpi('Sous-score inflation',(d.dims.inflation.score??'—')+(d.dims.inflation.score!=null?'/100':''),'Impact sur la note',d.dims.inflation.score>=50?'kv-pos':'kv-neg')}
-      </div>
-      <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${inflationImplication(code,p)}</div></div>
-      ${watchBlock(['CPI / PCE mensuel','Inflation des services (core)','Anticipations d\'inflation','Salaires'])}`;
-  }
-  if(activeSection==='monetaire'){
-    const m=MONETARY[code];const re=RATE_EXPECTATIONS[code];
-    return `
-      <div class="dsec-overview">
-        <div class="dsec-ovh"><i class="ti ti-building-bank"></i> Politique monétaire <span class="src-tag src-est">EST · ${LAST_MANUAL_UPDATE}</span> <span class="dsec-sig-tag" style="color:${scoreColor(d.dims.monetaire.score)}">${m.stance}</span></div>
-        <div class="dsec-ovtxt">${m.note}</div>
-      </div>
-      <div class="kpi-row">
-        ${kpi('Taux directeur',m.rate,'Actuel','kv-neu','<span class="src-tag src-est">EST</span>')}
-        ${kpi('Orientation',m.stance,(m.bias>0?'Biais hawkish (+'+m.bias+')':m.bias<0?'Biais dovish ('+m.bias+')':'Neutre'),m.bias>0?'kv-pos':m.bias<0?'kv-neg':'kv-neu')}
-        ${kpi('Sous-score monétaire',d.dims.monetaire.score+'/100','Poids fort (35%)',d.dims.monetaire.score>=50?'kv-pos':'kv-neg')}
-        ${re?kpi('Prochaine réunion',re.meeting,'Hold '+re.hold+'% · Cut '+re.cut+'% · Hike '+re.hike+'%','kv-neu'):''}
-      </div>
-      <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${monetaryImplication(code,m,d)}</div></div>
-      ${watchBlock(['Décision de taux','Discours / minutes','Dot plot & projections','Différentiel de taux'])}`;
-  }
-  // geo
-  const ge=GEO[code];
-  return `
-    <div class="dsec-overview">
-      <div class="dsec-ovh"><i class="ti ti-world"></i> Géopolitique &amp; risque <span class="src-tag src-est">EST · ${LAST_MANUAL_UPDATE}</span> <span class="dsec-sig-tag" style="color:${scoreColor(ge.score)}">${ge.score>=60?'Favorable / refuge':ge.score>=45?'Neutre':'Défavorable'}</span></div>
-      <div class="dsec-ovtxt">${ge.note}</div>
-    </div>
-    <div class="kpi-row">
-      ${kpi('Score géopolitique',ge.score+'/100','Stabilité / statut refuge',ge.score>=55?'kv-pos':ge.score>=45?'kv-neu':'kv-neg','<span class="src-tag src-est">EST</span>')}
-      ${kpi('Profil',ge.score>=60?'Valeur refuge':ge.score>=45?'Cyclique neutre':'Risque élevé','En contexte de stress',ge.score>=55?'kv-pos':'kv-neg')}
-    </div>
-    <div class="analysis"><div class="analysis-lbl"><i class="ti ti-brain"></i> Analyse &amp; implications trading</div><div class="analysis-txt">${geoImplication(code,ge)}</div></div>
-    ${watchBlock(['Élections / risque politique','Conflits & tensions régionales','Flux de capitaux','Prix des matières premières'])}`;
-}
-
-function watchBlock(items){
-  return `<div class="watch"><div class="watch-lbl"><i class="ti ti-radar" style="font-size:12px"></i> À surveiller</div><div class="watch-list">${items.map(i=>`<span class="watch-item"><i class="ti ti-eye" style="font-size:11px"></i>${i}</span>`).join('')}</div></div>`;
-}
-
-/* ── Narratifs (data-aware) ── */
-function growthNarrative(code,g,d){
-  const cli=d&&d.cli;
-  const cliTxt=cli?` L'indicateur avancé OCDE (CLI) est à <b>${cli.value}</b> (${cli.value>=100?'au-dessus de 100 → momentum d\'expansion':'sous 100 → momentum de ralentissement'}).`:'';
-  if(!g)return (cli?`Le PIB annuel OCDE n'est pas disponible pour ${code}, mais l'indicateur avancé (CLI) à <b>${cli.value}</b> ${cli.value>=100?'pointe vers une expansion':'signale un ralentissement'}.`:`La donnée de croissance OCDE n'est pas disponible actuellement pour ${code}. Le sous-score croissance est exclu du calcul et la note se base sur les autres dimensions.`);
-  const v=g.value;
-  if(v>=2.5)return `L'économie affiche une croissance robuste de <b>${v}%</b>, signe d'une demande interne solide qui soutient structurellement la devise et donne des marges de manœuvre à la banque centrale.`+cliTxt;
-  if(v>=1)return `Croissance modérée de <b>${v}%</b> : l'expansion se poursuit sans surchauffe. Contexte globalement neutre-positif pour la devise.`+cliTxt;
-  if(v>=0)return `Croissance atone (<b>${v}%</b>) : l'économie stagne, ce qui plaide pour une politique plus accommodante et tend à peser sur la devise.`+cliTxt;
-  return `Contraction de <b>${v}%</b> : l'économie se replie, scénario défavorable à la devise et propice à un assouplissement monétaire.`+cliTxt;
-}
-function growthImplication(code,g,d){
-  const s=d.dims.croissance.score;
-  if(!g)return `Sans donnée de croissance fiable, privilégiez les autres piliers (monétaire surtout) pour cadrer votre biais sur ${code}. À recroiser dès que l'OCDE republie.`;
-  const dir=s>=50?'soutient un biais acheteur':'renforce un biais vendeur';
-  return `Le différentiel de croissance est un moteur de moyen terme du change. Ici, la dynamique ${dir} sur ${code}. Pratique : comparez ce score à celui de la devise opposée dans une paire — un écart de croissance large (ex. ${code} fort vs devise faible) offre les configurations directionnelles les plus propres. Confirmez avec la politique monétaire avant d'engager.`;
-}
-function inflationNarrative(code,p){
-  if(!p)return `Donnée d'inflation indisponible pour ${code} actuellement. Sous-score inflation exclu du calcul.`;
-  const v=p.value;
-  if(v>4)return `Inflation élevée à <b>${v}%</b>, nettement au-dessus de la cible. Cela maintient la pression pour des taux restrictifs (soutien court terme) mais fait planer un risque d'instabilité si elle ne reflue pas.`;
-  if(v>=1.5)return `Inflation à <b>${v}%</b>, proche ou au-dessus de la cible de 2%. Zone qui entretient un biais restrictif modéré, plutôt favorable à la devise.`;
-  if(v>=0)return `Inflation faible (<b>${v}%</b>), sous la cible : la banque centrale dispose de latitude pour assouplir, ce qui tend à affaiblir la devise.`;
-  return `Déflation (<b>${v}%</b>) : signal défavorable fort, qui pousse à un assouplissement agressif et pèse sur la devise.`;
-}
-function inflationImplication(code,p){
-  if(!p)return `À recroiser dès publication. L'inflation pilote en grande partie les anticipations de taux — pilier le plus lourd du score.`;
-  const v=p.value;
-  if(v>4)return `Une inflation forte est à double tranchant : haussière à court terme (hausses de taux anticipées) mais source de volatilité. Tradez les <b>surprises</b> vs consensus plutôt que le niveau absolu — un chiffre supérieur aux attentes provoque typiquement une appréciation immédiate de ${code}, surtout si la banque centrale est jugée crédible.`;
-  if(v>=1.5)return `Inflation autour de la cible : configuration «&nbsp;Goldilocks&nbsp;» qui n'oblige pas la banque centrale à assouplir. Neutre-positif pour ${code}. Surveillez surtout la composante <b>services / core</b>, plus collante, qui dicte la trajectoire des taux.`;
-  return `Inflation basse = munitions pour assouplir = pression baissière sur ${code}. Recherchez les paires où ${code} (inflation faible) fait face à une devise à inflation/taux plus élevés : le portage joue contre ${code}.`;
-}
-function monetaryImplication(code,m,d){
-  const re=RATE_EXPECTATIONS[code];
-  const base=`La politique monétaire est le pilier le plus lourd du score (35%) car le <b>différentiel de taux</b> est le premier moteur du Forex. Orientation actuelle pour ${code} : <b>${m.stance}</b> (${m.bias>0?'hawkish':m.bias<0?'dovish':'neutre'}).`;
-  let trade;
-  if(m.bias>15)trade=` Un biais hawkish attire les flux de portage et soutient ${code} : privilégiez les achats de ${code} contre une devise dovish (assouplissement actif).`;
-  else if(m.bias<-15)trade=` Un biais dovish érode l'attrait de ${code} : privilégiez les ventes de ${code} contre une devise dont la banque centrale reste ferme.`;
-  else trade=` Orientation neutre : ${code} réagira surtout aux <b>surprises</b> (réunions, données d'inflation) plutôt qu'à une tendance de taux établie.`;
-  const meet=re?` Prochain rendez-vous : <b>${re.meeting}</b> — le marché price ${re.hold}% de statu quo, ${re.cut}% de baisse, ${re.hike}% de hausse. Un repricing de ces probabilités est le catalyseur le plus tradable.`:'';
-  return base+trade+meet;
-}
-function geoImplication(code,ge){
-  if(ge.impl)return ge.impl;
-  if(ge.score>=60)return `${code} joue un rôle de <b>refuge</b> : il s'apprécie quand l'aversion au risque monte.`;
-  if(ge.score>=45)return `Profil géopolitique neutre pour ${code} : pas de biais fort, amplificateur ponctuel lors d'événements spécifiques.`;
-  return `${code} est une devise à <b>haut bêta du risque</b> : elle souffre en stress de marché et se joue en risk-on confirmé.`;
-}
-
-function emploiNarrative(code,d){
-  const u=d.unemp,nfp=d.nfp,ahe=d.ahe,lfp=d.lfp,empRate=d.empRate;
-  if(code==='USD'){
-    if(!u&&!nfp)return `Données d'emploi US temporairement indisponibles. Le NFP mensuel et le taux de chômage sont les indicateurs clés pour la Fed.`;
-    let txt='';
-    if(u)txt+=`Le taux de chômage s'établit à <b>${u.value}%</b> (${u.period})`;
-    if(nfp)txt+=(txt?`, avec une variation NFP de <b>${nfp.value>0?'+':''}${nfp.value}k</b> postes créés (${nfp.period})`:`NFP : <b>${nfp.value>0?'+':''}${nfp.value}k</b> postes (${nfp.period})`);
-    if(ahe)txt+=`. Les salaires horaires moyens (AHE) progressent de <b>${ahe.value}%</b> en glissement annuel`;
-    if(lfp)txt+=`. Le taux de participation atteint <b>${lfp.value}%</b>`;
-    return txt+'.';
-  }
-  if(!u&&!empRate)return `Données d'emploi OCDE indisponibles pour ${code} actuellement.`;
-  let txt='';
-  if(u)txt+=`Le taux de chômage s'établit à <b>${u.value}%</b> (${u.period})`;
-  if(empRate)txt+=(txt?`. Le taux d'emploi est de <b>${empRate.value}%</b> (${empRate.period})`:`Taux d'emploi : <b>${empRate.value}%</b> (${empRate.period})`);
-  return txt+'.';
-}
-
-function emploiImplication(code,d){
-  const u=d.unemp;
-  const low=u&&u.value<5;
-  const high=u&&u.value>7;
-  const ahe=d.ahe;
-  let base=`Le marché du travail est un pilier critique pour la politique monétaire : un emploi tendu alimente les salaires, qui alimentent l'inflation des services — le composant le plus résistant. `;
-  if(code==='USD'){
-    base+=`Pour la Fed, le duo <b>NFP + AHE</b> est le signal le plus suivi : un NFP fort combiné à une AHE >3% maintient la pression hawkish. `;
-    if(ahe&&ahe.value>4)base+=`L'AHE actuelle à <b>${ahe.value}%</b> reste élevée — argument pour des taux restrictifs plus longtemps, soutien structurel pour le USD.`;
-    else if(ahe&&ahe.value<3)base+=`L'AHE à <b>${ahe.value}%</b> se modère — signal dovish pour la Fed, pression sur le USD si la tendance se confirme.`;
-  }
-  if(low)return base+` Chômage bas = marché du travail tendu = pressions salariales persistantes = banque centrale sous pression de maintenir des taux fermes. Soutien structurel pour <b>${code}</b>. Une surprise haussière (emploi encore plus fort) serait le catalyseur de nouvelle appréciation.`;
-  if(high)return base+` Chômage élevé = marché du travail en détente = pression dovish croissante sur la banque centrale. Poids sur <b>${code}</b>. Une amélioration surprise (baisse du chômage, NFP solide) constituerait le catalyseur haussier le plus puissant.`;
-  return base+`Marché du travail équilibré : l'emploi seul ne délivre pas de signal directionnel fort. Croisez avec l'AHE et le core CPI pour jauger la marge de manœuvre de la banque centrale sur <b>${code}</b>.`;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1595,7 +1155,7 @@ function initRateSync(){
   try{firebase.initializeApp(RATE_FB_CONFIG);}catch(e){}
   try{
     fxDb=firebase.firestore();
-    firebase.auth().onAuthStateChanged(u=>{fxAuthUser=u;renderRateExpectations();loadMacroNotes();});
+    firebase.auth().onAuthStateChanged(u=>{fxAuthUser=u;renderRateExpectations();loadMacroNotes();loadMacroCompassScores();});
     fxDb.collection('config').doc('rateExpectations').onSnapshot(doc=>{
       if(doc.exists){
         const data=doc.data()||{};
@@ -1660,7 +1220,11 @@ async function saveRateEdit(code,vals){
 /* ── Détail d'une carte d'attentes (clic) : graphique des probabilités ── */
 function openRateDetail(code){
   const r=RATE_EXPECTATIONS[code]; if(!r) return;
-  const m=(typeof MONETARY!=='undefined'&&MONETARY[code])?MONETARY[code]:{};
+  const monScore=(NOTION_DIMS[code]||{}).monetaire;
+  const m={
+    stance: monScore==null?'':(monScore>=65?'Hawkish':monScore>=42?'Neutre':'Dovish'),
+    note: (PILLAR_NOTES[code]||{}).monetaire||''
+  };
   const bar=(lbl,v,col)=>`<div class="rx-bd-row"><div class="rx-bd-top"><span>${lbl}</span><b>${v}%</b></div><div class="rx-bd-bar"><span style="width:${Math.max(0,Math.min(100,v))}%;background:${col}"></span></div></div>`;
   const ov=document.createElement('div'); ov.className='rx-modal';
   ov.innerHTML=`<div class="rx-box">

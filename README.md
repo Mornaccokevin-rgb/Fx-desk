@@ -20,7 +20,8 @@ Terminal macro temps réel sur **9 devises** (USD, EUR, GBP, JPY, CHF, AUD, NZD,
 - Note globale **/100** par devise (> 50 = biais acheteur).
 - 4 piliers : **croissance · inflation · politique monétaire · géopolitique**.
 - **News Feed** live (Finnhub) avec auto-refresh toutes les 15 min + rafraîchissement manuel.
-- Données OCDE (SDMX), BLS et Finnhub. Affichage **N/A** si une source est indisponible — jamais de donnée périmée déguisée en live.
+- Rang de force relative, biais, driver dominant et thèses (semaine actuelle / à venir / le mois) : lus **en direct** depuis la page Notion « Biais & Force Relative » via le Cloudflare Worker `cloudflare-worker/notion-worker.js` — zéro donnée en dur, zéro API payante.
+- Les 4 piliers /100 par devise sont un **jugement** porté par Claude sur les pages Notion (Biais & Force Relative + Track Record Fondamental), écrit dans Firestore (collection `macroCompass`) à la demande de Kevin (« mets à jour le macro compass »), puis lu en direct par le site. Voir `scripts/push_macro_compass.py`. Affichage **N/A** si une devise n'est pas encore couverte — jamais de donnée périmée déguisée en live.
 
 ### 📈 Performance Tracker
 Journal de trading complet, synchronisé via **Firebase**.

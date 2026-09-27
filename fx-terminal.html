@@ -682,66 +682,23 @@ const RATE_EXPECTATIONS = {
 };
 
 /* ══════════════════════════════════════════════════════════════
-   DONNÉES NOTION — Scoreboard « BIAIS & FORCE RELATIVE »
-   → Source principale de la force des devises (remplace les API).
-   Régénéré par Claude depuis la page Notion. Dernière MAJ : voir NOTION_UPDATED.
+   NOTION = API — force des devises en LIVE depuis le Worker Cloudflare
+   (biais/rang/driver/thèses). Les 4 dimensions sont calculées à la
+   demande depuis les rapports hebdo Notion (voir NOTION_DIMS).
 ═══════════════════════════════════════════════════════════════ */
-const NOTION_UPDATED = "20/09/2026";
-const NOTION_DATA = {
-  USD:{ rank:1, bias:'haussier', biasLabel:'Haussier', score:74, dims:{croissance:62,inflation:66,monetaire:82,geo:70},
-    driver:"Hike Fed 12-0, dot plot relevé de +50pb sur 2027-2028, DXY au plus haut depuis 7 semaines.",
-    actuelle:`FOMC : hike de 25pb à **3,75-4,00%** (vote **12-0**) et dot plot relevé de **+50pb** (médians 2027/2028 à 4,1%/3,9%) — un higher-for-longer que personne n'avait. Meilleure séance du dollar en 3 mois, DXY > **100**, 2 ans à **4,657%**. Claims solides (**196K** vs 208K).`,
-    avenir:`Semaine creuse en data dure, dominée par les speeches Fed quasi quotidiens. PMI flash (**53**), claims (**202K**), durable goods (**-0,5%**) attendus un peu plus mous. Sommet Trump-Xi jeudi. Barkin = la voix où une fissure apparaîtrait.`,
-    mois:`Le virage de Warsh confirmé à chaque étape (NFP **+162K**, Core CPI **0,3%**, hike 12-0) ; Goldman voit le prochain hike au **27-28/10**. Core PCE scotché à **3,3-3,4%**. Vigilance : le 30 ans ne recule pas → le thème debasement peut reprendre la main.`,
-    callout:`🟢 **Biais : Haussier** — le dot plot +50pb fixe un higher-for-longer que la data ne remet pas en cause ; seule une fissure Fed (Barkin) ou un 30 ans qui refuse de baisser le fragiliserait.` },
-  AUD:{ rank:2, bias:'haussier', biasLabel:'Haussier (borné)', score:68, dims:{croissance:55,inflation:68,monetaire:72,geo:41},
-    driver:"Bullock prépare le hike du 28-29/09 (93% pricé), terminal vu à 4,85%.",
-    actuelle:`Début de semaine terni par la Chine (ventes détail **+0,4%** vs +0,8%), AUD/USD reteste **0,7070**. Puis Bullock change la donne vendredi : risques haussiers d'inflation « se matérialisent », pétrole higher-for-longer → pricing du hike à **93%** (vers 4,60%), terminal **4,85%**.`,
-    avenir:`Hunter (RBA) lundi, PMI flash mercredi. Vrai rendez-vous : Employment Change d'août jeudi (cons. **20K**, chômage **4,5%**), dernière donnée avant la RBA. Sommet Trump-Xi jeudi (proxy chinois).`,
-    mois:`CPI juillet puis PIB T2 (**2,1%** vs 1,8%) ont fait passer le pricing de ~10% à 57%, figé à ~74% par le NAB faible, porté à **93%** par Bullock. UBS y voit surtout la prépa d'un hike de novembre. Vent de face chinois de fond.`,
-    callout:`🟢 **Biais : Haussier (borné)** — seule BC du bloc avec un hike attendu sous 10 jours, mais déjà pricé à 93%. ⚠️ Asymétrie : seul le ton peut encore surprendre.` },
-  EUR:{ rank:3, bias:'neutre', biasLabel:'Hawkish sans traction', score:55, dims:{croissance:48,inflation:55,monetaire:62,geo:43},
-    driver:"BCE hawkish, mais 4e semaine écrasée par le dollar.",
-    actuelle:`Semaine passive après le hike BCE (dépôt **2,50%**). ZEW allemand **34,7** vs ~37, mais situation actuelle en net rebond ; ZEW zone euro recule (**25,8** vs 31,4). EUR/USD **-80 pts** après la Fed, plus bas de 7 semaines vers **1,1450**.`,
-    avenir:`PMI flash mercredi (Allemagne **54**, zone euro **52,7**) — seul point data — puis Ifo jeudi. Salve de speeches BCE. Le PMI doit dire si le repli du ZEW zone euro est un accident ou un vrai découplage.`,
-    mois:`Hike BCE à 2,50% avec projections relevées, Lagarde parle de croissance « surprenamment forte » ; marché price jusqu'à 3 hausses d'ici mi-2027. Mais chaque catalyseur propre est effacé par le dollar, 4 semaines de suite. Faille : FBCF en recul, France à l'arrêt.`,
-    callout:`⚪ **Biais : Neutre-attentiste (hawkish sur le fond, sans traction)** — le carburant est là mais le prix ne suit pas ; sans catalyseur, l'EUR reste piloté par le dollar. ⚠️ Les 2 forecasts PMI sont sous le consensus.` },
-  CHF:{ rank:4, bias:'neutre', biasLabel:'Neutre', score:51, dims:{croissance:55,inflation:45,monetaire:40,geo:73},
-    driver:"Seule BC sans biais de resserrement, franc devenu devise de financement.",
-    actuelle:`Semaine sans catalyseur suisse. PPI/prix import **-0,7%** y/y vs -1,3% (déflation qui se réduit) — sans effet BNS. Le franc suit les flux refuge Moyen-Orient (or de 4293$ à 4381$).`,
-    avenir:`Décision BNS jeudi : statu quo à **0%** unanimement attendu, conf de presse Schlegel. Rien dans la data ne pousse à bouger → attention au ton (taux négatifs, intervention change).`,
-    mois:`CPI **0,8%** vs 0,5% et PIB T2 **+1,5%** n'ont rien changé à la fonction de réaction de la BNS, qui défend le franc (réserves de 711 à 759 Mds) pendant que Fed/BCE/BoJ/RBA resserrent. Le différentiel se creuse, le franc sous-performe.`,
-    callout:`⚪ **Biais : Neutre-attentiste** — la BNS a peu de raisons de bouger, le franc reste tributaire des flux dollar/risque.` },
-  JPY:{ rank:5, bias:'neutre', biasLabel:'Neutre-attentiste', score:48, dims:{croissance:50,inflation:52,monetaire:58,geo:52},
-    driver:"Hike BoJ à 1,25% mais vote 7-2 et Ueda sans calendrier ; rate check à 158.",
-    actuelle:`CPI national d'août (**1,9%** vs 2,0%) rate surtout sur le core-core (**1,7%** vs 2,0%). BoJ hike à **1,25%** (plus haut depuis 1995) mais vote **7-2** et Ueda sans calendrier. USD/JPY de 154,55 à **158**, ramené à 156-157 par un rate check.`,
-    avenir:`Seul rendez-vous propre : PMI flash jeudi (**55,2**), peu susceptible de bouger la paire. Le dollar reste soutenu par les speeches Fed ; à 158 déjà sanctionné par un rate check, surveiller une éventuelle intervention verbale.`,
-    mois:`Le décrochage fondamentaux/change de fin août s'était résorbé sur les salaires (**+4,7%**), avant de repartir avec la BoJ. COT : longs yen chargés (88e pct) que le prix contredit. Le rétrécissement du différentiel reste favorable au yen, mais Ueda ne pressera pas.`,
-    callout:`⚪ **Biais : Neutre-attentiste** — pas de catalyseur domestique, paire coincée entre pression dollar et plafond de facto à 158, positionnement long yen que le prix contredit. Risque de mouvement brusque plutôt côté yen fort.` },
-  GBP:{ rank:6, bias:'baissier', biasLabel:'Baissier (conviction faible)', score:40, dims:{croissance:50,inflation:58,monetaire:52,geo:50},
-    driver:"Hold BoE trop conditionnel, longs sterling débouclés, cable au plus bas depuis fin juillet.",
-    actuelle:`Chômage 3M **4,9%** vs 5,0%, CPI en ligne (**3,1%** ; core 2,6%). BoE maintient **3,75%** (vote 6-3) mais Bailey conditionne tout resserrement au Moyen-Orient sans urgence → débouclage de longs GBP, cable vers **1,3330** (plus bas depuis fin juillet). Retail sales solides (+0,5%) ne donnent qu'un rebond partiel.`,
-    avenir:`PMI flash mercredi attendu en amélioration (**52,3**) mais sous le consensus. Jeudi, 3 membres BoE parlent, aucun des dissidents hawkish → prolongement probable du ton conditionnel de Bailey.`,
-    mois:`Deux forces se neutralisent : GDP juillet **+0,4%**, PMI services et retail solides d'un côté ; emploi services en contraction depuis 23 mois et prix qui réaccélèrent de l'autre (stagflation). Le vrai moteur reste le différentiel Fed/BoE défavorable. Budget fin octobre en toile de fond.`,
-    callout:`🔴 **Biais : Baissier (conviction faible)** — aucun speaker hawkish au programme, différentiel Fed/BoE défavorable, seul soutien data (PMI) attendu sous le consensus.` },
-  CAD:{ rank:7, bias:'baissier', biasLabel:'Baissier', score:35, dims:{croissance:48,inflation:48,monetaire:40,geo:52},
-    driver:"Dossier tarifaire, aucun support domestique, core BoC pile sur le pivot de 2,0%.",
-    actuelle:`CPI d'août en ligne (**3,0%** ; core BoC **2,0%** stable — pile le pivot d'un éventuel hike du 28/10). Réaction « muted » : USD/CAD ne monte que sur le dollar, puis le repli du pétrole pèse. Trump évoque des tarifs si le Canada s'associe à l'UE.`,
-    avenir:`Macklem lundi. Jeudi : retail sales (révision juillet **-0,8%**, flash août **+0,4%**). Juste après : l'interdiction US sur alcool/motos/produits laitiers canadiens entre en vigueur le **29/09**.`,
-    mois:`4 semaines sans jamais s'appuyer sur la macro. GDP T2 **3,3%** (rebond export autos) n'a pas empêché le CAD de baisser, puis le hold BoC hawkish effacé par un emploi à **-41,7K**. L'escalade tarifaire ajoute un risque pas encore pleinement pricé.`,
-    callout:`🔴 **Biais : Baissier** — aucun support propre, durcissement tarifaire le 29/09, seuil de hike BoC (core 2,0%) atteint sans marge. C'est le flash retail d'août qui tranche.` },
-  NZD:{ rank:8, bias:'baissier', biasLabel:'Baissier', score:30, dims:{croissance:48,inflation:45,monetaire:45,geo:39},
-    driver:"Hawkish action / dovish reaction RBNZ, PIB battu sans effet.",
-    actuelle:`Pire performeuse de la semaine dès lundi, pénalisée par la Chine. PIB T2 pourtant battu (**+0,2%** vs +0,1% ; **+2,6%** y/y vs +2,2%) mais seulement un pop temporaire avant de refluer, écrasé par la force du dollar post-Fed.`,
-    avenir:`Aucune donnée néo-zélandaise. Le kiwi restera piloté par le dollar et le sommet Trump-Xi de jeudi (sensibilité au narratif chinois).`,
-    mois:`Depuis la hausse RBNZ du 02/09 (OCR **2,75%**, unanime), schéma « hawkish action, dovish reaction » : les membres refusent de s'engager, Silk évoque attendre décembre. Kiwi à un plus bas de plusieurs années vs AUD ; une bonne surprise domestique ne suffit plus.`,
-    callout:`🔴 **Biais : Baissier** — glissade prolongée, même le beat du PIB n'a pas cassé la tendance ; aucun catalyseur propre cette semaine.` },
-  CNH:{ rank:null, bias:'neutre', biasLabel:'Non classé', score:38, dims:{croissance:45,inflation:45,monetaire:35,geo:30},
-    driver:"Hors scoreboard Force Relative — devise administrée par la PBoC.",
-    actuelle:`Le yuan offshore n'est pas inclus dans le scoreboard « TOP 2 vs BOTTOM 2 » (devise sous contrôle du fixing PBoC).`,
-    avenir:`À suivre surtout comme signal avancé du risque asiatique (contamine AUD/NZD).`,
-    mois:`Biais structurellement défensif : rivalité US-Chine, sorties de capitaux, gestion administrée du change.`,
-    callout:`⚪ **Non classé** — devise administrée, tenue à part du scoreboard.` },
+const NOTION_API = 'https://notion-compass.fx-desk.workers.dev';
+let NOTION_UPDATED = '20/09/2026';
+// Dimensions 0-100 par devise — calculées depuis le rapport hebdo (sem. 21-27/09/2026).
+const NOTION_DIMS = {
+  USD:{croissance:80,inflation:72,monetaire:85,geo:70},
+  EUR:{croissance:62,inflation:58,monetaire:60,geo:43},
+  GBP:{croissance:42,inflation:60,monetaire:52,geo:48},
+  JPY:{croissance:52,inflation:55,monetaire:52,geo:52},
+  CHF:{croissance:52,inflation:42,monetaire:40,geo:72},
+  AUD:{croissance:50,inflation:65,monetaire:72,geo:41},
+  NZD:{croissance:46,inflation:50,monetaire:45,geo:39},
+  CAD:{croissance:44,inflation:48,monetaire:40,geo:50},
+  CNH:{croissance:45,inflation:45,monetaire:35,geo:30},
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -1011,24 +968,39 @@ async function loadAllCurrencies(){
 /* ══════════════════════════════════════════════════════════════
    SOURCE PRINCIPALE : NOTION (remplace les API pour la force des devises)
 ═══════════════════════════════════════════════════════════════ */
-function buildFromNotion(){
+// Récupère le scoreboard en LIVE depuis le Worker Notion (avec cache de secours)
+async function buildFromNotion(){
+  let data=null;
+  try{
+    const r=await fetch(NOTION_API+'/?source=biais',{cache:'no-store'});
+    data=await r.json();
+    if(data&&data.currencies) localStorage.setItem('fxmt_notion_biais',JSON.stringify(data));
+  }catch(e){ /* on tentera le cache */ }
+  if(!data||!data.currencies){
+    try{ data=JSON.parse(localStorage.getItem('fxmt_notion_biais')); }catch(e){}
+  }
+  const up=document.getElementById('dash-updated');
+  if(!data||!data.currencies){ if(up) up.textContent='Notion indisponible'; return; }
+  NOTION_UPDATED=data.updated||NOTION_UPDATED;
+  const W=CONFIG.WEIGHTS, wsum=W.growth+W.inflation+W.monetary+W.geo;
   CURRENCIES.forEach(c=>{
-    const n=NOTION_DATA[c.code];
-    if(!n) return;
+    const n=data.currencies[c.code];
+    const dm=NOTION_DIMS[c.code]||{croissance:50,inflation:50,monetaire:50,geo:50};
+    const score=Math.round((dm.croissance*W.growth+dm.inflation*W.inflation+dm.monetaire*W.monetary+dm.geo*W.geo)/wsum);
     CCY_DATA[c.code]={
-      score:n.score,
+      score,
       dims:{
-        croissance:{score:n.dims.croissance,live:false},
-        inflation:{score:n.dims.inflation,live:false},
-        monetaire:{score:n.dims.monetaire,live:false},
-        geo:{score:n.dims.geo,live:false}
+        croissance:{score:dm.croissance,live:false},
+        inflation:{score:dm.inflation,live:false},
+        monetaire:{score:dm.monetaire,live:false},
+        geo:{score:dm.geo,live:false}
       },
-      notion:n
+      notion:Object.assign({bias:'neutre',rank:null}, n||{})
     };
   });
   renderGrid();
-  const up=document.getElementById('dash-updated');
-  if(up) up.textContent='Notion · MAJ '+NOTION_UPDATED;
+  if(activeCcy) renderDetail();
+  if(up) up.textContent='Notion · MAJ '+(NOTION_UPDATED||'');
 }
 function signalOfBias(bias){
   if(bias==='haussier') return {cls:'buy-side',sCls:'s-buy',txt:'Acheter',short:'ACHAT'};
@@ -1046,7 +1018,7 @@ function biasColorOf(bias){
 ═══════════════════════════════════════════════════════════════ */
 function renderGrid(){
   const grid=document.getElementById('ccy-grid');
-  const rankOf=c=>{const n=NOTION_DATA[c.code];return (n&&n.rank!=null)?n.rank:99;};
+  const rankOf=c=>{const d=CCY_DATA[c.code];return (d&&d.notion&&d.notion.rank!=null)?d.notion.rank:99;};
   const sorted=[...CURRENCIES].sort((a,b)=>rankOf(a)-rankOf(b));
   grid.innerHTML=sorted.map(c=>{
     const d=CCY_DATA[c.code];

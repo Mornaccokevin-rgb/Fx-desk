@@ -287,7 +287,7 @@ a{color:inherit;text-decoration:none}
 .news-loading{padding:40px;text-align:center;color:var(--t3);font-size:13px}
 
 /* ─── RATE EXPECTATIONS ─── */
-.rate-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rate-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 @media(max-width:760px){.rate-grid{grid-template-columns:1fr}}
 .rate-card{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r2);padding:15px 17px}
 .rate-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -307,10 +307,6 @@ a{color:inherit;text-decoration:none}
 .rate-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
 
 /* ─── MAINTENANCE ─── */
-.maint{text-align:center;padding:90px 24px;background:var(--panel);border:1px dashed var(--bd2);border-radius:var(--r3)}
-.maint .ti{font-size:52px;color:var(--t3);margin-bottom:18px}
-.maint-title{font-size:21px;font-weight:700;margin-bottom:10px}
-.maint-desc{font-size:14px;color:var(--t2);max-width:440px;margin:0 auto;line-height:1.6}
 
 /* ─── MISC ─── */
 .spinner{width:30px;height:30px;border:3px solid var(--accent-dim);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
@@ -434,26 +430,6 @@ a{color:inherit;text-decoration:none}
 .sub-analysis img{max-width:100%;height:auto;border-radius:6px}
 .sub-context{margin-top:14px;padding-top:12px;border-top:1px dashed var(--bd)}
 .sub-context-h{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
-/* ── Tiroir latéral droit ── */
-#side-hotzone{position:fixed;top:0;right:0;width:16px;height:100vh;z-index:190}
-#side-drawer{position:fixed;top:0;right:0;height:100vh;width:min(440px,92vw);background:var(--panel);border-left:1px solid var(--bd2);box-shadow:-10px 0 34px rgba(0,0,0,.4);transform:translateX(100%);transition:transform .25s ease;z-index:200;display:flex;flex-direction:column;overflow:hidden}
-#side-drawer.open{transform:translateX(0)}
-.drawer-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--bd);flex-shrink:0}
-.drawer-title{font-size:13px;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:8px}
-.drawer-pin{background:none;border:1px solid var(--bd);border-radius:8px;padding:4px 9px;cursor:pointer;font-size:14px}
-.drawer-nav{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--bd);flex-wrap:wrap;flex-shrink:0}
-.dw-tab{background:var(--panel2);border:1px solid var(--bd);color:var(--t2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s}
-.dw-tab:hover{color:var(--accent)}
-.dw-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.drawer-body{flex:1;overflow-y:auto;padding:16px;min-height:0}
-.drawer-body .sec-hdr:first-child{margin-top:0}
-.drawer-edge-hint{position:fixed;top:50%;right:0;transform:translateY(-50%);writing-mode:vertical-rl;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:8px 3px;border-radius:6px 0 0 6px;z-index:189;opacity:.55;pointer-events:none}
-body.drawer-pinned .drawer-edge-hint{display:none}
-/* épinglé : tout le contenu se redimensionne */
-body{transition:padding-right .25s ease}
-body.drawer-pinned{padding-right:min(440px,92vw)}
-body.drawer-pinned #side-hotzone{display:none}
-@media(max-width:768px){ body.drawer-pinned{padding-right:0} }
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -473,7 +449,6 @@ body.drawer-pinned #side-hotzone{display:none}
   <div class="cmd-right">
     <div class="live-badge"><span class="live-dot"></span>LIVE</div>
     <div class="clock" id="clock">--:--:--</div>
-    <button class="icon-btn" id="drawer-btn" onclick="toggleDrawerPin()" title="Afficher/masquer les panneaux"><i class="ti ti-layout-sidebar-right"></i></button>
     <button class="icon-btn" onclick="toggleTheme()" title="Thème"><i class="ti ti-sun" id="theme-icon"></i></button>
   </div>
 </div>
@@ -503,37 +478,45 @@ body.drawer-pinned #side-hotzone{display:none}
     <div class="ccy-grid" id="ccy-grid"></div>
     <div id="detail-mount"></div>
 
-    <!-- NEWS FEED -->
     <div class="sec-hdr">
-      <i class="ti ti-news"></i><h2>News Feed &mdash; Squawk temps réel</h2>
+      <i class="ti ti-building-bank"></i><h2>Attentes de politique monétaire</h2>
       <div class="sec-hdr-line"></div>
-      <span class="news-updated" id="news-updated"></span>
-      <button class="news-refresh-btn" id="news-refresh-btn" onclick="refreshNews()" title="Rafraîchir les news"><i class="ti ti-refresh"></i></button>
-      <span class="badge-est" style="color:var(--buy);background:var(--buy-dim);border-color:var(--buy-glow)">LIVE · Finnhub</span>
+      <span class="badge-est" id="rate-updated">EST · à actualiser</span>
     </div>
-    <div class="news-toolbar" id="news-toolbar"></div>
-    <div class="news-feed" id="news-feed"><div class="news-loading"><div class="spinner"></div><div style="margin-top:12px">Chargement du flux…</div></div></div>
-  </div>
+    <div class="note-banner"><i class="ti ti-info-circle"></i><div>Colle ton bloc quotidien ci-dessous pour tout mettre à jour d'un coup. Tu peux aussi cliquer une carte pour le détail, ou le crayon ✏️ pour l'éditer à la main.</div></div>
+    <!-- Coller-pour-mettre-à-jour (rédacteurs) -->
+    <div class="rate-paste" id="rate-paste" style="display:none">
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">📋 Colle ton bloc « bps + probabilité next meeting » (RBNZ, ECB, BoE, Fed, BoJ, BoC, RBA, SNB) :</div>
+      <textarea id="rate-paste-input" placeholder="RBNZ: 52 bps (67% probability of rate hike at the next meeting)
+ECB: 42 bps (86% probability of no change at the next meeting)
+Fed: 26 bps (90% probability of no change at the next meeting)
+…"></textarea>
+      <div style="display:flex;gap:10px;margin-top:8px;align-items:center;flex-wrap:wrap">
+        <button class="ai-brief-btn" onclick="applyRatesPaste()">↻ Mettre à jour depuis le texte</button>
+        <span id="rate-paste-status" style="font-size:11px;color:var(--t3)"></span>
+      </div>
+    </div>
+    <div class="rate-grid" id="rate-grid"></div>
 
-  </div>
+    <div class="sec-hdr">
+      <i class="ti ti-building-bank"></i><h2>Institutionnels &mdash; COT (CFTC)</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est" id="cot-date"></span>
+    </div>
+    <div class="cot-grid" id="cot-grid"><div class="empty-mini">Chargement des données COT…</div></div>
 
-<!-- ═══════ TIROIR LATÉRAL DROIT ═══════ -->
-<div id="side-hotzone" title="Panneaux (survole)"></div>
-<div class="drawer-edge-hint">‹ PANNEAUX</div>
-<aside id="side-drawer">
-  <div class="drawer-hd">
-    <span class="drawer-title"><i class="ti ti-layout-sidebar-right"></i> Panneaux</span>
-    <button class="drawer-pin" id="drawer-pin" onclick="toggleDrawerPin()" title="Épingler / détacher">📌</button>
-  </div>
-  <div class="drawer-nav">
-    <button class="dw-tab active" onclick="drawerTab('sessions',this)">Sessions</button>
-    <button class="dw-tab" onclick="drawerTab('rates',this)">Taux</button>
-    <button class="dw-tab" onclick="drawerTab('cot',this)">Positionnement</button>
-    <button class="dw-tab" onclick="drawerTab('extras',this)">Marché</button>
-  </div>
-  <div class="drawer-body">
-    <!-- ═══════ SESSIONS TAB ═══════ -->
-  <div id="tab-sessions" class="tab-pane active">
+    <div class="sec-hdr" style="margin-top:30px">
+      <i class="ti ti-users"></i><h2>Retail &mdash; Sentiment communautaire (Myfxbook)</h2>
+      <div class="sec-hdr-line"></div>
+      <span class="badge-est" style="color:var(--amber)">Contrarian</span>
+    </div>
+    <div class="mfb-wrap" style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;overflow:auto">
+      <div style="width:100%;text-align:center">
+        <script type="text/javascript" src="https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1"></script>
+      </div>
+    </div>
+
+    <div class="sec-hdr" style="margin-top:34px"><i class="ti ti-clock-hour-4"></i><h2>Sessions de trading</h2><div class="sec-hdr-line"></div></div>
     <div class="sess-tab-grid">
       <aside>
         <div class="sess-panel">
@@ -559,62 +542,19 @@ body.drawer-pinned #side-hotzone{display:none}
         <div class="sess-cards" id="sess-cards"></div>
       </div>
     </div>
-  </div>
 
-  <!-- ═══════ ATTENTES DE TAUX TAB ═══════ -->
-  <div id="tab-rates" class="tab-pane">
+    <!-- NEWS FEED -->
     <div class="sec-hdr">
-      <i class="ti ti-building-bank"></i><h2>Attentes de politique monétaire</h2>
+      <i class="ti ti-news"></i><h2>News Feed &mdash; Squawk temps réel</h2>
       <div class="sec-hdr-line"></div>
-      <span class="badge-est" id="rate-updated">EST · à actualiser</span>
+      <span class="news-updated" id="news-updated"></span>
+      <button class="news-refresh-btn" id="news-refresh-btn" onclick="refreshNews()" title="Rafraîchir les news"><i class="ti ti-refresh"></i></button>
+      <span class="badge-est" style="color:var(--buy);background:var(--buy-dim);border-color:var(--buy-glow)">LIVE · Finnhub</span>
     </div>
-    <div class="note-banner"><i class="ti ti-info-circle"></i><div>Colle ton bloc quotidien ci-dessous pour tout mettre à jour d'un coup. Tu peux aussi cliquer une carte pour le détail, ou le crayon ✏️ pour l'éditer à la main.</div></div>
-    <!-- Coller-pour-mettre-à-jour (rédacteurs) -->
-    <div class="rate-paste" id="rate-paste" style="display:none">
-      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">📋 Colle ton bloc « bps + probabilité next meeting » (RBNZ, ECB, BoE, Fed, BoJ, BoC, RBA, SNB) :</div>
-      <textarea id="rate-paste-input" placeholder="RBNZ: 52 bps (67% probability of rate hike at the next meeting)
-ECB: 42 bps (86% probability of no change at the next meeting)
-Fed: 26 bps (90% probability of no change at the next meeting)
-…"></textarea>
-      <div style="display:flex;gap:10px;margin-top:8px;align-items:center;flex-wrap:wrap">
-        <button class="ai-brief-btn" onclick="applyRatesPaste()">↻ Mettre à jour depuis le texte</button>
-        <span id="rate-paste-status" style="font-size:11px;color:var(--t3)"></span>
-      </div>
-    </div>
-    <div class="rate-grid" id="rate-grid"></div>
-  </div>
+    <div class="news-toolbar" id="news-toolbar"></div>
+    <div class="news-feed" id="news-feed"><div class="news-loading"><div class="spinner"></div><div style="margin-top:12px">Chargement du flux…</div></div></div>
 
-  <!-- ═══════ POSITIONNEMENT (COT + RETAIL) TAB ═══════ -->
-  <div id="tab-cot" class="tab-pane">
-    <div class="sec-hdr">
-      <i class="ti ti-building-bank"></i><h2>Institutionnels &mdash; COT (CFTC)</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" id="cot-date"></span>
-    </div>
-    <div class="cot-grid" id="cot-grid"><div class="empty-mini">Chargement des données COT…</div></div>
-
-    <div class="sec-hdr" style="margin-top:30px">
-      <i class="ti ti-users"></i><h2>Retail &mdash; Sentiment communautaire (Myfxbook)</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" style="color:var(--amber)">Contrarian</span>
-    </div>
-    <div class="mfb-wrap" style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;overflow:auto">
-      <div style="width:100%;text-align:center">
-        <script type="text/javascript" src="https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1"></script>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ MARKET ANALYSIS TAB (maintenance) ═══════ -->
-  <div id="tab-market" class="tab-pane">
-    <div class="maint">
-      <i class="ti ti-tool"></i>
-      <div class="maint-title">Section en maintenance</div>
-      <div class="maint-desc">L'analyse de marché globale (corrélations cross-asset, risk sentiment, positionnement COT, flux) est en cours de développement. Disponible prochainement.</div>
-    </div>
-  </div>
-    <div id="tab-extras" class="tab-pane">
-      <!-- ANALYSE IA DU MARCHÉ (Gemini) -->
+    <!-- ANALYSE IA DU MARCHÉ (Gemini) -->
     <div class="sec-hdr">
       <i class="ti ti-sparkles"></i><h2>Analyse IA du marché</h2>
       <div class="sec-hdr-line"></div>
@@ -638,9 +578,9 @@ Fed: 26 bps (90% probability of no change at the next meeting)
       <span class="badge-est" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)">LIVE · Polymarket</span>
     </div>
     <div class="pm-grid" id="pm-grid"><div class="empty-mini">Chargement des marchés…</div></div>
-    </div>
   </div>
-</aside>
+
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1435,13 +1375,6 @@ async function applyRatesPaste(){
 /* ══════════════════════════════════════════════════════════════
    NAV / THEME / CLOCK / INIT
 ═══════════════════════════════════════════════════════════════ */
-function switchTab(t){
-  document.querySelectorAll('.cmd-tab').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-btn-'+t).classList.add('active');
-  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tab-'+t).classList.add('active');
-  window.scrollTo(0,0);
-}
 function toggleTheme(){
   document.body.classList.toggle('light');
   const light=document.body.classList.contains('light');
@@ -1765,30 +1698,8 @@ async function generateAiBrief(force){
   finally{ if(btn){btn.disabled=false;btn.innerHTML=old;} }
 }
 
-/* ── Tiroir latéral droit (sessions, taux, COT, marché) ── */
-function drawerTab(id,btn){
-  document.querySelectorAll('#side-drawer .tab-pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.dw-tab').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  const pane=document.getElementById('tab-'+id); if(pane) pane.classList.add('active');
-}
-function toggleDrawerPin(){
-  const pinned=document.body.classList.toggle('drawer-pinned');
-  const dw=document.getElementById('side-drawer'); if(dw) dw.classList.toggle('open',pinned);
-  const b=document.getElementById('drawer-pin'); if(b) b.style.color=pinned?'var(--accent)':'';
-  const hb=document.getElementById('drawer-btn'); if(hb) hb.style.color=pinned?'var(--accent)':'';
-}
-function setupDrawer(){
-  const hot=document.getElementById('side-hotzone'), dw=document.getElementById('side-drawer');
-  if(!hot||!dw) return;
-  const pinned=()=>document.body.classList.contains('drawer-pinned');
-  hot.addEventListener('mouseenter',()=>{ if(!pinned()) dw.classList.add('open'); });
-  dw.addEventListener('mouseleave',()=>{ if(!pinned()) dw.classList.remove('open'); });
-}
-
 function init(){
   if(localStorage.getItem('fxmt_theme')==='light'){document.body.classList.add('light');document.getElementById('theme-icon').className='ti ti-moon';}
-  setupDrawer();
   tickClock();setInterval(tickClock,1000);
   renderGrid();
   renderRateExpectations();

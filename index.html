@@ -2338,6 +2338,34 @@
     }
 
     /* ── Formulaire : image ── */
+    .mp-img-dropzone {
+        position: relative;
+        border: 1px dashed transparent;
+        border-radius: 10px;
+        padding: 6px;
+        margin: -6px;
+        transition: border-color 0.15s, background-color 0.15s
+    }
+    .mp-img-dropzone.dragover {
+        border-color: var(--fx-vl);
+        background: rgba(var(--acc-rgb), 0.08)
+    }
+    .mp-img-dropzone-overlay {
+        display: none;
+        position: absolute;
+        inset: 0;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--fx-vl);
+        background: rgba(var(--acc-rgb), 0.10);
+        border-radius: 10px;
+        pointer-events: none
+    }
+    .mp-img-dropzone.dragover .mp-img-dropzone-overlay {
+        display: flex
+    }
     .mp-img-row {
         display: flex;
         align-items: center;
@@ -3897,13 +3925,16 @@
                             </div>
                             <div class="fx-fgrp">
                                 <label class="fx-flbl">Images (optionnel — graphiques, captures… jusqu'à 4)</label>
-                                <div class="mp-img-row">
-                                    <label class="mp-img-btn" for="mp-image-input">🖼️ Ajouter des images</label>
-                                    <input type="file" id="mp-image-input" accept="image/*" multiple style="display:none" onchange="handleMacroImage(event)">
-                                    <button type="button" class="mp-img-clear" id="mp-img-clear" onclick="clearMacroImage()" style="display:none">✕ Tout retirer</button>
-                                    <span class="mp-img-hint" id="mp-img-hint">Aucune image</span>
+                                <div id="mp-img-dropzone" class="mp-img-dropzone">
+                                    <div class="mp-img-row">
+                                        <label class="mp-img-btn" for="mp-image-input">🖼️ Ajouter des images</label>
+                                        <input type="file" id="mp-image-input" accept="image/*" multiple style="display:none" onchange="handleMacroImage(event)">
+                                        <button type="button" class="mp-img-clear" id="mp-img-clear" onclick="clearMacroImage()" style="display:none">✕ Tout retirer</button>
+                                        <span class="mp-img-hint" id="mp-img-hint">Aucune image — glisse une image ici, colle-la (Ctrl+V) ou choisis un fichier</span>
+                                    </div>
+                                    <div id="mp-img-previews" class="mp-img-previews"></div>
+                                    <div class="mp-img-dropzone-overlay">📥 Dépose ton image ici</div>
                                 </div>
-                                <div id="mp-img-previews" class="mp-img-previews"></div>
                             </div>
                         </fieldset>
 
@@ -4191,6 +4222,7 @@
                 setMpView('dash');       // toujours ouvrir sur la semaine en cours
                 renderTagChipsInput();
                 initRteToolbar();
+                initMacroImageDropzone();
                 loadMacroNotes();
                 applyMacroEditorUI();
                 loadChat();
@@ -4975,14 +5007,50 @@
         // Collage : on retire les couleurs collées → le texte suit le thème (blanc/noir auto)
         const ed = document.getElementById('mp-analysis');
         if (ed) ed.addEventListener('paste', e => {
-            e.preventDefault();
             const cd = e.clipboardData || window.clipboardData;
+            // Image collée (Ctrl+V) → part rejoindre les images de la synthèse, pas le texte.
+            const imgFiles = cd ? Array.from(cd.items || []).filter(it => it.kind === 'file' && it.type.startsWith('image/')).map(it => it.getAsFile()).filter(Boolean) : [];
+            if (imgFiles.length) {
+                e.preventDefault();
+                let queue = Promise.resolve();
+                imgFiles.forEach(f => { queue = queue.then(() => addMacroImageFile(f)); });
+                queue.then(() => { showToast(imgFiles.length > 1 ? imgFiles.length + ' images collées' : 'Image collée'); renderMacroImagePreviews(); });
+                return;
+            }
+            e.preventDefault();
             const html = cd ? cd.getData('text/html') : '';
             const text = cd ? cd.getData('text/plain') : '';
             let frag;
             if (html) frag = sanitizeRich(html, true); // true = retire les couleurs
             else frag = (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\r?\n/g, '<br>');
             document.execCommand('insertHTML', false, frag);
+        });
+    }
+    function initMacroImageDropzone() {
+        const zone = document.getElementById('mp-img-dropzone');
+        if (!zone || zone.dataset.wired) return;
+        zone.dataset.wired = '1';
+        let dragDepth = 0;
+        zone.addEventListener('dragenter', e => {
+            e.preventDefault();
+            dragDepth++;
+            zone.classList.add('dragover');
+        });
+        zone.addEventListener('dragover', e => e.preventDefault());
+        zone.addEventListener('dragleave', e => {
+            e.preventDefault();
+            dragDepth = Math.max(0, dragDepth - 1);
+            if (!dragDepth) zone.classList.remove('dragover');
+        });
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            dragDepth = 0;
+            zone.classList.remove('dragover');
+            const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []).filter(f => f.type.startsWith('image/'));
+            if (!files.length) { showToast('Dépose une image (PNG, JPG…)'); return; }
+            let queue = Promise.resolve();
+            files.forEach(f => { queue = queue.then(() => addMacroImageFile(f)); });
+            queue.then(() => renderMacroImagePreviews());
         });
     }
     function updateRteToolbar() {

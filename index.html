@@ -2338,105 +2338,50 @@
     }
 
     /* ── Formulaire : image ── */
-    .mp-img-dropzone {
-        position: relative;
-        border: 1px dashed transparent;
+    /* ── Éditeur d'analyse + insertion d'images inline ── */
+    .mp-editor-wrap {
+        border: 1px solid transparent;
         border-radius: 10px;
-        padding: 6px;
-        margin: -6px;
         transition: border-color 0.15s, background-color 0.15s
     }
-    .mp-img-dropzone.dragover {
+    .mp-editor-wrap.dragover {
         border-color: var(--fx-vl);
-        background: rgba(var(--acc-rgb), 0.08)
+        background: rgba(var(--acc-rgb), 0.05)
     }
-    .mp-img-dropzone-overlay {
-        display: none;
-        position: absolute;
-        inset: 0;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--fx-vl);
-        background: rgba(var(--acc-rgb), 0.10);
-        border-radius: 10px;
-        pointer-events: none
-    }
-    .mp-img-dropzone.dragover .mp-img-dropzone-overlay {
-        display: flex
-    }
-    .mp-img-row {
+    .mp-img-bar {
         display: flex;
         align-items: center;
-        gap: 10px;
-        flex-wrap: wrap
+        gap: 8px;
+        padding: 0 2px 6px
     }
-    .mp-img-btn {
+    .mp-img-add-btn {
         background: var(--fx-vd);
         border: 1px solid var(--fx-bd);
         color: var(--fx-vl);
-        border-radius: 8px;
-        padding: 8px 14px;
-        font-size: 12px;
-        font-weight: 600;
+        border-radius: 7px;
+        width: 26px;
+        height: 26px;
+        font-size: 13px;
+        line-height: 1;
         cursor: pointer;
-        transition: all 0.15s
+        transition: background 0.15s;
+        flex: none
     }
-    .mp-img-btn:hover {
+    .mp-img-add-btn:hover {
         background: rgba(var(--acc-rgb), 0.18)
     }
-    .mp-img-clear {
-        background: var(--fx-rd);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        color: var(--fx-red);
-        border-radius: 8px;
-        padding: 7px 12px;
-        font-size: 12px;
-        cursor: pointer;
-        font-family: 'Space Grotesk', sans-serif
-    }
-    .mp-img-hint {
-        font-size: 11px;
+    .mp-img-bar-hint {
+        font-size: 10.5px;
         color: var(--fx-muted)
     }
-    .mp-img-previews {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px
-    }
-    .mp-img-previews:empty {
-        display: none
-    }
-    .mp-img-thumb {
-        position: relative
-    }
-    .mp-img-thumb img {
+    .mp-rte-img {
         display: block;
-        max-height: 140px;
-        max-width: 200px;
+        max-width: 100%;
+        max-height: 360px;
         border-radius: 8px;
         border: 1px solid var(--fx-bd);
+        margin: 8px 0;
         cursor: zoom-in
-    }
-    .mp-img-thumb-rm {
-        position: absolute;
-        top: -7px;
-        right: -7px;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        border: 1px solid var(--fx-bd);
-        background: var(--fx-card2);
-        color: var(--fx-muted);
-        font-size: 11px;
-        line-height: 1;
-        cursor: pointer
-    }
-    .mp-img-thumb-rm:hover {
-        color: var(--fx-red);
-        border-color: var(--fx-red)
     }
 
     /* ── Historique : sous-composantes + image ── */
@@ -3918,22 +3863,16 @@
 
                         <fieldset style="border:none;margin:0;padding:0;min-width:0">
                             <legend class="fx-fst" style="width:100%">✍️ Mon analyse</legend>
-                            <div class="fx-fgrp" style="margin-bottom:14px">
-                                <label class="fx-flbl" for="mp-analysis">Réaction du marché &amp; mon biais *</label>
-                                <div id="mp-analysis" class="fx-fc mp-rte" contenteditable="true" role="textbox" aria-multiline="true"
-                                    data-placeholder="Sélectionne du texte pour le mettre en forme (gras, couleur, titres…). Comment le marché a-t-il réagi vs le consensus ? Quel est mon biais ?"></div>
-                            </div>
                             <div class="fx-fgrp">
-                                <label class="fx-flbl">Images (optionnel — graphiques, captures… jusqu'à 4)</label>
-                                <div id="mp-img-dropzone" class="mp-img-dropzone">
-                                    <div class="mp-img-row">
-                                        <label class="mp-img-btn" for="mp-image-input">🖼️ Ajouter des images</label>
+                                <label class="fx-flbl" for="mp-analysis">Réaction du marché &amp; mon biais *</label>
+                                <div id="mp-editor-wrap" class="mp-editor-wrap">
+                                    <div class="mp-img-bar">
+                                        <button type="button" class="mp-img-add-btn" title="Insérer une image" onclick="document.getElementById('mp-image-input').click()">🖼️</button>
                                         <input type="file" id="mp-image-input" accept="image/*" multiple style="display:none" onchange="handleMacroImage(event)">
-                                        <button type="button" class="mp-img-clear" id="mp-img-clear" onclick="clearMacroImage()" style="display:none">✕ Tout retirer</button>
-                                        <span class="mp-img-hint" id="mp-img-hint">Aucune image — glisse une image ici, colle-la (Ctrl+V) ou choisis un fichier</span>
+                                        <span class="mp-img-bar-hint">glisse, colle (Ctrl+V) ou choisis une image — jusqu'à 4, placée où tu veux dans le texte</span>
                                     </div>
-                                    <div id="mp-img-previews" class="mp-img-previews"></div>
-                                    <div class="mp-img-dropzone-overlay">📥 Dépose ton image ici</div>
+                                    <div id="mp-analysis" class="fx-fc mp-rte" contenteditable="true" role="textbox" aria-multiline="true"
+                                        data-placeholder="Sélectionne du texte pour le mettre en forme (gras, couleur, titres…). Comment le marché a-t-il réagi vs le consensus ? Quel est mon biais ?"></div>
                                 </div>
                             </div>
                         </fieldset>
@@ -4833,7 +4772,6 @@
     let allMacroNotes = [],
         unsubMacroNotes = null,
         editingMacroId = null,
-        currentMacroImages = [], // images en base64 de la synthèse en cours d'édition
         currentMacroTags = [];   // tags de la synthèse en cours d'édition
 
     // ── État de navigation Daily FX ───────────────────────────────
@@ -5008,13 +4946,12 @@
         const ed = document.getElementById('mp-analysis');
         if (ed) ed.addEventListener('paste', e => {
             const cd = e.clipboardData || window.clipboardData;
-            // Image collée (Ctrl+V) → part rejoindre les images de la synthèse, pas le texte.
+            // Image collée (Ctrl+V) → insérée en ligne, exactement là où est le curseur.
             const imgFiles = cd ? Array.from(cd.items || []).filter(it => it.kind === 'file' && it.type.startsWith('image/')).map(it => it.getAsFile()).filter(Boolean) : [];
             if (imgFiles.length) {
                 e.preventDefault();
                 let queue = Promise.resolve();
                 imgFiles.forEach(f => { queue = queue.then(() => addMacroImageFile(f)); });
-                queue.then(() => { showToast(imgFiles.length > 1 ? imgFiles.length + ' images collées' : 'Image collée'); renderMacroImagePreviews(); });
                 return;
             }
             e.preventDefault();
@@ -5025,9 +4962,17 @@
             else frag = (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\r?\n/g, '<br>');
             document.execCommand('insertHTML', false, frag);
         });
+        // Clic sur une image déjà insérée → l'agrandir, avec option de la retirer
+        if (ed) ed.addEventListener('click', e => {
+            if (e.target.tagName === 'IMG') {
+                e.preventDefault();
+                const im = e.target;
+                openImgLightbox(im.src, () => im.remove());
+            }
+        });
     }
     function initMacroImageDropzone() {
-        const zone = document.getElementById('mp-img-dropzone');
+        const zone = document.getElementById('mp-editor-wrap');
         if (!zone || zone.dataset.wired) return;
         zone.dataset.wired = '1';
         let dragDepth = 0;
@@ -5048,9 +4993,9 @@
             zone.classList.remove('dragover');
             const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []).filter(f => f.type.startsWith('image/'));
             if (!files.length) { showToast('Dépose une image (PNG, JPG…)'); return; }
+            const point = { x: e.clientX, y: e.clientY };
             let queue = Promise.resolve();
-            files.forEach(f => { queue = queue.then(() => addMacroImageFile(f)); });
-            queue.then(() => renderMacroImagePreviews());
+            files.forEach(f => { queue = queue.then(() => addMacroImageFile(f, point)); });
         });
     }
     function updateRteToolbar() {
@@ -5086,6 +5031,9 @@
     }
     function sanitizeRich(html, stripColor) {
         const allowed = { B:1, STRONG:1, I:1, EM:1, U:1, S:1, STRIKE:1, BR:1, P:1, DIV:1, H1:1, H2:1, H3:1, SPAN:1, UL:1, OL:1, LI:1, FONT:1 };
+        function safeImgSrc(src) {
+            return (/^data:image\//i.test(src) || /^https:\/\//i.test(src)) ? src : '';
+        }
         function clean(node) {
             let out = '';
             node.childNodes.forEach(ch => {
@@ -5094,6 +5042,11 @@
                 } else if (ch.nodeType === 1) {
                     const tag = ch.tagName;
                     if (tag === 'BR') { out += '<br>'; return; }
+                    if (tag === 'IMG') {
+                        const src = safeImgSrc(ch.getAttribute('src') || '');
+                        if (src) out += '<img class="mp-rte-img" src="' + src.replace(/"/g, '') + '" alt="image">';
+                        return;
+                    }
                     const inner = clean(ch);
                     if (allowed[tag]) {
                         let style = (ch.getAttribute && ch.getAttribute('style')) ? filterStyleRich(ch.getAttribute('style'), stripColor) : '';
@@ -5145,11 +5098,15 @@
         })).filter(s => s.name || s.consensus || s.actual || s.previous);
     }
 
-    // ── Images (compression + base64, stockées dans la note) ──────
-    //  Jusqu'à MAX_MACRO_IMAGES images, budget total MACRO_IMAGES_BUDGET
-    //  (limite Firestore : 1 Mo par document).
+    // ── Images (compression + base64, insérées EN LIGNE dans le texte) ──
+    //  Jusqu'à MAX_MACRO_IMAGES images dans #mp-analysis, budget total
+    //  MACRO_IMAGES_BUDGET (limite Firestore : 1 Mo par document).
+    function macroInlineImages() {
+        const ed = document.getElementById('mp-analysis');
+        return ed ? Array.from(ed.querySelectorAll('img')) : [];
+    }
     function macroImagesSize() {
-        return currentMacroImages.reduce((s, im) => s + im.length, 0);
+        return macroInlineImages().reduce((s, im) => s + (im.getAttribute('src') || '').length, 0);
     }
     function compressMacroImage(img, maxDim, quality) {
         let { width: w, height: h } = img;
@@ -5164,13 +5121,48 @@
         cv.getContext('2d').drawImage(img, 0, 0, w, h);
         return cv.toDataURL('image/jpeg', quality);
     }
-    function addMacroImageFile(file) {
+    // Insère un <img> dans #mp-analysis à la sélection courante (ou à la fin si le
+    // curseur n'est pas dans l'éditeur), ou à un point précis (x,y) lors d'un drop.
+    function insertMacroImageNode(dataUrl, atPoint) {
+        const ed = document.getElementById('mp-analysis');
+        if (!ed) return;
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        img.className = 'mp-rte-img';
+        img.alt = 'image';
+        let range = null;
+        if (atPoint) {
+            if (document.caretRangeFromPoint) {
+                range = document.caretRangeFromPoint(atPoint.x, atPoint.y);
+            } else if (document.caretPositionFromPoint) {
+                const pos = document.caretPositionFromPoint(atPoint.x, atPoint.y);
+                if (pos) { range = document.createRange(); range.setStart(pos.offsetNode, pos.offset); range.collapse(true); }
+            }
+            if (range && !ed.contains(range.startContainer)) range = null;
+        } else {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount && ed.contains(sel.anchorNode)) range = sel.getRangeAt(0);
+        }
+        if (!range) {
+            range = document.createRange();
+            range.selectNodeContents(ed);
+            range.collapse(false);
+        }
+        range.deleteContents();
+        range.insertNode(img);
+        range.setStartAfter(img);
+        range.setEndAfter(img);
+        const sel = window.getSelection();
+        if (sel) { sel.removeAllRanges(); sel.addRange(range); }
+        ed.focus();
+    }
+    function addMacroImageFile(file, atPoint) {
         return new Promise(resolve => {
             if (!file.type.startsWith('image/')) {
                 showToast('Fichier image invalide : ' + file.name);
                 return resolve();
             }
-            if (currentMacroImages.length >= MAX_MACRO_IMAGES) {
+            if (macroInlineImages().length >= MAX_MACRO_IMAGES) {
                 showToast('Maximum ' + MAX_MACRO_IMAGES + ' images par synthèse');
                 return resolve();
             }
@@ -5189,8 +5181,7 @@
                         showToast('« ' + file.name + ' » trop lourde pour l\'espace restant — retire une image ou choisis-en une plus légère');
                         return resolve();
                     }
-                    currentMacroImages.push(data);
-                    renderMacroImagePreviews();
+                    insertMacroImageNode(data, atPoint);
                     resolve();
                 };
                 img.onerror = () => {
@@ -5211,61 +5202,26 @@
         files.forEach(f => {
             queue = queue.then(() => addMacroImageFile(f));
         });
-        queue.then(() => {
-            ev.target.value = ''; // permet de re-sélectionner le même fichier
-            renderMacroImagePreviews();
-        });
+        queue.then(() => { ev.target.value = ''; }); // permet de re-sélectionner le même fichier
     }
-    function renderMacroImagePreviews() {
-        const wrap = document.getElementById('mp-img-previews');
-        const clr = document.getElementById('mp-img-clear');
-        const hint = document.getElementById('mp-img-hint');
-        if (!wrap)
-            return;
-        wrap.innerHTML = '';
-        currentMacroImages.forEach((src, i) => {
-            const cell = document.createElement('div');
-            cell.className = 'mp-img-thumb';
-            const im = document.createElement('img');
-            im.src = src;
-            im.alt = 'Image ' + (i + 1);
-            im.title = 'Cliquer pour agrandir';
-            im.onclick = () => openImgLightbox(src);
-            const rm = document.createElement('button');
-            rm.type = 'button';
-            rm.className = 'mp-img-thumb-rm';
-            rm.textContent = '✕';
-            rm.title = 'Retirer cette image';
-            rm.setAttribute('aria-label', 'Retirer l\'image ' + (i + 1));
-            rm.onclick = () => {
-                currentMacroImages.splice(i, 1);
-                renderMacroImagePreviews();
-            };
-            cell.append(im, rm);
-            wrap.appendChild(cell);
-        });
-        if (clr)
-            clr.style.display = currentMacroImages.length ? '' : 'none';
-        if (hint)
-            hint.textContent = currentMacroImages.length
-                ? currentMacroImages.length + '/' + MAX_MACRO_IMAGES + ' image' + (currentMacroImages.length > 1 ? 's' : '') + ' · ~' + Math.round(macroImagesSize() / 1024) + ' Ko'
-                : 'Aucune image';
-    }
-    function clearMacroImage() {
-        currentMacroImages = [];
-        const inp = document.getElementById('mp-image-input');
-        if (inp)
-            inp.value = '';
-        renderMacroImagePreviews();
-    }
-    // Agrandit une image de synthèse en plein écran (clic pour fermer)
-    function openImgLightbox(src) {
+    // Agrandit une image en plein écran (clic pour fermer) — onDelete (optionnel)
+    // affiche un bouton pour la retirer directement depuis l'éditeur.
+    function openImgLightbox(src, onDelete) {
         const ov = document.createElement('div');
-        ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:24px';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;padding:24px;gap:14px';
         const im = document.createElement('img');
         im.src = src;
-        im.style.cssText = 'max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 12px 48px rgba(0,0,0,.6)';
+        im.style.cssText = 'max-width:100%;max-height:80vh;border-radius:8px;box-shadow:0 12px 48px rgba(0,0,0,.6);cursor:default';
+        im.onclick = e => e.stopPropagation();
         ov.appendChild(im);
+        if (onDelete) {
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.textContent = '🗑️ Retirer cette image';
+            rm.style.cssText = 'background:var(--fx-rd);border:1px solid rgba(239,68,68,.4);color:var(--fx-red);border-radius:8px;padding:8px 16px;font-size:12px;cursor:pointer;font-family:\'Space Grotesk\',sans-serif';
+            rm.onclick = e => { e.stopPropagation(); onDelete(); ov.remove(); };
+            ov.appendChild(rm);
+        }
         ov.onclick = () => ov.remove();
         document.body.appendChild(ov);
     }
@@ -5309,8 +5265,11 @@
             h += '</tbody></table>';
         }
         h += '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#222">' + sanitizeRich(n.analysis || '') + '</div>';
-        const imgs = Array.isArray(n.images) && n.images.length ? n.images : (n.image ? [n.image] : []);
-        imgs.forEach(src => { h += '<div style="margin-top:12px"><img src="' + src + '" style="max-width:100%;border-radius:8px"/></div>'; });
+        // Anciennes notes uniquement : images stockées à part (les nouvelles sont déjà inline ci-dessus).
+        if (!/<img\b/i.test(n.analysis || '')) {
+            const imgs = Array.isArray(n.images) && n.images.length ? n.images : (n.image ? [n.image] : []);
+            imgs.forEach(src => { h += '<div style="margin-top:12px"><img src="' + src + '" style="max-width:100%;border-radius:8px"/></div>'; });
+        }
         if (Array.isArray(n.tags) && n.tags.length) h += '<div style="margin-top:16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#8b7cf6">' + n.tags.map(t => '#' + esc(t)).join(' &nbsp;') + '</div>';
         return h;
     }
@@ -5934,8 +5893,8 @@
             previous: f.previous.value.trim(),
             subs: getMacroSubs(),
             tags: currentMacroTags.slice(),
-            images: currentMacroImages.slice(),
-            image: currentMacroImages[0] || '', // rétro-compatibilité (anciennes versions)
+            // Les images vivent désormais en ligne dans le HTML de l'analyse (voir
+            // insertMacroImageNode) — plus de tableau images[] séparé pour les nouvelles notes.
             analysis: (document.getElementById('mp-analysis').innerHTML || '').trim()
         };
         const analysisText = (document.getElementById('mp-analysis').innerText || '').trim();
@@ -6024,15 +5983,22 @@
         f.consensus.value = n.consensus || '';
         f.actual.value = n.actual || '';
         f.previous.value = n.previous || '';
-        document.getElementById('mp-analysis').innerHTML = n.analysis || '';
+        const ed = document.getElementById('mp-analysis');
+        ed.innerHTML = n.analysis || '';
+        // Rétro-compatibilité : anciennes notes dont les images étaient dans un
+        // tableau séparé (jamais dans le texte) → on les rajoute en fin de texte,
+        // elles deviennent alors déplaçables comme toute image insérée.
+        if (!ed.querySelector('img')) {
+            const legacyImgs = Array.isArray(n.images) && n.images.length ? n.images : (n.image ? [n.image] : []);
+            legacyImgs.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src; img.className = 'mp-rte-img'; img.alt = 'image';
+                ed.appendChild(img);
+            });
+        }
         // Sous-composantes
         document.getElementById('mp-subs').innerHTML = '';
         (n.subs || []).forEach(s => addMacroSub(s));
-        // Images existantes (rétro-compatible : anciennes notes à image unique)
-        currentMacroImages = Array.isArray(n.images) && n.images.length
-            ? n.images.slice()
-            : (n.image ? [n.image] : []);
-        renderMacroImagePreviews();
         // Tags existants
         currentMacroTags = Array.isArray(n.tags) ? n.tags.slice() : [];
         renderTagChipsInput();
@@ -6048,11 +6014,12 @@
         editingMacroId = null;
         document.getElementById('macroForm').reset();
         const ed = document.getElementById('mp-analysis');
-        if (ed) ed.innerHTML = ''; // le reset() ne vide pas un contenteditable
+        if (ed) ed.innerHTML = ''; // le reset() ne vide pas un contenteditable (images comprises)
         const subs = document.getElementById('mp-subs');
         if (subs)
             subs.innerHTML = '';
-        clearMacroImage();
+        const imgInput = document.getElementById('mp-image-input');
+        if (imgInput) imgInput.value = '';
         currentMacroTags = [];
         renderTagChipsInput();
         const ti = document.getElementById('mp-tag-add'); if (ti) ti.value = '';
@@ -6246,11 +6213,13 @@
         const p = document.createElement('div');
         p.className = 'mp-analysis';
         p.innerHTML = sanitizeRich(n.analysis || '');
+        p.addEventListener('click', e => { if (e.target.tagName === 'IMG') openImgLightbox(e.target.src); });
         li.appendChild(p);
 
-        const noteImgs = Array.isArray(n.images) && n.images.length
+        // Anciennes notes uniquement : images stockées à part (les nouvelles sont déjà inline ci-dessus).
+        const noteImgs = /<img\b/i.test(n.analysis || '') ? [] : (Array.isArray(n.images) && n.images.length
             ? n.images
-            : (n.image ? [n.image] : []);
+            : (n.image ? [n.image] : []));
         if (noteImgs.length) {
             const imgRow = document.createElement('div');
             imgRow.className = 'mp-card-imgs';

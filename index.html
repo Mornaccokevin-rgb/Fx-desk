@@ -2813,6 +2813,52 @@
         transform: translateY(0)
     }
 
+    /* ── Paramètres : onglets, champs, boutons ── */
+    .set-tabs { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid var(--fx-bd); padding-bottom: 12px; flex-wrap: wrap }
+    .set-tab { background: var(--fx-card2); border: 1px solid var(--fx-bd); color: var(--fx-muted2); border-radius: 8px; padding: 7px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: 'Space Grotesk', sans-serif }
+    .set-tab.active { background: var(--fx-vd); border-color: var(--fx-vl); color: var(--fx-vl) }
+    .set-pane { display: none }
+    .set-pane.active { display: block }
+    .set-section { margin-bottom: 20px }
+    .set-lbl { font-size: 12px; font-weight: 600; color: var(--fx-text); margin-bottom: 8px; display: flex; align-items: center; gap: 10px }
+    .set-val { font-size: 14px; color: var(--fx-vl); font-weight: 600; overflow-wrap: anywhere }
+    .set-hint { font-size: 11.5px; color: var(--fx-muted); line-height: 1.5 }
+    .set-inp { font-size: 13.5px; padding: 10px 12px; margin-bottom: 8px }
+    .set-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px }
+    .set-btn { background: var(--fx-vd); border: 1px solid var(--fx-bd); color: var(--fx-vl); border-radius: 8px; padding: 9px 16px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: 'Space Grotesk', sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 6px }
+    .set-btn:hover { background: rgba(var(--acc-rgb), 0.18) }
+    .set-btn:disabled { opacity: .55; cursor: wait }
+    .set-btn.ghost { background: transparent }
+    .set-btn.danger { background: var(--fx-rd); border-color: rgba(239, 68, 68, 0.35); color: var(--fx-red) }
+    .set-btn.danger-txt { color: var(--fx-red) }
+    .set-link { background: none; border: none; color: var(--fx-muted2); font-size: 11.5px; cursor: pointer; text-decoration: underline; font-family: inherit; font-weight: 400; padding: 0 }
+    .set-msg { font-size: 12px; margin-top: 8px; min-height: 16px; line-height: 1.5 }
+    .set-msg.ok { color: var(--fx-green, #22c55e) }
+    .set-msg.err { color: var(--fx-red) }
+    .set-key-row { display: flex; gap: 8px; align-items: flex-start }
+    .set-key-row .fx-inp { flex: 1; min-width: 0 }
+    .set-eye { background: var(--fx-card2); border: 1px solid var(--fx-bd); color: var(--fx-muted2); border-radius: 8px; width: 40px; height: 40px; cursor: pointer; flex: none }
+    .set-acc-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; border: 1px solid var(--fx-bd); border-radius: 9px; margin-bottom: 8px; background: var(--fx-card2) }
+    .set-acc-item .set-acc-mail { font-size: 13px; color: var(--fx-text); overflow-wrap: anywhere; min-width: 0 }
+    .set-acc-item .set-acc-tag { font-size: 10px; color: var(--fx-muted); text-transform: uppercase; letter-spacing: .05em }
+
+    /* ── Set-ups fondamentaux (IA) ── */
+    .su-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 14px }
+    .su-head > div { flex: 1 1 320px; min-width: 0 }
+    .su-title { font-size: 16px; font-weight: 700; color: var(--fx-vl); margin-bottom: 6px }
+    .su-badge { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--fx-vl); background: var(--fx-vd); border: 1px solid var(--fx-bd); border-radius: 20px; padding: 4px 10px; white-space: nowrap }
+    .su-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap }
+    .su-select { width: auto; margin: 0 }
+    .su-out { font-size: 13.5px; line-height: 1.7; color: var(--fx-text); overflow-wrap: anywhere }
+    .su-out h2 { font-size: 15px; color: var(--fx-vl); margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .04em }
+    .su-out h3 { font-size: 14.5px; color: var(--fx-text); margin: 16px 0 6px; padding-top: 12px; border-top: 1px solid var(--fx-bd) }
+    .su-out h2:first-child, .su-out h3:first-child { margin-top: 0; border-top: none; padding-top: 0 }
+    .su-out ul, .su-out ol { margin: 4px 0 10px 20px }
+    .su-out li { margin: 3px 0 }
+    .su-out p { margin: 6px 0 }
+    .su-out strong { color: var(--fx-vl) }
+    .su-meta { font-size: 11px; color: var(--fx-muted); margin-bottom: 12px; font-family: 'Space Mono', monospace }
+
     .modal-wrap {
         position: fixed;
         inset: 0;
@@ -3302,15 +3348,8 @@
     <div id="hub" class="screen">
         <div style="padding:64px 24px 48px;text-align:center;background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(120,80,0,0.1),transparent)">
             <div style="position:absolute;top:24px;right:24px;display:flex;gap:8px;align-items:center">
-                <button class="theme-toggle-btn" onclick="openSettings()" title="Paramètres / Couleurs">
-                    <i class="ti ti-palette"></i>
-                </button>
-                <button class="theme-toggle-btn" onclick="toggleThemeGlobal()" title="Thème Clair/Sombre">
-                    <i class="ti ti-sun" id="global-theme-icon-hub"></i>
-                </button>
-                <button class="theme-toggle-btn" onclick="logoutUser()" title="Déconnexion"
-                    style="border-color:rgba(239,68,68,0.35);color:var(--fx-red)">
-                    <i class="ti ti-logout"></i>
+                <button class="theme-toggle-btn" onclick="openSettings()" title="Paramètres">
+                    <i class="ti ti-settings"></i>
                 </button>
             </div>
             <span class="hub-emblem">⚜</span>
@@ -3353,6 +3392,18 @@
                     <div class="mod-icon">🧠</div>
                     <div class="mod-name">Daily FX</div>
                     <div class="mod-desc">Les synthèses macro post-annonces (NFP, CPI, FOMC) : la mémoire des marchés, à consulter au quotidien.</div>
+                    <div class="mod-arr">→</div>
+                </div>
+
+                <!-- Set-ups fondamentaux (IA) — ACTIF -->
+                <div class="mod-card live" onclick="openScreen('setups')">
+                    <div class="mod-status">
+                        <span class="dot"></span>
+                        Actif
+                    </div>
+                    <div class="mod-icon">🎯</div>
+                    <div class="mod-name">Set-ups fondamentaux</div>
+                    <div class="mod-desc">L'IA croise le Macro Compass et le Daily FX pour faire ressortir les set-ups les plus cohérents fondamentalement.</div>
                     <div class="mod-arr">→</div>
                 </div>
 
@@ -3861,6 +3912,42 @@
         <iframe id="fxMacroFrame" title="FX Macro Terminal" style="width:100%;height:calc(100vh - 52px);border:0;display:block;background:#05050c" src="fx-terminal.html"></iframe>
     </div>
 
+    <!-- ══════ SET-UPS FONDAMENTAUX (IA) ══════ -->
+    <div id="setups" class="screen">
+        <nav class="fx-topbar">
+            <button class="fx-topbar-back" onclick="openScreen('hub')">← Hub</button>
+            <div class="topbar-sep"></div>
+            <span class="topbar-emb">⚜</span>
+            <span class="topbar-brand">Sphinx Alliance</span>
+            <div class="topbar-sep"></div>
+            <span class="topbar-mod" style="color:var(--fx-vl)">Set-ups fondamentaux</span>
+        </nav>
+        <div class="fx-content">
+            <div class="fx-form-card">
+                <div class="su-head">
+                    <div>
+                        <div class="su-title">🎯 Set-ups fondamentalement cohérents</div>
+                        <div class="set-hint">L'IA lit ton Macro Compass (notes par pilier, biais, thèses, attentes de taux) et tes synthèses Daily FX récentes, puis classe les paires où <b>tous les fondamentaux pointent dans le même sens</b>. Aucune analyse technique : pas de graphique.</div>
+                    </div>
+                    <span class="su-badge" id="su-provider">—</span>
+                </div>
+                <div class="su-controls">
+                    <label class="set-hint" for="su-days">Daily FX pris en compte :</label>
+                    <select id="su-days" class="fx-inp set-inp su-select">
+                        <option value="7">7 derniers jours</option>
+                        <option value="14" selected>14 derniers jours</option>
+                        <option value="30">30 derniers jours</option>
+                    </select>
+                    <button type="button" class="set-btn" id="su-run" onclick="runSetupAnalysis()">🎯 Lancer l'analyse</button>
+                </div>
+                <div class="set-msg" id="su-status"></div>
+            </div>
+            <div class="fx-form-card su-out" id="su-out">
+                <div class="set-hint">Aucune analyse pour l'instant. Configure ta clé dans ⚙️ Paramètres → IA, puis lance l'analyse.</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ══════ JOURNAL DE SYNTHÈSE MACRO (Macro Prep) ══════ -->
     <div id="macroprep" class="screen">
         <nav class="fx-topbar">
@@ -4093,13 +4180,18 @@
         <button type="button" class="rtb-clr" data-color="#a78bfa" title="Violet" style="background:#a78bfa"></button>
     </div>
 
-    <!-- ══════ PARAMÈTRES D'AFFICHAGE ══════ -->
+    <!-- ══════ PARAMÈTRES (apparence, compte, IA) ══════ -->
     <div class="modal-wrap" id="settingsModal">
         <div class="modal-overlay" onclick="closeSettings()"></div>
-        <div class="modal-box">
-            <div style="font-size:15px;font-weight:600;color:var(--fx-vl);margin-bottom:4px">⚙️ Paramètres d'affichage</div>
-            <div style="font-size:12px;color:var(--fx-muted);margin-bottom:18px">Personnalise l'apparence de tout le site.</div>
+        <div class="modal-box" style="max-width:560px">
+            <div style="font-size:15px;font-weight:600;color:var(--fx-vl);margin-bottom:14px">⚙️ Paramètres</div>
+            <div class="set-tabs">
+                <button type="button" class="set-tab active" data-tab="look" onclick="setSettingsTab('look')">🎨 Apparence</button>
+                <button type="button" class="set-tab" data-tab="account" onclick="setSettingsTab('account')">👤 Compte</button>
+                <button type="button" class="set-tab" data-tab="ai" onclick="setSettingsTab('ai')">🤖 IA</button>
+            </div>
 
+            <div class="set-pane active" data-pane="look">
             <div style="font-size:12px;font-weight:600;color:var(--fx-text);margin-bottom:10px">Couleur d'accent</div>
             <div class="acc-swatches" id="accSwatches">
                 <button class="acc-sw" data-acc="violet"    style="--sw:#7c3aed" onclick="applyAccent('violet')"    title="Violet"></button>
@@ -4125,6 +4217,65 @@
                 <button class="surf-btn" data-zoom="normal" onclick="applyZoom('normal')">Normal</button>
                 <button class="surf-btn" data-zoom="lg" onclick="applyZoom('lg')">Grand</button>
                 <button class="surf-btn" data-zoom="xl" onclick="applyZoom('xl')">Très grand</button>
+            </div>
+
+            </div>
+
+            <div class="set-pane" data-pane="account">
+                <div class="set-section">
+                    <div class="set-lbl">Connecté en tant que</div>
+                    <div class="set-val" id="set-account-email">—</div>
+                    <div class="set-hint" id="set-account-provider"></div>
+                </div>
+
+                <div class="set-section" id="set-pwd-block">
+                    <div class="set-lbl">Changer de mot de passe</div>
+                    <input type="password" id="set-pwd-current" class="fx-inp set-inp" placeholder="Mot de passe actuel" autocomplete="current-password">
+                    <input type="password" id="set-pwd-new" class="fx-inp set-inp" placeholder="Nouveau mot de passe (6 caractères min.)" autocomplete="new-password">
+                    <input type="password" id="set-pwd-confirm" class="fx-inp set-inp" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password">
+                    <div class="set-row">
+                        <button type="button" class="set-btn" onclick="changePassword()">Mettre à jour</button>
+                        <button type="button" class="set-link" onclick="sendResetEmail()">Mot de passe oublié ? Recevoir un email</button>
+                    </div>
+                    <div class="set-msg" id="set-pwd-msg"></div>
+                </div>
+                <div class="set-section set-hint" id="set-pwd-google" style="display:none">Ton compte se connecte avec Google : le mot de passe se gère directement dans ton compte Google.</div>
+
+                <div class="set-section">
+                    <div class="set-lbl">Changer de compte</div>
+                    <div class="set-hint" style="margin-bottom:8px">Comptes déjà utilisés sur cet appareil. Basculer te déconnecte et pré-remplit l'email de l'autre compte.</div>
+                    <div id="set-accounts"></div>
+                    <button type="button" class="set-btn ghost" onclick="switchAccount('')">＋ Se connecter avec un autre compte</button>
+                </div>
+
+                <button type="button" class="set-btn danger" style="width:100%;margin-top:6px" onclick="logoutUser()"><i class="ti ti-logout"></i> Se déconnecter</button>
+            </div>
+
+            <div class="set-pane" data-pane="ai">
+                <div class="set-section">
+                    <div class="set-lbl">Fournisseur</div>
+                    <div class="surf-row" id="aiProviderRow">
+                        <button type="button" class="surf-btn" data-ai="gemini" onclick="selectAiProvider('gemini')">Gemini</button>
+                        <button type="button" class="surf-btn" data-ai="claude" onclick="selectAiProvider('claude')">Claude</button>
+                        <button type="button" class="surf-btn" data-ai="openai" onclick="selectAiProvider('openai')">ChatGPT</button>
+                    </div>
+                </div>
+                <div class="set-section">
+                    <div class="set-lbl">Clé API <a class="set-link" id="ai-key-link" href="#" target="_blank" rel="noopener noreferrer">obtenir une clé ↗</a></div>
+                    <div class="set-key-row">
+                        <input type="password" id="ai-key-input" class="fx-inp set-inp" placeholder="Colle ta clé API ici" autocomplete="off" spellcheck="false">
+                        <button type="button" class="set-eye" onclick="toggleAiKeyVisibility()" title="Afficher / masquer"><i class="ti ti-eye" id="ai-key-eye"></i></button>
+                    </div>
+                    <div class="set-lbl" style="margin-top:10px">Modèle</div>
+                    <input type="text" id="ai-model-input" class="fx-inp set-inp" autocomplete="off" spellcheck="false">
+                    <div class="set-row">
+                        <button type="button" class="set-btn" onclick="saveAiSettings()">Enregistrer</button>
+                        <button type="button" class="set-btn ghost" onclick="testAiKey()">Tester la clé</button>
+                        <button type="button" class="set-btn ghost danger-txt" onclick="removeAiKey()">Supprimer</button>
+                    </div>
+                    <div class="set-msg" id="ai-msg"></div>
+                    <div class="set-hint" style="margin-top:10px">🔒 La clé reste uniquement sur cet appareil (navigateur), elle n'est jamais envoyée à Firebase. Elle est utilisée par le module <b>Set-ups fondamentaux</b> pour analyser le Macro Compass et le Daily FX. Les appels sont facturés sur ton compte du fournisseur.</div>
+                </div>
             </div>
 
             <button class="btn-close-modal" onclick="closeSettings()" style="margin-top:18px">Fermer</button>
@@ -4214,17 +4365,443 @@
         if (typeof redrawCharts === 'function')
             redrawCharts();
     }
-    function openSettings() {
+    function openSettings(tab) {
         applyAccent(localStorage.getItem('sphinx_accent') || 'violet'); // resync pastille active
+        renderAccountSettings();
+        renderAiSettings();
+        setSettingsTab(tab || 'look');
         document.getElementById('settingsModal').classList.add('open');
     }
     function closeSettings() {
         document.getElementById('settingsModal').classList.remove('open');
+        ['set-pwd-current', 'set-pwd-new', 'set-pwd-confirm'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        setMsg('set-pwd-msg', '');
+        setMsg('ai-msg', '');
+    }
+    function setSettingsTab(tab) {
+        document.querySelectorAll('#settingsModal .set-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+        document.querySelectorAll('#settingsModal .set-pane').forEach(p => p.classList.toggle('active', p.dataset.pane === tab));
+    }
+    function setMsg(id, text, kind) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text || '';
+        el.className = 'set-msg' + (kind ? ' ' + kind : '');
+    }
+
+    // ── COMPTE : infos, mot de passe, comptes mémorisés ───────────
+    function userHasPassword(u) {
+        return !!(u && (u.providerData || []).some(p => p.providerId === 'password'));
+    }
+    function getRememberedAccounts() {
+        try { return JSON.parse(localStorage.getItem('sphinx_accounts')) || []; } catch (e) { return []; }
+    }
+    function rememberAccount(u) {
+        if (!u || !u.email) return;
+        const provider = userHasPassword(u) ? 'password' : 'google';
+        const list = getRememberedAccounts().filter(a => a.email !== u.email);
+        list.unshift({ email: u.email, provider });
+        localStorage.setItem('sphinx_accounts', JSON.stringify(list.slice(0, 6)));
+    }
+    function forgetAccount(email) {
+        localStorage.setItem('sphinx_accounts', JSON.stringify(getRememberedAccounts().filter(a => a.email !== email)));
+        renderAccountSettings();
+    }
+    function renderAccountSettings() {
+        const u = auth && auth.currentUser;
+        document.getElementById('set-account-email').textContent = u ? (u.email || u.displayName || '—') : '—';
+        const hasPwd = userHasPassword(u);
+        document.getElementById('set-account-provider').textContent = u ? (hasPwd ? 'Connexion par email et mot de passe' : 'Connexion avec Google') : '';
+        document.getElementById('set-pwd-block').style.display = hasPwd ? '' : 'none';
+        document.getElementById('set-pwd-google').style.display = (u && !hasPwd) ? '' : 'none';
+        const wrap = document.getElementById('set-accounts');
+        wrap.innerHTML = '';
+        const others = getRememberedAccounts().filter(a => !u || a.email !== u.email);
+        if (!others.length) {
+            wrap.innerHTML = '<div class="set-hint" style="margin-bottom:8px">Aucun autre compte mémorisé sur cet appareil.</div>';
+            return;
+        }
+        others.forEach(a => {
+            const row = document.createElement('div');
+            row.className = 'set-acc-item';
+            const info = document.createElement('div');
+            info.style.minWidth = '0';
+            const mail = document.createElement('div');
+            mail.className = 'set-acc-mail';
+            mail.textContent = a.email;
+            const tag = document.createElement('div');
+            tag.className = 'set-acc-tag';
+            tag.textContent = a.provider === 'google' ? 'Google' : 'Email';
+            info.append(mail, tag);
+            const actions = document.createElement('div');
+            actions.style.cssText = 'display:flex;gap:6px;flex:none';
+            const go = document.createElement('button');
+            go.type = 'button';
+            go.className = 'set-btn';
+            go.textContent = 'Basculer';
+            go.onclick = () => switchAccount(a.email);
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.className = 'set-link';
+            rm.textContent = 'Oublier';
+            rm.onclick = () => forgetAccount(a.email);
+            actions.append(go, rm);
+            row.append(info, actions);
+            wrap.appendChild(row);
+        });
+    }
+    async function changePassword() {
+        const u = auth && auth.currentUser;
+        if (!u || !userHasPassword(u)) return;
+        const cur = document.getElementById('set-pwd-current').value;
+        const nw = document.getElementById('set-pwd-new').value;
+        const cf = document.getElementById('set-pwd-confirm').value;
+        if (!cur || !nw || !cf) return setMsg('set-pwd-msg', 'Remplis les trois champs.', 'err');
+        if (nw.length < 6) return setMsg('set-pwd-msg', 'Le nouveau mot de passe doit faire au moins 6 caractères.', 'err');
+        if (nw !== cf) return setMsg('set-pwd-msg', 'Les deux nouveaux mots de passe ne correspondent pas.', 'err');
+        if (nw === cur) return setMsg('set-pwd-msg', 'Le nouveau mot de passe doit être différent de l\'actuel.', 'err');
+        setMsg('set-pwd-msg', 'Mise à jour…');
+        try {
+            // Firebase exige une connexion récente : on revalide avec le mot de passe actuel.
+            const cred = firebase.auth.EmailAuthProvider.credential(u.email, cur);
+            await u.reauthenticateWithCredential(cred);
+            await u.updatePassword(nw);
+            ['set-pwd-current', 'set-pwd-new', 'set-pwd-confirm'].forEach(id => document.getElementById(id).value = '');
+            setMsg('set-pwd-msg', 'Mot de passe mis à jour ✅', 'ok');
+        } catch (err) {
+            const c = err && err.code;
+            const msg = (c === 'auth/wrong-password' || c === 'auth/invalid-credential' || c === 'auth/invalid-login-credentials')
+                ? 'Mot de passe actuel incorrect.'
+                : c === 'auth/weak-password' ? 'Mot de passe trop faible.'
+                : c === 'auth/too-many-requests' ? 'Trop de tentatives, réessaie dans quelques minutes.'
+                : 'Erreur : ' + ((err && err.message) || c);
+            setMsg('set-pwd-msg', msg, 'err');
+        }
+    }
+    async function sendResetEmail() {
+        const u = auth && auth.currentUser;
+        if (!u || !u.email) return;
+        try {
+            await auth.sendPasswordResetEmail(u.email);
+            setMsg('set-pwd-msg', 'Email de réinitialisation envoyé à ' + u.email + ' ✅', 'ok');
+        } catch (err) {
+            setMsg('set-pwd-msg', 'Erreur : ' + ((err && err.message) || err), 'err');
+        }
+    }
+    async function switchAccount(email) {
+        // Après la déconnexion, le portail ouvre directement la carte de connexion
+        // avec l'email de l'autre compte pré-rempli (voir onAuthStateChanged).
+        localStorage.setItem('sphinx_switch_to', JSON.stringify({ email: email || '' }));
+        closeSettings();
+        await signOutClean();
+    }
+
+    // ── IA : fournisseur, clé et modèle (stockés sur cet appareil) ──
+    const AI_PROVIDERS = {
+        gemini: { label: 'Gemini', model: 'gemini-2.5-flash', keyUrl: 'https://aistudio.google.com/apikey' },
+        claude: { label: 'Claude', model: 'claude-opus-5', keyUrl: 'https://console.anthropic.com/settings/keys' },
+        openai: { label: 'ChatGPT', model: 'gpt-5', keyUrl: 'https://platform.openai.com/api-keys' }
+    };
+    let aiDraftProvider = null;
+    function getAiSettings() {
+        let st = {};
+        try { st = JSON.parse(localStorage.getItem('sphinx_ai')) || {}; } catch (e) {}
+        st.keys = st.keys || {};
+        st.models = st.models || {};
+        if (!AI_PROVIDERS[st.provider]) st.provider = 'gemini';
+        return st;
+    }
+    function activeAiConfig() {
+        const st = getAiSettings();
+        const provider = st.provider;
+        return { provider, key: st.keys[provider] || '', model: st.models[provider] || AI_PROVIDERS[provider].model };
+    }
+    function renderAiSettings() {
+        aiDraftProvider = getAiSettings().provider;
+        fillAiFields();
+    }
+    function fillAiFields() {
+        const st = getAiSettings();
+        const p = aiDraftProvider;
+        document.querySelectorAll('#aiProviderRow .surf-btn').forEach(b => b.classList.toggle('active', b.dataset.ai === p));
+        const key = document.getElementById('ai-key-input');
+        key.value = st.keys[p] || '';
+        key.type = 'password';
+        document.getElementById('ai-key-eye').className = 'ti ti-eye';
+        document.getElementById('ai-model-input').value = st.models[p] || AI_PROVIDERS[p].model;
+        document.getElementById('ai-key-link').href = AI_PROVIDERS[p].keyUrl;
+    }
+    function selectAiProvider(p) {
+        if (!AI_PROVIDERS[p]) return;
+        aiDraftProvider = p;
+        fillAiFields();
+        setMsg('ai-msg', '');
+    }
+    function toggleAiKeyVisibility() {
+        const key = document.getElementById('ai-key-input');
+        const show = key.type === 'password';
+        key.type = show ? 'text' : 'password';
+        document.getElementById('ai-key-eye').className = show ? 'ti ti-eye-off' : 'ti ti-eye';
+    }
+    function saveAiSettings() {
+        const st = getAiSettings();
+        const p = aiDraftProvider;
+        const key = document.getElementById('ai-key-input').value.trim();
+        const model = document.getElementById('ai-model-input').value.trim() || AI_PROVIDERS[p].model;
+        if (!key) return setMsg('ai-msg', 'Colle d\'abord ta clé API.', 'err');
+        st.provider = p;
+        st.keys[p] = key;
+        st.models[p] = model;
+        localStorage.setItem('sphinx_ai', JSON.stringify(st));
+        setMsg('ai-msg', AI_PROVIDERS[p].label + ' enregistré et sélectionné ✅', 'ok');
+        renderSetupsHeader();
+    }
+    function removeAiKey() {
+        const st = getAiSettings();
+        const p = aiDraftProvider;
+        delete st.keys[p];
+        localStorage.setItem('sphinx_ai', JSON.stringify(st));
+        fillAiFields();
+        setMsg('ai-msg', 'Clé ' + AI_PROVIDERS[p].label + ' supprimée de cet appareil.', 'ok');
+        renderSetupsHeader();
+    }
+    async function testAiKey() {
+        const p = aiDraftProvider;
+        const key = document.getElementById('ai-key-input').value.trim();
+        const model = document.getElementById('ai-model-input').value.trim() || AI_PROVIDERS[p].model;
+        if (!key) return setMsg('ai-msg', 'Colle d\'abord ta clé API.', 'err');
+        setMsg('ai-msg', 'Test en cours…');
+        try {
+            await callAi({ provider: p, key, model }, 'Réponds uniquement par OK.', 'Test de connexion.', 1024);
+            setMsg('ai-msg', 'Clé valide ✅ (' + model + '). Pense à cliquer « Enregistrer ».', 'ok');
+        } catch (err) {
+            setMsg('ai-msg', 'Échec : ' + err.message, 'err');
+        }
+    }
+
+    // Appel texte simple vers le fournisseur choisi (appel direct depuis le navigateur).
+    async function callAi(cfg, system, user, maxTokens) {
+        const readErr = async r => {
+            let d = null;
+            try { d = await r.json(); } catch (e) {}
+            const m = d && (d.error && (d.error.message || d.error.type) || d.message);
+            return new Error((m || ('HTTP ' + r.status)) + (r.status === 401 || r.status === 403 ? ' (clé refusée)' : ''));
+        };
+        if (cfg.provider === 'gemini') {
+            const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(cfg.model) + ':generateContent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-goog-api-key': cfg.key },
+                body: JSON.stringify({
+                    systemInstruction: { parts: [{ text: system }] },
+                    contents: [{ role: 'user', parts: [{ text: user }] }],
+                    generationConfig: { maxOutputTokens: maxTokens }
+                })
+            });
+            if (!r.ok) throw await readErr(r);
+            const d = await r.json();
+            const parts = (((d.candidates || [])[0] || {}).content || {}).parts || [];
+            const text = parts.map(x => x.text || '').join('').trim();
+            if (!text) throw new Error('Réponse vide (' + ((d.candidates || [])[0] || {}).finishReason + ')');
+            return text;
+        }
+        if (cfg.provider === 'claude') {
+            const headers = {
+                'Content-Type': 'application/json',
+                'x-api-key': cfg.key,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+            };
+            const body = { model: cfg.model, max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] };
+            // Repli automatique côté serveur si le modèle refuse une requête (Opus 5 / Fable 5.1).
+            if (cfg.model === 'claude-opus-5' || cfg.model === 'claude-fable-5-1') {
+                headers['anthropic-beta'] = 'server-side-fallback-2026-07-01';
+                body.fallbacks = 'default';
+            }
+            const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
+            if (!r.ok) throw await readErr(r);
+            const d = await r.json();
+            if (d.stop_reason === 'refusal') throw new Error('Le modèle a refusé la requête' + (d.stop_details && d.stop_details.explanation ? ' : ' + d.stop_details.explanation : '.'));
+            const text = (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+            if (!text) throw new Error('Réponse vide (' + d.stop_reason + ')');
+            return text + (d.stop_reason === 'max_tokens' ? '\n\n_(Réponse tronquée : limite de longueur atteinte.)_' : '');
+        }
+        const r = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+            body: JSON.stringify({
+                model: cfg.model,
+                max_completion_tokens: maxTokens,
+                messages: [{ role: 'system', content: system }, { role: 'user', content: user }]
+            })
+        });
+        if (!r.ok) throw await readErr(r);
+        const d = await r.json();
+        const text = ((((d.choices || [])[0] || {}).message || {}).content || '').trim();
+        if (!text) throw new Error('Réponse vide');
+        return text;
+    }
+
+    // ── SET-UPS FONDAMENTAUX (IA) ─────────────────────────────────
+    //  Collecte Macro Compass (Firestore macroCompass) + attentes de taux
+    //  (config/rateExpectations) + Daily FX récents (macroNotes), puis demande à
+    //  l'IA de classer les paires les plus cohérentes fondamentalement.
+    function renderSetupsHeader() {
+        const badge = document.getElementById('su-provider');
+        if (!badge) return;
+        const cfg = activeAiConfig();
+        badge.textContent = cfg.key ? (AI_PROVIDERS[cfg.provider].label + ' · ' + cfg.model) : 'Aucune clé API';
+    }
+    function initSetupsScreen() {
+        renderSetupsHeader();
+        let last = null;
+        try { last = JSON.parse(localStorage.getItem('sphinx_setups_last')); } catch (e) {}
+        if (last && last.text) renderSetupsResult(last);
+    }
+    function htmlToPlain(html) {
+        const doc = new DOMParser().parseFromString(html || '', 'text/html');
+        doc.querySelectorAll('img').forEach(i => i.remove());
+        doc.querySelectorAll('br').forEach(b => b.replaceWith('\n'));
+        doc.querySelectorAll('p,div,li,h1,h2,h3').forEach(el => el.append('\n'));
+        return (doc.body.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    }
+    async function gatherSetupData(days) {
+        const cutoff = new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
+        const [mc, rx, notes] = await Promise.all([
+            db.collection('macroCompass').get(),
+            db.collection('config').doc('rateExpectations').get().catch(() => null),
+            db.collection('macroNotes').where('date', '>=', cutoff).get()
+        ]);
+        const lines = [];
+        let meta = null;
+        const ccys = [];
+        mc.forEach(d => { if (d.id === '_meta') meta = d.data(); else ccys.push(d.data()); });
+        ccys.sort((a, b) => (a.rank == null ? 99 : a.rank) - (b.rank == null ? 99 : b.rank));
+        lines.push('# MACRO COMPASS — force relative par devise' + (meta && meta.sourceWeek ? ' (' + meta.sourceWeek + ')' : ''));
+        lines.push('Chaque pilier est noté 0-100 (50 = neutre, >50 = soutien pour la devise).');
+        ccys.forEach(c => {
+            if (c.notCovered || c.score == null) { lines.push('\n## ' + c.code + ' — non couvert (N/A)'); return; }
+            const p = c.pillars || {};
+            const pil = (k, lbl) => p[k] && p[k].score != null ? '- ' + lbl + ' : ' + p[k].score + '/100 — ' + (p[k].note || '') : '';
+            lines.push('\n## ' + c.code + ' — rang #' + c.rank + ', note ' + c.score + '/100, biais : ' + (c.biasLabel || c.bias) + (c.vsLastWeek ? ' (' + c.vsLastWeek + ' vs semaine passée)' : ''));
+            if (c.driver) lines.push('Driver dominant : ' + c.driver);
+            [pil('croissance', 'Croissance'), pil('inflation', 'Inflation'), pil('politiqueMonetaire', 'Politique monétaire'), pil('geopolitique', 'Géopolitique')].filter(Boolean).forEach(l => lines.push(l));
+            const t = c.theses || {};
+            if (t.semaineActuelle) lines.push('Semaine actuelle : ' + t.semaineActuelle);
+            if (t.semaineAvenir) lines.push('Semaine à venir : ' + t.semaineAvenir);
+            if (t.mois) lines.push('Le mois : ' + t.mois);
+            if (c.catalyseur) lines.push('Catalyseur : ' + c.catalyseur);
+            if (c.callout) lines.push('Verdict : ' + c.callout);
+        });
+        const banks = rx && rx.exists ? ((rx.data() || {}).banks || {}) : {};
+        const bankCodes = Object.keys(banks);
+        if (bankCodes.length) {
+            lines.push('\n# ATTENTES DE TAUX (prochaine réunion)');
+            bankCodes.forEach(code => {
+                const b = banks[code] || {};
+                lines.push('- ' + code + (b.bank ? ' (' + b.bank + ')' : '') + ' : taux ' + (b.rate || '?') + ', réunion ' + (b.meeting || '?') + ' — hausse ' + (b.hike ?? '?') + '% / statu quo ' + (b.hold ?? '?') + '% / baisse ' + (b.cut ?? '?') + '%');
+            });
+        }
+        const list = notes.docs.map(d => d.data()).sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))).slice(0, 60);
+        lines.push('\n# DAILY FX — synthèses post-publication des ' + days + ' derniers jours (' + list.length + ')');
+        if (!list.length) lines.push('(aucune synthèse sur la période)');
+        list.forEach(n => {
+            const figs = [n.consensus && 'cons. ' + n.consensus, n.actual && 'réel ' + n.actual, n.previous && 'préc. ' + n.previous].filter(Boolean).join(', ');
+            lines.push('\n## [' + (n.date || '?') + '] ' + (n.event || 'Donnée') + (figs ? ' — ' + figs : '') + (Array.isArray(n.tags) && n.tags.length ? ' — tags : ' + n.tags.join(', ') : ''));
+            (n.subs || []).forEach(sb => lines.push('- ' + (sb.name || '') + ' : ' + [sb.consensus && 'cons. ' + sb.consensus, sb.actual && 'réel ' + sb.actual, sb.previous && 'préc. ' + sb.previous].filter(Boolean).join(', ')));
+            const txt = htmlToPlain(n.analysis);
+            if (txt) lines.push(txt.length > 1500 ? txt.slice(0, 1500) + '…' : txt);
+        });
+        return { text: lines.join('\n'), nCcy: ccys.filter(c => !c.notCovered).length, nNotes: list.length };
+    }
+    const SETUP_SYSTEM_PROMPT = `Tu es un analyste macro FX senior qui aide un trader discrétionnaire à sélectionner ses trades de la semaine UNIQUEMENT sur base fondamentale.
+
+Règles impératives :
+- Tu n'as accès à AUCUN graphique ni donnée de prix : ne parle jamais de niveaux techniques, supports, résistances, tendances de prix, figures chartistes ou indicateurs techniques.
+- Appuie-toi exclusivement sur les données fournies (Macro Compass, attentes de taux, synthèses Daily FX). N'invente aucun chiffre ni aucune date ; si une information manque, dis-le.
+- Un set-up « fondamentalement cohérent » oppose une devise forte à une devise faible où croissance, inflation, politique monétaire et géopolitique convergent, confirmé par les publications récentes du Daily FX et par les attentes de taux. Pénalise toute contradiction entre piliers ou entre le Compass et les données récentes.
+- Le trader applique la règle « TOP 2 contre BOTTOM 2 » du classement de force relative : privilégie ces croisements et signale explicitement tout set-up qui sort de cette règle.
+- Écris les paires dans l'ordre de cotation standard du marché (EUR/USD, GBP/JPY, AUD/NZD…) et précise le sens (achat ou vente de la paire) en conséquence.
+- Réponds en français, de façon dense et concrète, en Markdown.
+
+Format de réponse :
+## Synthèse
+3 à 4 phrases sur le régime macro dominant.
+## Top set-ups
+3 à 5 set-ups maximum, du plus cohérent au moins cohérent. Pour chacun :
+### N. PAIRE — Achat/Vente (conviction x/5)
+- **Thèse fondamentale** : …
+- **Cohérence des piliers** : devise forte vs devise faible, pilier par pilier.
+- **Preuves récentes** : publications Daily FX avec leur date.
+- **Catalyseurs à venir** : …
+- **Invalidation (fondamentale)** : ce qui casserait la thèse.
+## Paires à éviter
+Croisements aux signaux contradictoires, avec la raison.
+## Limites des données
+Ce qui manque ou est daté.`;
+    async function runSetupAnalysis() {
+        const cfg = activeAiConfig();
+        if (!cfg.key) {
+            setMsg('su-status', 'Aucune clé API : ajoute-la dans ⚙️ Paramètres → IA.', 'err');
+            openSettings('ai');
+            return;
+        }
+        const btn = document.getElementById('su-run');
+        const days = parseInt(document.getElementById('su-days').value, 10) || 14;
+        btn.disabled = true;
+        const t0 = Date.now();
+        const tick = setInterval(() => setMsg('su-status', 'Analyse en cours avec ' + AI_PROVIDERS[cfg.provider].label + '… ' + Math.round((Date.now() - t0) / 1000) + ' s'), 1000);
+        try {
+            setMsg('su-status', 'Lecture du Macro Compass et du Daily FX…');
+            const data = await gatherSetupData(days);
+            if (!data.nCcy) throw new Error('Le Macro Compass est vide : lance d\'abord une mise à jour depuis Notion.');
+            const user = 'Voici les données à analyser (date du jour : ' + new Date().toISOString().slice(0, 10) + ').\n\n' + data.text;
+            const text = await callAi(cfg, SETUP_SYSTEM_PROMPT, user, 16000);
+            const result = { text, at: new Date().toISOString(), provider: cfg.provider, model: cfg.model, days, nNotes: data.nNotes, nCcy: data.nCcy };
+            localStorage.setItem('sphinx_setups_last', JSON.stringify(result));
+            renderSetupsResult(result);
+            setMsg('su-status', 'Analyse terminée en ' + Math.round((Date.now() - t0) / 1000) + ' s ✅', 'ok');
+        } catch (err) {
+            setMsg('su-status', 'Échec : ' + err.message, 'err');
+        } finally {
+            clearInterval(tick);
+            btn.disabled = false;
+        }
+    }
+    function renderSetupsResult(r) {
+        const out = document.getElementById('su-out');
+        if (!out) return;
+        const when = new Date(r.at).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        out.innerHTML = '<div class="su-meta">' + escHtml(when + ' · ' + (AI_PROVIDERS[r.provider] ? AI_PROVIDERS[r.provider].label : r.provider) + ' · ' + r.model + ' · ' + r.nCcy + ' devises · ' + r.nNotes + ' synthèses Daily FX (' + r.days + ' j)') + '</div>' + mdToSafeHtml(r.text);
+    }
+    function escHtml(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    // Markdown minimal → HTML, en échappant tout d'abord (la réponse de l'IA n'est pas fiable).
+    function mdToSafeHtml(md) {
+        const inline = t => escHtml(t)
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g, '$1<em>$2</em>')
+            .replace(/(^|\s)_(.+?)_(?=\s|$|[.,;:!?)])/g, '$1<em>$2</em>');
+        const out = [];
+        let list = null;
+        const close = () => { if (list) { out.push('</' + list + '>'); list = null; } };
+        String(md || '').split(/\r?\n/).forEach(raw => {
+            const line = raw.trimEnd();
+            let m;
+            if (!line.trim()) { close(); return; }
+            if ((m = line.match(/^(#{1,4})\s+(.*)$/))) { close(); const lvl = Math.min(3, Math.max(2, m[1].length)); out.push('<h' + lvl + '>' + inline(m[2]) + '</h' + lvl + '>'); return; }
+            if ((m = line.match(/^\s*[-*•]\s+(.*)$/))) { if (list !== 'ul') { close(); out.push('<ul>'); list = 'ul'; } out.push('<li>' + inline(m[1]) + '</li>'); return; }
+            if ((m = line.match(/^\s*\d+[.)]\s+(.*)$/))) { if (list !== 'ol') { close(); out.push('<ol>'); list = 'ol'; } out.push('<li>' + inline(m[1]) + '</li>'); return; }
+            close();
+            out.push('<p>' + inline(line) + '</p>');
+        });
+        close();
+        return out.join('');
     }
 
     // ── NAVIGATION ────────────────────────────────────────────────
     // Tout le site est derrière la connexion : ces écrans exigent un user authentifié.
-    const PROTECTED_SCREENS = ['hub', 'fxdesk', 'fxmacro', 'macroprep'];
+    const PROTECTED_SCREENS = ['hub', 'fxdesk', 'fxmacro', 'macroprep', 'setups'];
     function openScreen(id) {
         if (PROTECTED_SCREENS.includes(id) && !(auth && auth.currentUser))
             id = 'landing';
@@ -4244,6 +4821,8 @@
         window.scrollTo(0, 0);
         if (id === 'fxdesk' && auth && auth.currentUser)
             showFxApp(auth.currentUser);
+        if (id === 'setups' && auth && auth.currentUser)
+            initSetupsScreen();
         if (id === 'macroprep' && auth && auth.currentUser) {
             // Une erreur d'init (Firestore, etc.) ne doit jamais laisser
             // l'écran vide : on l'isole pour que le formulaire reste visible.
@@ -4301,6 +4880,7 @@
         db = firebase.firestore();
         auth.onAuthStateChanged(function(user) {
             if (user) {
+                rememberAccount(user);
                 // Connexion réussie depuis le portail → on entre dans le hub.
                 if (document.getElementById('landing').classList.contains('active')) {
                     resetAuthCard();
@@ -4309,6 +4889,17 @@
             } else {
                 // Déconnecté (ou session expirée) → retour au portail.
                 openScreen('landing');
+                // Bascule de compte demandée depuis les paramètres → carte de connexion prête.
+                const sw = localStorage.getItem('sphinx_switch_to');
+                if (sw) {
+                    localStorage.removeItem('sphinx_switch_to');
+                    let email = '';
+                    try { email = JSON.parse(sw).email || ''; } catch (e) {}
+                    showAuthCard('login');
+                    document.getElementById('loginEmailInp').value = email;
+                    document.getElementById('loginPwdInp').value = '';
+                    (email ? document.getElementById('loginPwdInp') : document.getElementById('loginEmailInp')).focus();
+                }
             }
         });
     });
@@ -4410,6 +5001,10 @@
     async function logoutUser() {
         if (!confirm('Se déconnecter ?'))
             return;
+        closeSettings();
+        await signOutClean();
+    }
+    async function signOutClean() {
         if (unsubTrades) {
             unsubTrades();
             unsubTrades = null;

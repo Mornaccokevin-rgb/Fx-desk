@@ -2837,6 +2837,8 @@
     .set-msg.err { color: var(--fx-red) }
     .set-key-row { display: flex; gap: 8px; align-items: flex-start }
     .set-key-row .fx-inp { flex: 1; min-width: 0 }
+    .set-masked { -webkit-text-security: disc }
+    .set-masked.revealed { -webkit-text-security: none }
     .set-eye { background: var(--fx-card2); border: 1px solid var(--fx-bd); color: var(--fx-muted2); border-radius: 8px; width: 40px; height: 40px; cursor: pointer; flex: none }
     .set-acc-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; border: 1px solid var(--fx-bd); border-radius: 9px; margin-bottom: 8px; background: var(--fx-card2) }
     .set-acc-item .set-acc-mail { font-size: 13px; color: var(--fx-text); overflow-wrap: anywhere; min-width: 0 }
@@ -4263,11 +4265,11 @@
                 <div class="set-section">
                     <div class="set-lbl">Clé API <a class="set-link" id="ai-key-link" href="#" target="_blank" rel="noopener noreferrer">obtenir une clé ↗</a></div>
                     <div class="set-key-row">
-                        <input type="password" id="ai-key-input" class="fx-inp set-inp" placeholder="Colle ta clé API ici" autocomplete="off" spellcheck="false">
+                        <input type="text" id="ai-key-input" name="sphinx-ai-token" class="fx-inp set-inp set-masked" placeholder="Colle ta clé API ici" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other">
                         <button type="button" class="set-eye" onclick="toggleAiKeyVisibility()" title="Afficher / masquer"><i class="ti ti-eye" id="ai-key-eye"></i></button>
                     </div>
                     <div class="set-lbl" style="margin-top:10px">Modèle</div>
-                    <input type="text" id="ai-model-input" class="fx-inp set-inp" autocomplete="off" spellcheck="false">
+                    <input type="text" id="ai-model-input" name="sphinx-ai-model-id" class="fx-inp set-inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other">
                     <div class="set-row">
                         <button type="button" class="set-btn" onclick="saveAiSettings()">Enregistrer</button>
                         <button type="button" class="set-btn ghost" onclick="testAiKey()">Tester la clé</button>
@@ -4503,6 +4505,23 @@
         openai: { label: 'ChatGPT', model: 'gpt-5', keyUrl: 'https://platform.openai.com/api-keys' }
     };
     let aiDraftProvider = null;
+    // Nom de modèle valide : lettres, chiffres, points, tirets (ex. gemini-2.5-flash).
+    // Accepte "models/..." (format Google) et retire les espaces parasites.
+    function cleanModelName(provider, raw) {
+        const v = String(raw || '').trim().replace(/^models\//, '');
+        return /^[A-Za-z0-9][A-Za-z0-9._\-]*$/.test(v) ? v : AI_PROVIDERS[provider].model;
+    }
+    function readModelField(p) {
+        const field = document.getElementById('ai-model-input');
+        const raw = field.value.trim();
+        const model = cleanModelName(p, raw);
+        if (raw && raw !== model && raw.replace(/^models\//, '') !== model) {
+            field.value = model;
+            return { model, fixed: raw };
+        }
+        field.value = model;
+        return { model, fixed: null };
+    }
     function getAiSettings() {
         let st = {};
         try { st = JSON.parse(localStorage.getItem('sphinx_ai')) || {}; } catch (e) {}
@@ -4514,7 +4533,7 @@
     function activeAiConfig() {
         const st = getAiSettings();
         const provider = st.provider;
-        return { provider, key: st.keys[provider] || '', model: st.models[provider] || AI_PROVIDERS[provider].model };
+        return { provider, key: st.keys[provider] || '', model: cleanModelName(provider, st.models[provider]) };
     }
     function renderAiSettings() {
         aiDraftProvider = getAiSettings().provider;
@@ -4526,9 +4545,9 @@
         document.querySelectorAll('#aiProviderRow .surf-btn').forEach(b => b.classList.toggle('active', b.dataset.ai === p));
         const key = document.getElementById('ai-key-input');
         key.value = st.keys[p] || '';
-        key.type = 'password';
+        key.classList.remove('revealed');
         document.getElementById('ai-key-eye').className = 'ti ti-eye';
-        document.getElementById('ai-model-input').value = st.models[p] || AI_PROVIDERS[p].model;
+        document.getElementById('ai-model-input').value = cleanModelName(p, st.models[p]);
         document.getElementById('ai-key-link').href = AI_PROVIDERS[p].keyUrl;
     }
     function selectAiProvider(p) {
@@ -4539,21 +4558,20 @@
     }
     function toggleAiKeyVisibility() {
         const key = document.getElementById('ai-key-input');
-        const show = key.type === 'password';
-        key.type = show ? 'text' : 'password';
+        const show = key.classList.toggle('revealed');
         document.getElementById('ai-key-eye').className = show ? 'ti ti-eye-off' : 'ti ti-eye';
     }
     function saveAiSettings() {
         const st = getAiSettings();
         const p = aiDraftProvider;
         const key = document.getElementById('ai-key-input').value.trim();
-        const model = document.getElementById('ai-model-input').value.trim() || AI_PROVIDERS[p].model;
+        const { model, fixed } = readModelField(p);
         if (!key) return setMsg('ai-msg', 'Colle d\'abord ta clé API.', 'err');
         st.provider = p;
         st.keys[p] = key;
         st.models[p] = model;
         localStorage.setItem('sphinx_ai', JSON.stringify(st));
-        setMsg('ai-msg', AI_PROVIDERS[p].label + ' enregistré et sélectionné ✅', 'ok');
+        setMsg('ai-msg', AI_PROVIDERS[p].label + ' enregistré et sélectionné ✅ (' + model + ')' + (fixed ? ' — nom de modèle invalide « ' + fixed + ' » remplacé par le modèle par défaut.' : ''), 'ok');
         renderSetupsHeader();
     }
     function removeAiKey() {
@@ -4568,14 +4586,14 @@
     async function testAiKey() {
         const p = aiDraftProvider;
         const key = document.getElementById('ai-key-input').value.trim();
-        const model = document.getElementById('ai-model-input').value.trim() || AI_PROVIDERS[p].model;
+        const { model, fixed } = readModelField(p);
         if (!key) return setMsg('ai-msg', 'Colle d\'abord ta clé API.', 'err');
-        setMsg('ai-msg', 'Test en cours…');
+        setMsg('ai-msg', 'Test en cours avec ' + model + '…' + (fixed ? ' (nom de modèle invalide « ' + fixed + ' » remplacé)' : ''));
         try {
             await callAi({ provider: p, key, model }, 'Réponds uniquement par OK.', 'Test de connexion.', 1024);
             setMsg('ai-msg', 'Clé valide ✅ (' + model + '). Pense à cliquer « Enregistrer ».', 'ok');
         } catch (err) {
-            setMsg('ai-msg', 'Échec : ' + err.message, 'err');
+            setMsg('ai-msg', 'Échec avec le modèle « ' + model + ' » : ' + err.message, 'err');
         }
     }
 

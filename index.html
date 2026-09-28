@@ -2384,6 +2384,86 @@
         cursor: zoom-in
     }
 
+    /* ── Modale d'insertion d'image (glisser-déposer + sélection) ── */
+    .mp-img-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 99997;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+        padding: 20px
+    }
+    .mp-img-modal.show {
+        display: flex
+    }
+    .mp-img-modal-box {
+        position: relative;
+        width: min(380px, 100%);
+        background: var(--fx-card2);
+        border: 1.5px dashed var(--fx-bd);
+        border-radius: 14px;
+        padding: 34px 24px 26px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        text-align: center;
+        transition: border-color 0.15s, background-color 0.15s
+    }
+    .mp-img-modal-box.dragover {
+        border-color: var(--fx-vl);
+        background: rgba(var(--acc-rgb), 0.08)
+    }
+    .mp-img-modal-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1px solid var(--fx-bd);
+        background: var(--fx-card);
+        color: var(--fx-muted);
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer
+    }
+    .mp-img-modal-close:hover {
+        color: var(--fx-red);
+        border-color: var(--fx-red)
+    }
+    .mp-img-modal-icon {
+        font-size: 30px;
+        opacity: 0.85
+    }
+    .mp-img-modal-text {
+        font-size: 13px;
+        color: var(--fx-muted2);
+        line-height: 1.5;
+        margin: 0
+    }
+    .mp-img-modal-browse {
+        background: var(--fx-vd);
+        border: 1px solid var(--fx-bd);
+        color: var(--fx-vl);
+        border-radius: 8px;
+        padding: 9px 18px;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s;
+        font-family: 'Space Grotesk', sans-serif
+    }
+    .mp-img-modal-browse:hover {
+        background: rgba(var(--acc-rgb), 0.18)
+    }
+    .mp-img-modal-count {
+        font-size: 10.5px;
+        color: var(--fx-muted)
+    }
+
     /* ── Historique : sous-composantes + image ── */
     .mp-sub-table {
         width: 100%;
@@ -3867,12 +3947,22 @@
                                 <label class="fx-flbl" for="mp-analysis">Réaction du marché &amp; mon biais *</label>
                                 <div id="mp-editor-wrap" class="mp-editor-wrap">
                                     <div class="mp-img-bar">
-                                        <button type="button" class="mp-img-add-btn" title="Insérer une image" onclick="document.getElementById('mp-image-input').click()">🖼️</button>
+                                        <button type="button" class="mp-img-add-btn" title="Insérer une image" onclick="openMacroImageModal()">🖼️</button>
                                         <input type="file" id="mp-image-input" accept="image/*" multiple style="display:none" onchange="handleMacroImage(event)">
-                                        <span class="mp-img-bar-hint">glisse, colle (Ctrl+V) ou choisis une image — jusqu'à 4, placée où tu veux dans le texte</span>
+                                        <span class="mp-img-bar-hint">glisse, colle (Ctrl+V) ou clique l'icône — jusqu'à 4 images, placées où tu veux dans le texte</span>
                                     </div>
                                     <div id="mp-analysis" class="fx-fc mp-rte" contenteditable="true" role="textbox" aria-multiline="true"
                                         data-placeholder="Sélectionne du texte pour le mettre en forme (gras, couleur, titres…). Comment le marché a-t-il réagi vs le consensus ? Quel est mon biais ?"></div>
+                                </div>
+                            </div>
+
+                            <div id="mp-img-modal" class="mp-img-modal" onclick="if(event.target===this)closeMacroImageModal()">
+                                <div id="mp-img-modal-box" class="mp-img-modal-box">
+                                    <button type="button" class="mp-img-modal-close" title="Fermer" onclick="closeMacroImageModal()">✕</button>
+                                    <div class="mp-img-modal-icon">🖼️</div>
+                                    <p class="mp-img-modal-text">Glisse une image ici, ou colle-la (Ctrl+V)</p>
+                                    <button type="button" class="mp-img-modal-browse" onclick="document.getElementById('mp-image-input').click()">📂 Choisir un fichier</button>
+                                    <span class="mp-img-modal-count" id="mp-img-modal-count"></span>
                                 </div>
                             </div>
                         </fieldset>
@@ -4162,6 +4252,7 @@
                 renderTagChipsInput();
                 initRteToolbar();
                 initMacroImageDropzone();
+                initMacroImageModal();
                 loadMacroNotes();
                 applyMacroEditorUI();
                 loadChat();
@@ -4772,7 +4863,9 @@
     let allMacroNotes = [],
         unsubMacroNotes = null,
         editingMacroId = null,
-        currentMacroTags = [];   // tags de la synthèse en cours d'édition
+        currentMacroTags = [],   // tags de la synthèse en cours d'édition
+        mpDraggedImg = null,     // <img> en cours de glisser-déplacer dans #mp-analysis (évite la duplication)
+        savedMpRange = null;     // position du curseur sauvegardée avant l'ouverture de la modale image
 
     // ── État de navigation Daily FX ───────────────────────────────
     let mpView = 'dash';          // 'dash' | 'hist'
@@ -4970,6 +5063,54 @@
                 openImgLightbox(im.src, () => im.remove());
             }
         });
+        // Repérer quand on commence à faire glisser une image déjà présente dans le
+        // texte : au drop, on la DÉPLACE (pas de nouveau fichier), jamais de doublon.
+        if (ed) {
+            ed.addEventListener('dragstart', e => { if (e.target.tagName === 'IMG') mpDraggedImg = e.target; });
+            ed.addEventListener('dragend', () => { mpDraggedImg = null; stopMpAutoScroll(); });
+        }
+    }
+    // Déplace une image déjà présente dans #mp-analysis vers un point de dépôt
+    // (au lieu d'en recréer une nouvelle) — insertNode() déplace un noeud déjà
+    // dans le DOM, il n'est jamais dupliqué.
+    function moveMacroImageNode(node, point) {
+        const ed = document.getElementById('mp-analysis');
+        if (!ed) return;
+        const range = mpRangeFromPoint(ed, point) || (() => { const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); return r; })();
+        range.insertNode(node);
+        range.setStartAfter(node);
+        range.setEndAfter(node);
+        const sel = window.getSelection();
+        if (sel) { sel.removeAllRanges(); sel.addRange(range); }
+    }
+    function mpRangeFromPoint(ed, point) {
+        if (!point) return null;
+        let range = null;
+        if (document.caretRangeFromPoint) {
+            range = document.caretRangeFromPoint(point.x, point.y);
+        } else if (document.caretPositionFromPoint) {
+            const pos = document.caretPositionFromPoint(point.x, point.y);
+            if (pos) { range = document.createRange(); range.setStart(pos.offsetNode, pos.offset); range.collapse(true); }
+        }
+        return (range && ed.contains(range.startContainer)) ? range : null;
+    }
+    // Auto-scroll de l'éditeur quand on glisse une image près du bord haut/bas
+    // (sinon impossible de la placer plus haut que ce qui est visible à l'écran).
+    let mpAutoScrollTimer = null;
+    function mpHandleDragAutoScroll(e) {
+        const ed = document.getElementById('mp-analysis');
+        if (!ed) return;
+        const rect = ed.getBoundingClientRect();
+        const edge = 34;
+        let dir = 0;
+        if (e.clientY < rect.top + edge) dir = -1;
+        else if (e.clientY > rect.bottom - edge) dir = 1;
+        if (!dir) { stopMpAutoScroll(); return; }
+        if (mpAutoScrollTimer) return;
+        mpAutoScrollTimer = setInterval(() => { ed.scrollTop += dir * 14; }, 16);
+    }
+    function stopMpAutoScroll() {
+        if (mpAutoScrollTimer) { clearInterval(mpAutoScrollTimer); mpAutoScrollTimer = null; }
     }
     function initMacroImageDropzone() {
         const zone = document.getElementById('mp-editor-wrap');
@@ -4981,19 +5122,27 @@
             dragDepth++;
             zone.classList.add('dragover');
         });
-        zone.addEventListener('dragover', e => e.preventDefault());
+        zone.addEventListener('dragover', e => { e.preventDefault(); mpHandleDragAutoScroll(e); });
         zone.addEventListener('dragleave', e => {
             e.preventDefault();
             dragDepth = Math.max(0, dragDepth - 1);
-            if (!dragDepth) zone.classList.remove('dragover');
+            if (!dragDepth) { zone.classList.remove('dragover'); stopMpAutoScroll(); }
         });
         zone.addEventListener('drop', e => {
             e.preventDefault();
             dragDepth = 0;
             zone.classList.remove('dragover');
+            stopMpAutoScroll();
+            const point = { x: e.clientX, y: e.clientY };
+            if (mpDraggedImg) {
+                // Réordonnancement d'une image déjà dans le texte → déplacement, jamais copie.
+                const moved = mpDraggedImg;
+                mpDraggedImg = null;
+                moveMacroImageNode(moved, point);
+                return;
+            }
             const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []).filter(f => f.type.startsWith('image/'));
             if (!files.length) { showToast('Dépose une image (PNG, JPG…)'); return; }
-            const point = { x: e.clientX, y: e.clientY };
             let queue = Promise.resolve();
             files.forEach(f => { queue = queue.then(() => addMacroImageFile(f, point)); });
         });
@@ -5123,7 +5272,9 @@
     }
     // Insère un <img> dans #mp-analysis à la sélection courante (ou à la fin si le
     // curseur n'est pas dans l'éditeur), ou à un point précis (x,y) lors d'un drop.
-    function insertMacroImageNode(dataUrl, atPoint) {
+    // target : Range (position sauvegardée, ex. avant ouverture de la modale),
+    // {x,y} (point de dépôt), ou rien (sélection courante / fin du texte).
+    function insertMacroImageNode(dataUrl, target) {
         const ed = document.getElementById('mp-analysis');
         if (!ed) return;
         const img = document.createElement('img');
@@ -5131,14 +5282,10 @@
         img.className = 'mp-rte-img';
         img.alt = 'image';
         let range = null;
-        if (atPoint) {
-            if (document.caretRangeFromPoint) {
-                range = document.caretRangeFromPoint(atPoint.x, atPoint.y);
-            } else if (document.caretPositionFromPoint) {
-                const pos = document.caretPositionFromPoint(atPoint.x, atPoint.y);
-                if (pos) { range = document.createRange(); range.setStart(pos.offsetNode, pos.offset); range.collapse(true); }
-            }
-            if (range && !ed.contains(range.startContainer)) range = null;
+        if (target instanceof Range) {
+            range = ed.contains(target.startContainer) ? target.cloneRange() : null;
+        } else if (target && typeof target.x === 'number') {
+            range = mpRangeFromPoint(ed, target);
         } else {
             const sel = window.getSelection();
             if (sel && sel.rangeCount && ed.contains(sel.anchorNode)) range = sel.getRangeAt(0);
@@ -5197,12 +5344,72 @@
         const files = Array.from(ev.target.files || []);
         if (!files.length)
             return;
-        // Traite les fichiers l'un après l'autre (budget calculé au fur et à mesure)
+        // Insère à la position sauvegardée à l'ouverture de la modale (si elle est
+        // ouverte), sinon à la sélection courante / fin du texte.
+        const target = savedMpRange;
         let queue = Promise.resolve();
         files.forEach(f => {
-            queue = queue.then(() => addMacroImageFile(f));
+            queue = queue.then(() => addMacroImageFile(f, target));
         });
-        queue.then(() => { ev.target.value = ''; }); // permet de re-sélectionner le même fichier
+        queue.then(() => { ev.target.value = ''; closeMacroImageModal(); }); // permet de re-sélectionner le même fichier
+    }
+    // ── Modale d'insertion d'image (icône 🖼️) ──────────────────────
+    function openMacroImageModal() {
+        const ed = document.getElementById('mp-analysis');
+        const sel = window.getSelection();
+        // Sauvegarde la position du curseur AVANT que la modale ne prenne le focus.
+        savedMpRange = (ed && sel && sel.rangeCount && ed.contains(sel.anchorNode)) ? sel.getRangeAt(0).cloneRange() : null;
+        if (macroInlineImages().length >= MAX_MACRO_IMAGES) {
+            showToast('Maximum ' + MAX_MACRO_IMAGES + ' images par synthèse');
+            return;
+        }
+        const modal = document.getElementById('mp-img-modal');
+        if (modal) modal.classList.add('show');
+        updateMacroImageModalCount();
+    }
+    function closeMacroImageModal() {
+        const modal = document.getElementById('mp-img-modal');
+        if (modal) modal.classList.remove('show');
+    }
+    function updateMacroImageModalCount() {
+        const el = document.getElementById('mp-img-modal-count');
+        if (!el) return;
+        const n = macroInlineImages().length;
+        el.textContent = n + '/' + MAX_MACRO_IMAGES + ' image' + (n > 1 ? 's' : '') + ' dans cette synthèse';
+    }
+    function initMacroImageModal() {
+        const modal = document.getElementById('mp-img-modal');
+        const box = document.getElementById('mp-img-modal-box');
+        if (!modal || !box || modal.dataset.wired) return;
+        modal.dataset.wired = '1';
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('show')) closeMacroImageModal(); });
+        let dragDepth = 0;
+        box.addEventListener('dragenter', e => { e.preventDefault(); dragDepth++; box.classList.add('dragover'); });
+        box.addEventListener('dragover', e => e.preventDefault());
+        box.addEventListener('dragleave', e => { e.preventDefault(); dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) box.classList.remove('dragover'); });
+        box.addEventListener('drop', e => {
+            e.preventDefault();
+            dragDepth = 0;
+            box.classList.remove('dragover');
+            const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []).filter(f => f.type.startsWith('image/'));
+            if (!files.length) { showToast('Dépose une image (PNG, JPG…)'); return; }
+            const target = savedMpRange;
+            let queue = Promise.resolve();
+            files.forEach(f => { queue = queue.then(() => addMacroImageFile(f, target)); });
+            queue.then(() => { updateMacroImageModalCount(); closeMacroImageModal(); });
+        });
+        // Ctrl+V pendant que la modale est ouverte (le focus n'est plus sur le texte)
+        document.addEventListener('paste', e => {
+            if (!modal.classList.contains('show')) return;
+            const cd = e.clipboardData || window.clipboardData;
+            const imgFiles = cd ? Array.from(cd.items || []).filter(it => it.kind === 'file' && it.type.startsWith('image/')).map(it => it.getAsFile()).filter(Boolean) : [];
+            if (!imgFiles.length) return;
+            e.preventDefault();
+            const target = savedMpRange;
+            let queue = Promise.resolve();
+            imgFiles.forEach(f => { queue = queue.then(() => addMacroImageFile(f, target)); });
+            queue.then(() => { updateMacroImageModalCount(); closeMacroImageModal(); });
+        });
     }
     // Agrandit une image en plein écran (clic pour fermer) — onDelete (optionnel)
     // affiche un bouton pour la retirer directement depuis l'éditeur.

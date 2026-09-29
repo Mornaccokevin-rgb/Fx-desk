@@ -3,8 +3,9 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ─────────────────────────────────────────────────────────────
-    //  RÉDACTEURS AUTORISÉS (Macro Prep)
-    //  ⚠️ Cette liste DOIT être identique à MACRO_EDITORS dans index.html.
+    //  RÉDACTEURS AUTORISÉS (Daily FX, Macro Compass, Set-ups)
+    //  ⚠️ Cette liste DOIT être identique à MACRO_EDITORS dans index.html
+    //  et à MACRO_EDITORS_FX dans fx-terminal.html.
     //  Pour ajouter un rédacteur : ajoute son email ici ET dans le JS.
     // ─────────────────────────────────────────────────────────────
     function isSignedIn() {
@@ -71,6 +72,18 @@ service cloud.firestore {
     match /macroCompass/{docId} {
       allow read:  if isSignedIn();
       allow write: if isMacroEditor();
+    }
+
+    // ── SET-UPS FONDAMENTAUX — partagés, comme le Daily FX ──────
+    //  Lecture : tout utilisateur connecté. Création / modification /
+    //  suppression : rédacteurs uniquement (set-up + ses captures).
+    match /fundSetups/{setupId} {
+      allow read:  if isSignedIn();
+      allow write: if isMacroEditor();
+      match /shots/{shotId} {
+        allow read:  if isSignedIn();
+        allow write: if isMacroEditor();
+      }
     }
 
     // ── DONNÉES PRIVÉES — Performance Tracker ────────────────────

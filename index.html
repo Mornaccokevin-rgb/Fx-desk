@@ -2905,6 +2905,12 @@
     .fs-shot-cap .fx-inp { margin: 0 }
     .fs-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 4px }
     .fs-dirty { font-size: 11.5px; color: var(--fx-gold) }
+    .fs-lock { font-size: 12.5px; color: var(--fx-muted2); background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 9px; padding: 9px 13px; margin: 4px 0 12px }
+    .fs-ro-notes { font-size: 14px; line-height: 1.7; color: var(--fx-text); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 9px; padding: 12px 14px }
+    .fs-ro-meta { font-size: 11px; color: var(--fx-muted); margin-top: 10px; font-family: 'Space Mono', monospace }
+    .fs-shot-cap-ro { font-size: 13px; color: var(--fx-text); line-height: 1.5; overflow-wrap: anywhere }
+    .fs-shot-cap-ro .fs-tf { cursor: default; margin-right: 6px }
+    #fs-edit-view.readonly .fs-edit-only { display: none !important }
     .fs-stale { font-size: 12px; color: var(--fx-gold); background: rgba(245, 158, 11, .08); border: 1px solid rgba(245, 158, 11, .3); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px }
 
     .modal-wrap {
@@ -3451,7 +3457,7 @@
                     </div>
                     <div class="mod-icon">🎯</div>
                     <div class="mod-name">Set-ups fondamentaux</div>
-                    <div class="mod-desc">Enregistre tes set-ups (graphiques, légendes, thèse) : l'IA les confronte au Macro Compass et au Daily FX pour dire s'ils tiennent fondamentalement.</div>
+                    <div class="mod-desc">Les set-ups de l'alliance (graphiques légendés, thèse) : l'IA les confronte au Macro Compass et au Daily FX pour dire s'ils tiennent fondamentalement.</div>
                     <div class="mod-arr">→</div>
                 </div>
 
@@ -3972,7 +3978,7 @@
         </nav>
         <div class="fx-content">
             <div class="su-tabs">
-                <button type="button" class="su-tab active" data-sutab="mine" onclick="setSetupsTab('mine')">📋 Mes set-ups</button>
+                <button type="button" class="su-tab active" data-sutab="mine" onclick="setSetupsTab('mine')">📋 Set-ups</button>
                 <button type="button" class="su-tab" data-sutab="radar" onclick="setSetupsTab('radar')">🎯 Radar IA</button>
             </div>
 
@@ -3982,11 +3988,12 @@
                     <div class="fx-form-card">
                         <div class="su-head">
                             <div>
-                                <div class="su-title">📋 Mes set-ups</div>
-                                <div class="set-hint">Enregistre chaque set-up avec ses graphiques (légendés avec leur time frame) et ta thèse. L'IA le confronte ensuite à tout le Sphinx Alliance — Macro Compass, attentes de taux, Daily FX — et dit si, <b>sur le plan fondamental uniquement</b>, la paire est vraiment intéressante. Tes set-ups sont privés (visibles par toi seul).</div>
+                                <div class="su-title">📋 Set-ups de l'alliance</div>
+                                <div class="set-hint">Chaque set-up réunit ses graphiques (légendés avec leur time frame) et la thèse du rédacteur. L'IA le confronte à tout le Sphinx Alliance — Macro Compass, attentes de taux, Daily FX — et dit si, <b>sur le plan fondamental uniquement</b>, la paire est vraiment intéressante. Les set-ups sont partagés avec toute l'alliance.</div>
                             </div>
-                            <button type="button" class="set-btn" onclick="newFundSetup()">＋ Nouveau set-up</button>
+                            <button type="button" class="set-btn" id="fs-new" onclick="newFundSetup()" style="display:none">＋ Nouveau set-up</button>
                         </div>
+                        <div class="fs-lock" id="fs-list-lock" style="display:none">🔒 Lecture seule — seuls les rédacteurs autorisés peuvent créer, modifier ou supprimer des set-ups.</div>
                         <div class="set-msg" id="fs-list-msg"></div>
                         <div class="fs-grid" id="fs-grid"></div>
                     </div>
@@ -3997,10 +4004,21 @@
                     <div class="fx-form-card">
                         <div class="su-head">
                             <div>
-                                <button type="button" class="set-btn ghost" onclick="closeFundSetup()">← Mes set-ups</button>
+                                <button type="button" class="set-btn ghost" onclick="closeFundSetup()">← Tous les set-ups</button>
                             </div>
                             <span class="su-badge" id="fs-provider">—</span>
                         </div>
+                        <div class="fs-lock" id="fs-edit-lock" style="display:none">🔒 Lecture seule — seuls les rédacteurs autorisés peuvent modifier ce set-up.</div>
+                        <div class="fs-ro" id="fs-ro" style="display:none">
+                            <div class="fs-card-top" style="justify-content:flex-start;gap:12px;margin-bottom:12px">
+                                <span class="fs-pair" id="fs-ro-pair"></span>
+                                <span class="fs-dir" id="fs-ro-dir"></span>
+                            </div>
+                            <div class="fx-lbl">Thèse / notes</div>
+                            <div class="fs-ro-notes" id="fs-ro-notes"></div>
+                            <div class="fs-ro-meta" id="fs-ro-meta"></div>
+                        </div>
+                        <div id="fs-form">
                         <div class="fs-row">
                             <div>
                                 <label class="fx-lbl" for="fs-pair">Paire</label>
@@ -4018,12 +4036,13 @@
                         </div>
                         <label class="fx-lbl" for="fs-notes" style="margin-top:10px">Ma thèse / mes notes</label>
                         <textarea id="fs-notes" class="fx-inp set-inp fs-text" placeholder="Pourquoi ce set-up ? Ce que tu as remarqué côté macro, catalyseurs attendus, ce qui t'attire ou te gêne…" oninput="fsMarkDirty()"></textarea>
+                        </div>
                     </div>
 
                     <div class="fx-form-card">
                         <div class="su-title">📈 Graphiques</div>
-                        <div class="set-hint" style="margin-bottom:12px">Ajoute tes captures (jusqu'à <span id="fs-max-shots">8</span>) et note sous chacune sa légende, par exemple son time frame. Elles restent pour ta lecture : l'IA ne les analyse pas, elle juge uniquement le fondamental.</div>
-                        <div class="fs-drop" id="fs-drop">
+                        <div class="set-hint fs-edit-only" style="margin-bottom:12px">Ajoute tes captures (jusqu'à <span id="fs-max-shots">8</span>) et note sous chacune sa légende, par exemple son time frame. Elles restent pour ta lecture : l'IA ne les analyse pas, elle juge uniquement le fondamental.</div>
+                        <div class="fs-drop fs-edit-only" id="fs-drop">
                             <button type="button" class="set-btn" onclick="document.getElementById('fs-file').click()">🖼️ Ajouter des graphiques</button>
                             <div class="set-hint" style="margin-top:8px">ou glisse-dépose les images ici, ou colle-les avec Ctrl+V</div>
                             <input type="file" id="fs-file" accept="image/*" multiple style="display:none" onchange="fsHandleFiles(this)">
@@ -4032,7 +4051,7 @@
                         <div class="fs-shots" id="fs-shots"></div>
                     </div>
 
-                    <div class="fx-form-card">
+                    <div class="fx-form-card fs-edit-only">
                         <div class="fs-actions">
                             <button type="button" class="set-btn" id="fs-save" onclick="saveFundSetup()">💾 Enregistrer</button>
                             <button type="button" class="set-btn danger" id="fs-del" onclick="deleteFundSetup()">🗑️ Supprimer</button>
@@ -4045,10 +4064,10 @@
                         <div class="su-head">
                             <div>
                                 <div class="su-title">🧠 Avis fondamental de l'IA</div>
-                                <div class="set-hint">L'IA lit tout le Sphinx Alliance (Macro Compass, attentes de taux, Daily FX) et évalue ce set-up — et ta thèse — uniquement sur le fond macro. Le set-up est enregistré avant l'analyse.</div>
+                                <div class="set-hint">L'IA lit tout le Sphinx Alliance (Macro Compass, attentes de taux, Daily FX) et évalue ce set-up — et sa thèse — uniquement sur le fond macro.</div>
                             </div>
                         </div>
-                        <div class="su-controls">
+                        <div class="su-controls fs-edit-only">
                             <label class="set-hint" for="fs-days">Daily FX pris en compte :</label>
                             <select id="fs-days" class="fx-inp set-inp su-select">
                                 <option value="7">7 derniers jours</option>
@@ -4057,7 +4076,7 @@
                             </select>
                             <button type="button" class="set-btn" id="fs-run" onclick="analyzeFundSetup()">🎯 Analyser ce set-up</button>
                         </div>
-                        <div class="set-msg" id="fs-status"></div>
+                        <div class="set-msg fs-edit-only" id="fs-status"></div>
                         <div class="su-out" id="fs-analysis" style="margin-top:8px">
                             <div class="set-hint">Pas encore d'analyse pour ce set-up.</div>
                         </div>
@@ -4964,9 +4983,11 @@ Ce qui manque ou est daté.`;
     }
 
     // ── MES SET-UPS : graphiques légendés + thèse + avis fondamental de l'IA ──
-    //  Stockage privé : users/{uid}/fundSetups/{id} (méta + analyse IA + miniature)
-    //  et users/{uid}/fundSetups/{id}/shots/{shotId} (une capture par document,
-    //  pour rester sous la limite de 1 Mo de Firestore sans sacrifier la netteté).
+    //  Contenu PARTAGÉ, comme le Daily FX : lecture pour tout connecté, création /
+    //  modification / suppression réservées aux rédacteurs (MACRO_EDITORS +
+    //  firestore.rules). Stockage : fundSetups/{id} (méta + analyse IA + miniature)
+    //  et fundSetups/{id}/shots/{shotId} (une capture par document, pour rester
+    //  sous la limite de 1 Mo de Firestore sans sacrifier la netteté).
     const FS_PAIRS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'USD/CNH',
         'EUR/GBP', 'EUR/JPY', 'EUR/CHF', 'EUR/AUD', 'EUR/NZD', 'EUR/CAD',
         'GBP/JPY', 'GBP/CHF', 'GBP/AUD', 'GBP/NZD', 'GBP/CAD',
@@ -4977,10 +4998,12 @@ Ce qui manque ou est daté.`;
     const FS_TF_RE = /^(M1|M5|M15|M30|H1|H4|D1|W1|MN)\b\s*[·—–:-]?\s*/i;
     const FS_DIR_LABEL = { buy: 'Achat', sell: 'Vente' };
     const FS_VERDICT_LABEL = { fav: 'Favorable', mit: 'Mitigé', def: 'Défavorable' };
-    let fsList = [], fsDraft = null, fsDirty = false, fsSaving = false, fsAnalyzing = false, fsRemoved = [], fsUid = null, fsTab = 'mine', fsWired = false;
+    let fsList = [], fsDraft = null, fsDirty = false, fsSaving = false, fsAnalyzing = false, fsRemoved = [], fsUid = null, fsTab = 'mine', fsWired = false, fsMigrated = false;
 
     const fsEl = id => document.getElementById(id);
-    function fsCol() { return db.collection('users').doc(auth.currentUser.uid).collection('fundSetups'); }
+    function fsCol() { return db.collection('fundSetups'); }
+    function fsLegacyCol() { return db.collection('users').doc(auth.currentUser.uid).collection('fundSetups'); }
+    function fsCanEdit() { return isMacroEditor(); }
     function fsNormalizePair(v) {
         const l = String(v || '').toUpperCase().replace(/[^A-Z]/g, '');
         return l.length === 6 ? l.slice(0, 3) + '/' + l.slice(3) : null;
@@ -4998,11 +5021,14 @@ Ce qui manque ou est daté.`;
         const uid = auth.currentUser.uid;
         if (fsUid !== uid) {                       // autre compte : on repart de zéro
             fsUid = uid;
-            fsList = []; fsDraft = null; fsDirty = false; fsRemoved = [];
+            fsList = []; fsDraft = null; fsDirty = false; fsRemoved = []; fsMigrated = false;
             fsEl('fs-list-view').style.display = '';
             fsEl('fs-edit-view').style.display = 'none';
         }
         if (!fsWired) wireFundSetups();
+        const editor = fsCanEdit();
+        fsEl('fs-new').style.display = editor ? '' : 'none';
+        fsEl('fs-list-lock').style.display = editor ? 'none' : '';
         setSetupsTab(fsTab);
         loadFundSetups();
     }
@@ -5020,12 +5046,13 @@ Ce qui manque ou est daté.`;
             depth = 0;
             zone.classList.remove('dragover');
             const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []).filter(f => f.type.startsWith('image/'));
+            if (!fsCanEdit()) return;
             if (!files.length) return setMsg('fs-shots-msg', 'Dépose une image (PNG, JPG…).', 'err');
             fsAddFiles(files);
         });
         // Ctrl+V : n'intercepte que les images (le collage de texte reste normal).
         document.addEventListener('paste', e => {
-            if (!fsDraft || fsTab !== 'mine' || fsEl('fs-edit-view').style.display === 'none') return;
+            if (!fsDraft || !fsCanEdit() || fsTab !== 'mine' || fsEl('fs-edit-view').style.display === 'none') return;
             if (!fsEl('setups').classList.contains('active')) return;
             const cd = e.clipboardData || window.clipboardData;
             const files = cd ? Array.from(cd.items || []).filter(it => it.kind === 'file' && it.type.startsWith('image/')).map(it => it.getAsFile()).filter(Boolean) : [];
@@ -5036,15 +5063,40 @@ Ce qui manque ou est daté.`;
     }
 
     // ── Liste ──
+    // Les premiers set-ups étaient privés (users/{uid}/fundSetups) : un rédacteur
+    // les recopie une fois dans la collection partagée, puis les efface.
+    async function fsMigrateLegacy() {
+        if (fsMigrated || !fsCanEdit()) return 0;
+        fsMigrated = true;
+        const legacy = await fsLegacyCol().get();
+        let n = 0;
+        for (const d of legacy.docs) {
+            const shots = await d.ref.collection('shots').get();
+            const target = fsCol().doc(d.id);
+            const copy = db.batch();
+            shots.forEach(sh => copy.set(target.collection('shots').doc(sh.id), sh.data()));
+            copy.set(target, Object.assign({}, d.data(), { createdBy: auth.currentUser.email || '', updatedBy: auth.currentUser.email || '' }));
+            await copy.commit();
+            const purge = db.batch();
+            shots.forEach(sh => purge.delete(sh.ref));
+            purge.delete(d.ref);
+            await purge.commit();
+            n++;
+        }
+        return n;
+    }
     async function loadFundSetups() {
         try {
+            let moved = 0;
+            try { moved = await fsMigrateLegacy(); } catch (e) { console.warn('Set-ups — migration :', e); fsMigrated = false; }
+            if (moved) showToast(moved + ' set-up' + (moved > 1 ? 's' : '') + ' partagé' + (moved > 1 ? 's' : '') + ' avec l\'alliance');
             const snap = await fsCol().get();
             fsList = [];
             snap.forEach(d => fsList.push(Object.assign({ id: d.id }, d.data())));
             fsList.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
             setMsg('fs-list-msg', '');
         } catch (e) {
-            setMsg('fs-list-msg', 'Chargement impossible : ' + e.message + (/permission/i.test(e.message) ? ' (vérifie les règles Firestore : users/{uid}/…)' : ''), 'err');
+            setMsg('fs-list-msg', 'Chargement impossible : ' + e.message + (/permission/i.test(e.message) ? ' (publie les règles Firestore à jour : bloc « fundSetups » de firestore.rules)' : ''), 'err');
         }
         renderFundSetupList();
     }
@@ -5055,7 +5107,7 @@ Ce qui manque ou est daté.`;
             const d = document.createElement('div');
             d.className = 'fs-empty';
             d.style.gridColumn = '1 / -1';
-            d.textContent = 'Aucun set-up pour l\'instant. Clique sur « Nouveau set-up » pour ajouter ta première paire.';
+            d.textContent = fsCanEdit() ? 'Aucun set-up pour l\'instant. Clique sur « Nouveau set-up » pour ajouter ta première paire.' : 'Aucun set-up publié pour l\'instant.';
             grid.appendChild(d);
             return;
         }
@@ -5099,6 +5151,7 @@ Ce qui manque ou est daté.`;
 
     // ── Ouverture / fermeture / création ──
     function newFundSetup() {
+        if (!fsCanEdit()) return showToast('Réservé aux rédacteurs');
         fsDraft = { id: null, pair: '', dir: '', notes: '', shots: [], analysis: null, verdict: '', createdAt: Date.now() };
         fsRemoved = [];
         fsShowEditor();
@@ -5119,7 +5172,8 @@ Ce qui manque ou est daté.`;
             fsDraft = {
                 id, pair: meta.pair || '', dir: meta.dir || '', notes: meta.notes || '',
                 shots: shots.map(s => ({ id: s.id, data: s.data, caption: s.caption || '', _dirty: false })),
-                analysis: meta.analysis || null, verdict: meta.verdict || '', createdAt: meta.createdAt || Date.now()
+                analysis: meta.analysis || null, verdict: meta.verdict || '', createdAt: meta.createdAt || Date.now(),
+                createdBy: meta.createdBy || '', updatedBy: meta.updatedBy || '', updatedAt: meta.updatedAt || 0
             };
             fsRemoved = [];
             setMsg('fs-list-msg', '');
@@ -5130,6 +5184,18 @@ Ce qui manque ou est daté.`;
         }
     }
     function fsShowEditor() {
+        const editor = fsCanEdit();
+        fsEl('fs-edit-view').classList.toggle('readonly', !editor);
+        fsEl('fs-edit-lock').style.display = editor ? 'none' : '';
+        fsEl('fs-provider').style.display = editor ? '' : 'none';
+        fsEl('fs-form').style.display = editor ? '' : 'none';
+        fsEl('fs-ro').style.display = editor ? 'none' : '';
+        fsEl('fs-ro-pair').textContent = fsDraft.pair || '—';
+        const dir = fsEl('fs-ro-dir');
+        dir.className = 'fs-dir ' + (fsDraft.dir || '');
+        dir.textContent = FS_DIR_LABEL[fsDraft.dir] || 'Sens non précisé';
+        fsEl('fs-ro-notes').textContent = fsDraft.notes || 'Aucune note.';
+        fsEl('fs-ro-meta').textContent = [fsDraft.createdBy && 'Par ' + fsDraft.createdBy, fsDraft.updatedAt && 'mis à jour le ' + fsFmtDate(fsDraft.updatedAt)].filter(Boolean).join(' · ');
         fsEl('fs-pair').value = fsDraft.pair;
         fsEl('fs-dir').value = fsDraft.dir;
         fsEl('fs-notes').value = fsDraft.notes;
@@ -5193,7 +5259,7 @@ Ce qui manque ou est daté.`;
         });
     }
     async function fsAddFiles(files) {
-        if (!fsDraft) return;
+        if (!fsDraft || !fsCanEdit()) return;
         const skipped = [];
         for (const f of files) {
             if (fsDraft.shots.length >= FS_MAX_SHOTS) { skipped.push('maximum ' + FS_MAX_SHOTS + ' graphiques atteint'); break; }
@@ -5247,7 +5313,8 @@ Ce qui manque ou est daté.`;
                 mk('›', 'Déplacer après', () => fsMoveShot(i, 1), '', i === fsDraft.shots.length - 1),
                 mk('✕', 'Retirer ce graphique', () => fsRemoveShot(i), 'del')
             );
-            tools.append(lbl, btns);
+            tools.append(lbl);
+            if (fsCanEdit()) tools.append(btns);
             const img = document.createElement('img');
             img.src = s.data;
             img.alt = 'Graphique ' + (i + 1) + (s.caption ? ' — ' + s.caption : '');
@@ -5255,6 +5322,22 @@ Ce qui manque ou est daté.`;
             img.onclick = () => openImgLightbox(s.data);
             const cap = document.createElement('div');
             cap.className = 'fs-shot-cap';
+            if (!fsCanEdit()) {
+                const ro = document.createElement('div');
+                ro.className = 'fs-shot-cap-ro';
+                const m = FS_TF_RE.exec(s.caption || '');
+                if (m) {
+                    const tf = document.createElement('span');
+                    tf.className = 'fs-tf on';
+                    tf.textContent = m[1].toUpperCase();
+                    ro.appendChild(tf);
+                }
+                ro.appendChild(document.createTextNode((m ? s.caption.replace(FS_TF_RE, '') : s.caption) || (m ? '' : 'Sans légende')));
+                cap.appendChild(ro);
+                fig.append(tools, img, cap);
+                box.appendChild(fig);
+                return;
+            }
             const input = document.createElement('input');
             input.type = 'text'; input.className = 'fx-inp set-inp'; input.maxLength = 200;
             input.placeholder = 'Légende (ex. H4 — retest de la zone après la cassure)';
@@ -5297,6 +5380,7 @@ Ce qui manque ou est daté.`;
     }
     async function saveFundSetup(quiet) {
         if (!fsDraft || fsSaving) return false;
+        if (!fsCanEdit()) { setMsg('fs-msg', 'Réservé aux rédacteurs.', 'err'); return false; }
         fsReadForm();
         const pair = fsNormalizePair(fsDraft.pair);
         if (!pair) { setMsg('fs-msg', 'Indique une paire valide (ex. EUR/USD).', 'err'); fsEl('fs-pair').focus(); return false; }
@@ -5314,7 +5398,8 @@ Ce qui manque ou est daté.`;
                 order: fsDraft.shots.map(s => s.id),
                 thumb: await fsMakeThumb(fsDraft.shots[0] && fsDraft.shots[0].data),
                 analysis: fsDraft.analysis || null, verdict: fsDraft.verdict || '',
-                createdAt: fsDraft.createdAt || now, updatedAt: now
+                createdAt: fsDraft.createdAt || now, updatedAt: now,
+                createdBy: fsDraft.createdBy || auth.currentUser.email || '', updatedBy: auth.currentUser.email || ''
             };
             const shotsCol = col.doc(id).collection('shots');
             const batch = db.batch();
@@ -5323,6 +5408,7 @@ Ce qui manque ou est daté.`;
             batch.set(col.doc(id), meta);
             await batch.commit();
             fsDraft.id = id;
+            fsDraft.createdBy = meta.createdBy;
             fsDraft.shots.forEach(s => { s._dirty = false; });
             fsRemoved = [];
             const entry = Object.assign({ id }, meta);
@@ -5342,7 +5428,7 @@ Ce qui manque ou est daté.`;
         }
     }
     async function deleteFundSetup() {
-        if (!fsDraft) return;
+        if (!fsDraft || !fsCanEdit()) return;
         if (!fsDraft.id) { fsDirty = false; return closeFundSetup(); }
         if (!confirm('Supprimer définitivement le set-up « ' + (fsDraft.pair || 'sans nom') + ' » et ses graphiques ?')) return;
         try {
@@ -5400,7 +5486,7 @@ Ce qui manque ou est daté.`;
     }
     function fsUpdateStale() {
         const el = fsEl('fs-stale');
-        if (el && fsDraft && fsDraft.analysis) el.style.display = fsDraft.analysis.sig === fsSig() ? 'none' : '';
+        if (el && fsDraft && fsDraft.analysis) el.style.display = !fsCanEdit() || fsDraft.analysis.sig === fsSig() ? 'none' : '';
     }
     function renderFsAnalysis() {
         const out = fsEl('fs-analysis');
@@ -5418,6 +5504,7 @@ Ce qui manque ou est daté.`;
     }
     async function analyzeFundSetup() {
         if (!fsDraft || fsAnalyzing) return;
+        if (!fsCanEdit()) return showToast('Réservé aux rédacteurs');
         const cfg = activeAiConfig();
         if (!cfg.key) {
             setMsg('fs-status', 'Aucune clé API : ajoute-la dans ⚙️ Paramètres → IA.', 'err');

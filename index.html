@@ -5004,6 +5004,11 @@ Ce qui manque ou est daté.`;
     function fsCol() { return db.collection('fundSetups'); }
     function fsLegacyCol() { return db.collection('users').doc(auth.currentUser.uid).collection('fundSetups'); }
     function fsCanEdit() { return isMacroEditor(); }
+    // Refus Firestore = règles « fundSetups » pas encore publiées dans la console Firebase.
+    function fsErr(e) {
+        const m = (e && e.message) || String(e);
+        return /permission|insufficient/i.test(m) ? 'Firebase refuse l\'accès : les règles Firestore à jour (bloc « fundSetups » du fichier firestore.rules) ne sont pas encore publiées dans la console Firebase → Firestore Database → Règles.' : m;
+    }
     function fsNormalizePair(v) {
         const l = String(v || '').toUpperCase().replace(/[^A-Z]/g, '');
         return l.length === 6 ? l.slice(0, 3) + '/' + l.slice(3) : null;
@@ -5096,7 +5101,7 @@ Ce qui manque ou est daté.`;
             fsList.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
             setMsg('fs-list-msg', '');
         } catch (e) {
-            setMsg('fs-list-msg', 'Chargement impossible : ' + e.message + (/permission/i.test(e.message) ? ' (publie les règles Firestore à jour : bloc « fundSetups » de firestore.rules)' : ''), 'err');
+            setMsg('fs-list-msg', 'Chargement impossible. ' + fsErr(e), 'err');
         }
         renderFundSetupList();
     }
@@ -5180,7 +5185,7 @@ Ce qui manque ou est daté.`;
             fsShowEditor();
             setMsg('fs-msg', '');
         } catch (e) {
-            setMsg('fs-list-msg', 'Ouverture impossible : ' + e.message, 'err');
+            setMsg('fs-list-msg', 'Ouverture impossible. ' + fsErr(e), 'err');
         }
     }
     function fsShowEditor() {
@@ -5420,7 +5425,7 @@ Ce qui manque ou est daté.`;
             if (!quiet) setMsg('fs-msg', 'Set-up enregistré ✅', 'ok');
             return true;
         } catch (e) {
-            setMsg('fs-msg', 'Échec de l\'enregistrement : ' + e.message, 'err');
+            setMsg('fs-msg', 'Échec de l\'enregistrement. ' + fsErr(e), 'err');
             return false;
         } finally {
             fsSaving = false;
@@ -5443,7 +5448,7 @@ Ce qui manque ou est daté.`;
             closeFundSetup();
             showToast('Set-up supprimé');
         } catch (e) {
-            setMsg('fs-msg', 'Suppression impossible : ' + e.message, 'err');
+            setMsg('fs-msg', 'Suppression impossible. ' + fsErr(e), 'err');
         }
     }
 

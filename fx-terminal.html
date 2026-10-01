@@ -328,6 +328,14 @@ a{color:inherit;text-decoration:none}
 .rx-sum{font-size:11px;color:var(--t3);margin:2px 0 12px}
 .rx-btns{display:flex;gap:10px;margin-top:8px}
 .rx-btns button{flex:1;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.mc-box{max-width:620px}
+.mc-box textarea{width:100%;min-height:120px;background:var(--panel2);border:1px solid var(--bd);border-radius:8px;color:var(--t);font-family:var(--mono);font-size:11px;padding:10px;resize:vertical;box-sizing:border-box}
+.mc-hint{font-size:11.5px;color:var(--t3);line-height:1.5;margin-bottom:10px}
+.mc-prev{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;font-family:var(--mono)}
+.mc-prev th,.mc-prev td{padding:5px 6px;border-bottom:1px solid var(--bd);text-align:center}
+.mc-prev th:first-child,.mc-prev td:first-child{text-align:left}
+.mc-prev th{color:var(--t3);font-weight:600;font-size:10px;text-transform:uppercase}
+.mc-msg{font-size:12px;margin-top:10px;min-height:16px}
 .rx-save{background:var(--accent);color:#fff}
 .rx-cancel{background:var(--panel3);color:var(--t2)}
 
@@ -474,6 +482,7 @@ a{color:inherit;text-decoration:none}
       <i class="ti ti-world"></i><h2>Force des devises &mdash; Note macro /100</h2>
       <div class="sec-hdr-line"></div>
       <span id="dash-updated" style="font-size:10px;color:var(--t3);font-family:var(--mono)"></span>
+      <button class="ai-brief-btn" id="mc-import-btn" style="display:none" onclick="openCompassImport()" title="Importer les notes préparées par Claude">📥 Importer une mise à jour</button>
     </div>
     <div class="ccy-grid" id="ccy-grid"></div>
     <div id="detail-mount"></div>
@@ -1100,7 +1109,7 @@ function initRateSync(){
   }catch(e){ try{fxApp=firebase.initializeApp(RATE_FB_CONFIG);}catch(e2){fxApp=firebase.app();} }
   try{
     fxDb=fxApp.firestore();
-    fxApp.auth().onAuthStateChanged(u=>{fxAuthUser=u;renderRateExpectations();loadMacroNotes();loadMacroCompassScores();});
+    fxApp.auth().onAuthStateChanged(u=>{fxAuthUser=u;const ib=document.getElementById('mc-import-btn');if(ib)ib.style.display=mpIsEditor()?'':'none';renderRateExpectations();loadMacroNotes();loadMacroCompassScores();});
     fxDb.collection('config').doc('rateExpectations').onSnapshot(doc=>{
       if(doc.exists){
         const data=doc.data()||{};
@@ -1160,6 +1169,71 @@ async function saveRateEdit(code,vals){
     rateMeta.updatedAt=new Date().toISOString(); updateRateBadge();
     toast('Attentes mises à jour ✅');
   }catch(e){toast('Erreur : '+e.message);}
+}
+
+/* ── Import d'une mise à jour du Compass (fichier JSON préparé par Claude, rédacteurs) ──
+   Écrit la collection macroCompass (une fiche par devise + _meta) avec le compte du rédacteur. */
+const MC_PILLARS=[['croissance','Croiss.'],['inflation','Infl.'],['politiqueMonetaire','Monét.'],['geopolitique','Géo.']];
+let mcPending=null;
+function mcParse(text){
+  let d; try{ d=JSON.parse(text); }catch(e){ throw new Error('JSON illisible : '+e.message); }
+  if(!d||d.format!=='sphinx-macro-compass'||!d.currencies) throw new Error('Ce fichier n\'est pas une mise à jour du Macro Compass.');
+  const codes=Object.keys(d.currencies);
+  codes.forEach(c=>{
+    if(!/^[A-Z]{3}$/.test(c)) throw new Error('Code devise invalide : '+c);
+    const x=d.currencies[c];
+    if(x.notCovered) return;
+    MC_PILLARS.forEach(([k])=>{ const s=x.pillars&&x.pillars[k]&&x.pillars[k].score; if(typeof s!=='number'||s<0||s>100) throw new Error(c+' : note « '+k+' » manquante ou hors 0-100.'); });
+  });
+  return d;
+}
+function mcPreview(d){
+  const rows=Object.values(d.currencies).sort((a,b)=>(a.rank||99)-(b.rank||99)).map(x=>{
+    if(x.notCovered) return '<tr><td>'+x.code+'</td><td colspan="6" style="color:var(--t3)">non couvert (N/A)</td></tr>';
+    return '<tr><td>'+(x.rank?'#'+x.rank+' ':'')+x.code+'</td>'+MC_PILLARS.map(([k])=>'<td>'+x.pillars[k].score+'</td>').join('')+'<td><b>'+(x.score!=null?x.score:'—')+'</b></td><td>'+(CCY_DATA[x.code]&&CCY_DATA[x.code].score!=null?CCY_DATA[x.code].score:'—')+'</td></tr>';
+  }).join('');
+  return '<table class="mc-prev"><tr><th>Devise</th>'+MC_PILLARS.map(([,l])=>'<th>'+l+'</th>').join('')+'<th>Note</th><th>Avant</th></tr>'+rows+'</table>';
+}
+function openCompassImport(){
+  if(!mpIsEditor()){toast('Réservé aux rédacteurs');return;}
+  mcPending=null;
+  const ov=document.createElement('div'); ov.className='rx-modal'; ov.id='mc-modal';
+  ov.innerHTML=`<div class="rx-box mc-box">
+    <h3>📥 Mettre à jour la force des devises</h3>
+    <div class="mc-hint">Choisis le fichier <b>macro-compass-….json</b> préparé par Claude, ou colle son contenu. Vérifie l'aperçu, puis publie : toute l'alliance verra les nouvelles notes.</div>
+    <input type="file" id="mc-file" accept=".json,application/json" style="margin-bottom:10px;font-size:12px;color:var(--t2)">
+    <textarea id="mc-text" placeholder="…ou colle le JSON ici"></textarea>
+    <div id="mc-prev"></div>
+    <div class="mc-msg" id="mc-msg"></div>
+    <div class="rx-btns"><button class="rx-cancel" id="mc-cancel">Annuler</button><button class="rx-save" id="mc-save" disabled>Publier</button></div>
+  </div>`;
+  document.body.appendChild(ov);
+  const g=id=>ov.querySelector('#'+id);
+  const msg=(t,c)=>{g('mc-msg').textContent=t;g('mc-msg').style.color=c||'var(--t3)';};
+  const load=text=>{
+    mcPending=null; g('mc-save').disabled=true; g('mc-prev').innerHTML='';
+    if(!text.trim()){msg('');return;}
+    try{ mcPending=mcParse(text); g('mc-prev').innerHTML=mcPreview(mcPending); g('mc-save').disabled=false;
+      msg('Mise à jour du '+new Date(mcPending.meta&&mcPending.meta.updatedAt||Date.now()).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+' — prête à publier.','var(--buy)'); }
+    catch(e){ msg(e.message,'var(--sell)'); }
+  };
+  g('mc-file').onchange=e=>{const f=e.target.files&&e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{g('mc-text').value=r.result; load(r.result);}; r.readAsText(f);};
+  g('mc-text').addEventListener('input',()=>load(g('mc-text').value));
+  g('mc-cancel').onclick=()=>ov.remove();
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  g('mc-save').onclick=async()=>{
+    if(!mcPending||!fxDb) return;
+    g('mc-save').disabled=true; msg('Publication…');
+    try{
+      const batch=fxDb.batch(), col=fxDb.collection('macroCompass');
+      Object.entries(mcPending.currencies).forEach(([code,x])=>batch.set(col.doc(code),Object.assign({},x,{code})));
+      batch.set(col.doc('_meta'),Object.assign({},mcPending.meta||{},{updatedAt:(mcPending.meta&&mcPending.meta.updatedAt)||new Date().toISOString(),publishedBy:fxAuthUser.email||'',publishedAt:new Date().toISOString()}));
+      await batch.commit();
+      msg('✅ Macro Compass mis à jour pour toute l\'alliance.','var(--buy)');
+      toast('Macro Compass mis à jour ✅');
+      setTimeout(()=>ov.remove(),1200);
+    }catch(e){ msg('Erreur : '+e.message,'var(--sell)'); g('mc-save').disabled=false; }
+  };
 }
 
 /* ── Détail d'une carte d'attentes (clic) : graphique des probabilités ── */

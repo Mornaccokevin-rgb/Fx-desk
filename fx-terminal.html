@@ -1092,10 +1092,15 @@ let fxDb=null, fxAuthUser=null, rateMeta={updatedAt:null,updatedBy:''};
 function mpIsEditor(){return !!(fxAuthUser&&fxAuthUser.email&&MACRO_EDITORS_FX.includes(fxAuthUser.email.toLowerCase()));}
 function initRateSync(){
   if(typeof firebase==='undefined') return;
-  try{firebase.initializeApp(RATE_FB_CONFIG);}catch(e){}
+  // Même session que le compte actif du hub (une app Firebase nommée par compte).
+  let fxApp;
   try{
-    fxDb=firebase.firestore();
-    firebase.auth().onAuthStateChanged(u=>{fxAuthUser=u;renderRateExpectations();loadMacroNotes();loadMacroCompassScores();});
+    const nm=localStorage.getItem('sphinx_active_app')||'[DEFAULT]';
+    fxApp=firebase.apps.find(a=>a.name===nm)||(nm==='[DEFAULT]'?firebase.initializeApp(RATE_FB_CONFIG):firebase.initializeApp(RATE_FB_CONFIG,nm));
+  }catch(e){ try{fxApp=firebase.initializeApp(RATE_FB_CONFIG);}catch(e2){fxApp=firebase.app();} }
+  try{
+    fxDb=fxApp.firestore();
+    fxApp.auth().onAuthStateChanged(u=>{fxAuthUser=u;renderRateExpectations();loadMacroNotes();loadMacroCompassScores();});
     fxDb.collection('config').doc('rateExpectations').onSnapshot(doc=>{
       if(doc.exists){
         const data=doc.data()||{};

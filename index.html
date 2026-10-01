@@ -1038,6 +1038,16 @@
         transition: border-color 0.2s
     }
 
+    .lk-title { text-align: center; font-size: 15px; font-weight: 700; color: var(--fx-text); margin: 4px 0 4px }
+    .lk-email { text-align: center; font-size: 13px; color: var(--fx-muted2); margin-bottom: 20px; overflow-wrap: anywhere }
+    .lk-bio { margin-bottom: 4px }
+    .lk-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; border: 0; padding: 0 }
+    .lk-hint { font-size: 11.5px; color: var(--fx-muted); line-height: 1.5; text-align: center; margin-top: 12px }
+    .lk-acc-title { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--fx-muted); margin: 18px 0 8px }
+    .lk-acc { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 9px; padding: 10px 12px; margin-bottom: 8px; color: var(--fx-text); font-size: 13px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; text-align: left }
+    .lk-acc:hover { border-color: var(--fx-bb) }
+    .lk-acc span:first-child { overflow-wrap: anywhere; min-width: 0 }
+    .lk-acc span:last-child { color: var(--fx-vl); font-size: 12px; flex: none }
     .fx-auth-err {
         background: var(--fx-rd);
         color: var(--fx-red);
@@ -1814,6 +1824,9 @@
         opacity: 1
     }
     /* Barre de filtre par tag */
+    .tm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; border: 1px solid var(--fx-bd); border-radius: 9px; margin-bottom: 8px; background: var(--fx-card2) }
+    .tm-name { font-size: 13.5px; font-weight: 600; color: var(--fx-vl); overflow-wrap: anywhere; min-width: 0 }
+    .tm-count { font-size: 11.5px; color: var(--fx-muted); margin-left: 8px; font-weight: 400 }
     .mp-tagbar {
         display: flex;
         flex-wrap: wrap;
@@ -2905,12 +2918,38 @@
     .fs-shot-cap .fx-inp { margin: 0 }
     .fs-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 4px }
     .fs-dirty { font-size: 11.5px; color: var(--fx-gold) }
-    .fs-lock { font-size: 12.5px; color: var(--fx-muted2); background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 9px; padding: 9px 13px; margin: 4px 0 12px }
-    .fs-ro-notes { font-size: 14px; line-height: 1.7; color: var(--fx-text); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--fx-card2); border: 1px solid var(--fx-bd); border-radius: 9px; padding: 12px 14px }
-    .fs-ro-meta { font-size: 11px; color: var(--fx-muted); margin-top: 10px; font-family: 'Space Mono', monospace }
-    .fs-shot-cap-ro { font-size: 13px; color: var(--fx-text); line-height: 1.5; overflow-wrap: anywhere }
-    .fs-shot-cap-ro .fs-tf { cursor: default; margin-right: 6px }
-    #fs-edit-view.readonly .fs-edit-only { display: none !important }
+    /* Page de lecture d'un set-up */
+    .fs-read-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; max-width: 820px; margin: 0 auto 14px }
+    .fs-article { max-width: 820px; margin: 0 auto; background: var(--fx-card); border: 1px solid var(--fx-bd); border-radius: 16px; overflow: hidden }
+    .fs-art-head { padding: 30px 32px 24px; border-bottom: 1px solid var(--fx-bd); background: linear-gradient(180deg, var(--fx-vd), transparent) }
+    .fs-art-kicker { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--fx-muted2); margin-bottom: 10px }
+    .fs-art-pair { font-family: 'Space Mono', monospace; font-size: 40px; line-height: 1.1; font-weight: 700; color: var(--fx-text); margin: 0 0 14px; letter-spacing: .02em }
+    .fs-art-pills { display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+    .fs-art-pills .fs-dir, .fs-art-pills .fs-verdict { font-size: 12px; padding: 5px 12px }
+    .fs-art-by { font-size: 12px; color: var(--fx-muted); margin-top: 14px }
+    .fs-art-sec { padding: 26px 32px; border-bottom: 1px solid var(--fx-bd) }
+    .fs-art-sec:last-child { border-bottom: none }
+    .fs-art-h { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--fx-vl); margin: 0 0 14px }
+    .fs-art-text { font-size: 16px; line-height: 1.8; color: var(--fx-text); overflow-wrap: anywhere }
+    .fs-art-text p { margin: 0 0 14px }
+    .fs-art-text p:last-child { margin-bottom: 0 }
+    .fs-art-empty { font-size: 14px; color: var(--fx-muted); font-style: italic }
+    .fs-art-fig { margin: 0 0 26px }
+    .fs-art-fig:last-child { margin-bottom: 0 }
+    .fs-art-fig img { width: 100%; display: block; border-radius: 10px; border: 1px solid var(--fx-bd); cursor: zoom-in; background: var(--fx-bg2) }
+    .fs-art-fig figcaption { display: flex; align-items: baseline; gap: 8px; margin-top: 10px; font-size: 14px; color: var(--fx-muted2); line-height: 1.5; overflow-wrap: anywhere }
+    .fs-art-fig figcaption .fs-tf { cursor: default; flex: none }
+    .fs-art-num { font-size: 11px; color: var(--fx-muted); font-family: 'Space Mono', monospace; flex: none }
+    .fs-art-verdict { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--fx-bd); background: var(--fx-card2); margin-bottom: 18px }
+    .fs-art-score { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; color: var(--fx-text); flex: none }
+    .fs-art-score small { font-size: 13px; color: var(--fx-muted) }
+    .fs-art-vtxt { font-size: 12.5px; color: var(--fx-muted2); line-height: 1.5 }
+    .fs-art-ai { font-size: 15px }
+    @media (max-width: 600px) {
+        .fs-art-head, .fs-art-sec { padding: 20px 18px }
+        .fs-art-pair { font-size: 30px }
+        .fs-art-text { font-size: 15px }
+    }
     .fs-stale { font-size: 12px; color: var(--fx-gold); background: rgba(245, 158, 11, .08); border: 1px solid rgba(245, 158, 11, .3); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px }
 
     .modal-wrap {
@@ -3355,6 +3394,7 @@
                         <div class="fx-auth-mark">⚜</div>
                         <div class="fx-auth-title">SPHINX ALLIANCE</div>
                     </div>
+                    <div id="auth-accounts"></div>
                     <div class="fx-auth-tabs">
                         <div class="fx-auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Se connecter</div>
                         <div class="fx-auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Créer un compte</div>
@@ -3362,22 +3402,22 @@
                     <div id="form-login">
                         <div class="fx-grp">
                             <label class="fx-lbl">Email</label>
-                            <input type="email" id="loginEmailInp" class="fx-inp" placeholder="votre@email.com">
+                            <input type="email" id="loginEmailInp" class="fx-inp" placeholder="votre@email.com" autocomplete="username">
                         </div>
                         <div class="fx-grp">
                             <label class="fx-lbl">Mot de passe</label>
-                            <input type="password" id="loginPwdInp" class="fx-inp" placeholder="••••••••">
+                            <input type="password" id="loginPwdInp" class="fx-inp" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginEmail()">
                         </div>
                         <button class="fx-btn-primary" onclick="doLoginEmail()">Se connecter →</button>
                     </div>
                     <div id="form-signup" style="display:none">
                         <div class="fx-grp">
                             <label class="fx-lbl">Email</label>
-                            <input type="email" id="signupEmailInp" class="fx-inp" placeholder="votre@email.com">
+                            <input type="email" id="signupEmailInp" class="fx-inp" placeholder="votre@email.com" autocomplete="username">
                         </div>
                         <div class="fx-grp">
                             <label class="fx-lbl">Mot de passe</label>
-                            <input type="password" id="signupPwdInp" class="fx-inp" placeholder="Minimum 6 caractères">
+                            <input type="password" id="signupPwdInp" class="fx-inp" placeholder="Minimum 6 caractères" autocomplete="new-password">
                         </div>
                         <button class="fx-btn-primary" onclick="doSignupEmail()">Créer mon compte →</button>
                     </div>
@@ -3394,6 +3434,36 @@
                     <div class="fx-auth-err" id="authErr"></div>
                     <button class="landing-back" onclick="hideAuthCard()">← Retour</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ VÉRIFICATION D'IDENTITÉ (à chaque ouverture du site) ══════ -->
+    <div id="lock" class="screen">
+        <div class="fx-auth-wrap" style="display:flex">
+            <div class="fx-auth-card">
+                <div class="fx-auth-logo">
+                    <div class="fx-auth-mark">⚜</div>
+                    <div class="fx-auth-title">SPHINX ALLIANCE</div>
+                </div>
+                <div class="lk-title">🔒 Vérification d'identité</div>
+                <div class="lk-email" id="lk-email"></div>
+                <button type="button" class="fx-btn-primary lk-bio" id="lk-bio" style="display:none" onclick="lockUnlockBio()"><span id="lk-bio-label">Déverrouiller avec Face ID / Touch ID</span></button>
+                <div class="fx-divider" id="lk-or" style="display:none">ou</div>
+                <form id="lk-pwd-form" onsubmit="event.preventDefault();lockUnlockPwd()" autocomplete="on">
+                    <input type="email" id="lk-user" class="lk-hidden" autocomplete="username" tabindex="-1" aria-hidden="true" readonly>
+                    <div class="fx-grp">
+                        <label class="fx-lbl" for="lk-pwd">Mot de passe</label>
+                        <input type="password" id="lk-pwd" class="fx-inp" placeholder="••••••••" autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="fx-btn-primary">Déverrouiller →</button>
+                    <button type="button" class="set-link" style="margin-top:10px" onclick="lockResetPwd()">Mot de passe oublié ?</button>
+                </form>
+                <button type="button" class="fx-google-btn" id="lk-google" style="display:none" onclick="lockUnlockGoogle()">Vérifier avec Google</button>
+                <div class="fx-auth-err" id="lk-err"></div>
+                <div class="lk-hint" id="lk-hint"></div>
+                <div id="lk-accounts"></div>
+                <button type="button" class="landing-back" onclick="lockSignOut()">Se déconnecter de ce compte</button>
             </div>
         </div>
     </div>
@@ -3993,10 +4063,18 @@
                             </div>
                             <button type="button" class="set-btn" id="fs-new" onclick="newFundSetup()" style="display:none">＋ Nouveau set-up</button>
                         </div>
-                        <div class="fs-lock" id="fs-list-lock" style="display:none">🔒 Lecture seule — seuls les rédacteurs autorisés peuvent créer, modifier ou supprimer des set-ups.</div>
                         <div class="set-msg" id="fs-list-msg"></div>
                         <div class="fs-grid" id="fs-grid"></div>
                     </div>
+                </div>
+
+                <!-- ── Set-up : page de lecture (tout le monde) ── -->
+                <div id="fs-read-view" style="display:none">
+                    <div class="fs-read-bar">
+                        <button type="button" class="set-btn ghost" onclick="closeFundSetup()">← Tous les set-ups</button>
+                        <button type="button" class="set-btn" id="fs-read-edit" style="display:none" onclick="fsShowEditor()">✏️ Modifier</button>
+                    </div>
+                    <article class="fs-article" id="fs-article"></article>
                 </div>
 
                 <!-- ── Mes set-ups : éditeur ── -->
@@ -4005,18 +4083,9 @@
                         <div class="su-head">
                             <div>
                                 <button type="button" class="set-btn ghost" onclick="closeFundSetup()">← Tous les set-ups</button>
+                                <button type="button" class="set-btn ghost" id="fs-preview" onclick="fsPreview()">👁 Aperçu lecture</button>
                             </div>
                             <span class="su-badge" id="fs-provider">—</span>
-                        </div>
-                        <div class="fs-lock" id="fs-edit-lock" style="display:none">🔒 Lecture seule — seuls les rédacteurs autorisés peuvent modifier ce set-up.</div>
-                        <div class="fs-ro" id="fs-ro" style="display:none">
-                            <div class="fs-card-top" style="justify-content:flex-start;gap:12px;margin-bottom:12px">
-                                <span class="fs-pair" id="fs-ro-pair"></span>
-                                <span class="fs-dir" id="fs-ro-dir"></span>
-                            </div>
-                            <div class="fx-lbl">Thèse / notes</div>
-                            <div class="fs-ro-notes" id="fs-ro-notes"></div>
-                            <div class="fs-ro-meta" id="fs-ro-meta"></div>
                         </div>
                         <div id="fs-form">
                         <div class="fs-row">
@@ -4112,6 +4181,20 @@
         </div>
     </div>
 
+    <!-- ══════ GESTION DES TAGS (Daily FX, rédacteurs) ══════ -->
+    <div class="modal-wrap" id="tagManager">
+        <div class="modal-overlay" onclick="closeTagManager()"></div>
+        <div class="modal-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <div class="su-title" style="margin:0">🏷️ Tags du Daily FX</div>
+                <button type="button" class="set-btn ghost" onclick="closeTagManager()">✕</button>
+            </div>
+            <div class="set-hint" style="margin-bottom:14px">Supprimer un tag le retire de toutes les synthèses qui le portent. Les synthèses elles-mêmes ne sont pas supprimées.</div>
+            <div id="tagManagerList"></div>
+            <div class="set-msg" id="tagManagerMsg"></div>
+        </div>
+    </div>
+
     <!-- ══════ JOURNAL DE SYNTHÈSE MACRO (Macro Prep) ══════ -->
     <div id="macroprep" class="screen">
         <nav class="fx-topbar">
@@ -4148,10 +4231,6 @@
                 <div id="mp-view-dash">
 
                 <!-- Bannière lecture seule (non-rédacteurs) -->
-                <p id="mp-readonly" class="mp-readonly" style="display:none" role="status">
-                    🔒 Flux en lecture seule — seuls les rédacteurs autorisés peuvent publier des analyses ici.
-                </p>
-
                 <!-- ── PARTIE 1 : FORMULAIRE D'ENTRÉE (rédacteurs) ── -->
                 <section id="mp-form-section" class="fx-form-card" aria-labelledby="mp-form-title">
                     <h2 id="mp-form-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0 0 18px">🧠 Nouvelle synthèse</h2>
@@ -4224,6 +4303,7 @@
                                 <div id="mp-tags-chips" class="mp-tags-chips"></div>
                                 <input type="text" id="mp-tag-add" class="fx-fc" placeholder="Écris un tag puis Entrée…" autocomplete="off"
                                     onkeydown="if(event.key==='Enter'||event.key===','){event.preventDefault();addTagChip(this.value);this.value='';}">
+                                <button type="button" class="set-link" style="align-self:flex-start" onclick="openTagManager()">⚙️ Gérer les tags existants</button>
                             </div>
                         </fieldset>
 
@@ -4405,9 +4485,19 @@
                 </div>
                 <div class="set-section set-hint" id="set-pwd-google" style="display:none">Ton compte se connecte avec Google : le mot de passe se gère directement dans ton compte Google.</div>
 
+                <div class="set-section" id="set-bio-block" style="display:none">
+                    <div class="set-lbl">Face ID / Touch ID</div>
+                    <div class="set-hint" id="set-bio-status" style="margin-bottom:8px"></div>
+                    <div class="set-row">
+                        <button type="button" class="set-btn" id="set-bio-on" onclick="bioEnroll()">🔐 Activer sur cet appareil</button>
+                        <button type="button" class="set-btn danger" id="set-bio-off" onclick="bioDisable()">Désactiver</button>
+                    </div>
+                    <div class="set-msg" id="set-bio-msg"></div>
+                </div>
+
                 <div class="set-section">
                     <div class="set-lbl">Changer de compte</div>
-                    <div class="set-hint" style="margin-bottom:8px">Comptes déjà utilisés sur cet appareil. Basculer te déconnecte et pré-remplit l'email de l'autre compte.</div>
+                    <div class="set-hint" style="margin-bottom:8px">Chaque compte reste connecté sur cet appareil : basculer demande seulement Face ID / Touch ID (ou le mot de passe) du compte choisi.</div>
                     <div id="set-accounts"></div>
                     <button type="button" class="set-btn ghost" onclick="switchAccount('')">＋ Se connecter avec un autre compte</button>
                 </div>
@@ -4560,15 +4650,25 @@
     function getRememberedAccounts() {
         try { return JSON.parse(localStorage.getItem('sphinx_accounts')) || []; } catch (e) { return []; }
     }
-    function rememberAccount(u) {
+    // Chaque compte mémorisé garde sa propre session Firebase (app nommée « app »),
+    // pour pouvoir basculer d'un compte à l'autre avec Face ID / Touch ID au lieu du mot de passe.
+    function saveRememberedAccounts(list) {
+        localStorage.setItem('sphinx_accounts', JSON.stringify(list.slice(0, 6)));
+    }
+    function rememberAccount(u, appName) {
         if (!u || !u.email) return;
         const provider = userHasPassword(u) ? 'password' : 'google';
         const list = getRememberedAccounts().filter(a => a.email !== u.email);
-        list.unshift({ email: u.email, provider });
-        localStorage.setItem('sphinx_accounts', JSON.stringify(list.slice(0, 6)));
+        list.forEach(a => { if (a.app === appName) delete a.app; });   // une session = un seul compte
+        list.unshift({ email: u.email, provider, app: appName });
+        saveRememberedAccounts(list);
     }
     function forgetAccount(email) {
-        localStorage.setItem('sphinx_accounts', JSON.stringify(getRememberedAccounts().filter(a => a.email !== email)));
+        const acc = getRememberedAccounts().find(a => a.email === email);
+        if (acc && acc.app && acc.app !== saAppName) {
+            try { saGetApp(acc.app).auth().signOut(); } catch (e) {}
+        }
+        saveRememberedAccounts(getRememberedAccounts().filter(a => a.email !== email));
         renderAccountSettings();
     }
     function renderAccountSettings() {
@@ -4578,6 +4678,7 @@
         document.getElementById('set-account-provider').textContent = u ? (hasPwd ? 'Connexion par email et mot de passe' : 'Connexion avec Google') : '';
         document.getElementById('set-pwd-block').style.display = hasPwd ? '' : 'none';
         document.getElementById('set-pwd-google').style.display = (u && !hasPwd) ? '' : 'none';
+        renderBioSettings();
         const wrap = document.getElementById('set-accounts');
         wrap.innerHTML = '';
         const others = getRememberedAccounts().filter(a => !u || a.email !== u.email);
@@ -4652,12 +4753,262 @@
             setMsg('set-pwd-msg', 'Erreur : ' + ((err && err.message) || err), 'err');
         }
     }
-    async function switchAccount(email) {
-        // Après la déconnexion, le portail ouvre directement la carte de connexion
-        // avec l'email de l'autre compte pré-rempli (voir onAuthStateChanged).
-        localStorage.setItem('sphinx_switch_to', JSON.stringify({ email: email || '' }));
+    // Bascule : si le compte a encore sa session sur l'appareil, on l'active et on
+    // recharge → écran de vérification (Face ID / Touch ID ou mot de passe).
+    // Sinon : carte de connexion pré-remplie, sans déconnecter le compte actuel.
+    function switchAccount(email) {
         closeSettings();
+        const acc = email && getRememberedAccounts().find(a => a.email === email);
+        if (acc && acc.app && acc.app !== saAppName) {
+            saActivateApp(acc.app);
+            return;
+        }
+        openScreen('landing');
+        showAuthCard('login');
+        document.getElementById('loginEmailInp').value = email || '';
+        document.getElementById('loginPwdInp').value = '';
+        (email ? document.getElementById('loginPwdInp') : document.getElementById('loginEmailInp')).focus();
+    }
+
+    // ── SESSIONS MULTI-COMPTES + VERROU (Face ID / Touch ID ou mot de passe) ──
+    const SA_ACTIVE_KEY = 'sphinx_active_app';
+    const SA_UNLOCK_KEY = 'sphinx_unlocked';      // sessionStorage : « app|uid » déverrouillé pour cet onglet
+    let saAppName = '[DEFAULT]', saUnlocked = false, saUnlockedUid = null, saJustSignedIn = false;
+    function saGetApp(name) {
+        const found = firebase.apps.find(a => a.name === name);
+        if (found) return found;
+        return name === '[DEFAULT]' ? firebase.initializeApp(firebaseConfig) : firebase.initializeApp(firebaseConfig, name);
+    }
+    function saNewAppName() { return 'acc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+    function saActivateApp(name) {
+        localStorage.setItem(SA_ACTIVE_KEY, name);
+        try { sessionStorage.removeItem(SA_UNLOCK_KEY); } catch (e) {}
+        location.reload();
+    }
+    function saIsUnlocked(u) {
+        if (saUnlocked && saUnlockedUid === u.uid) return true;
+        try { return sessionStorage.getItem(SA_UNLOCK_KEY) === saAppName + '|' + u.uid; } catch (e) { return false; }
+    }
+    function saMarkUnlocked(u) {
+        saUnlocked = true;
+        saUnlockedUid = u.uid;
+        try { sessionStorage.setItem(SA_UNLOCK_KEY, saAppName + '|' + u.uid); } catch (e) {}
+    }
+    // Connexion (email, inscription ou Google) dans la session du bon compte.
+    async function saSignIn(email, fn) {
+        const acc = email && getRememberedAccounts().find(a => a.email.toLowerCase() === email.toLowerCase());
+        const target = (acc && acc.app) ? acc.app : (auth.currentUser ? saNewAppName() : saAppName);
+        if (target === saAppName) {
+            saJustSignedIn = true;
+            try { await fn(auth); } catch (e) { saJustSignedIn = false; throw e; }
+            if (auth.currentUser) saEnter(auth.currentUser);
+            return;
+        }
+        const other = saGetApp(target).auth();
+        await fn(other);
+        const u = other.currentUser;
+        if (!u) return;
+        const prev = getRememberedAccounts().find(a => a.email === u.email);
+        if (prev && prev.app && prev.app !== target && prev.app !== saAppName) {
+            try { await saGetApp(prev.app).auth().signOut(); } catch (e) {}
+        }
+        rememberAccount(u, target);
+        localStorage.setItem(SA_ACTIVE_KEY, target);
+        try { sessionStorage.setItem(SA_UNLOCK_KEY, target + '|' + u.uid); } catch (e) {}   // vient de saisir son mot de passe
+        location.reload();
+    }
+    // Utilisateur vérifié → hub.
+    function saEnter(u) {
+        saJustSignedIn = false;
+        saMarkUnlocked(u);
+        const onPortal = ['landing', 'lock'].some(id => document.getElementById(id).classList.contains('active'));
+        if (onPortal) {
+            resetAuthCard();
+            openScreen('hub');
+        }
+    }
+    function saAccountsHtml(container, exceptEmail, title) {
+        const box = document.getElementById(container);
+        if (!box) return;
+        box.textContent = '';
+        const list = getRememberedAccounts().filter(a => a.email !== exceptEmail && a.app);
+        if (!list.length) return;
+        const t = document.createElement('div');
+        t.className = 'lk-acc-title';
+        t.textContent = title;
+        box.appendChild(t);
+        list.forEach(a => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'lk-acc';
+            const m = document.createElement('span');
+            m.textContent = a.email;
+            const go = document.createElement('span');
+            go.textContent = 'Continuer →';
+            b.append(m, go);
+            b.onclick = () => switchAccount(a.email);
+            box.appendChild(b);
+        });
+    }
+
+    // ── Écran de vérification ──
+    async function showLockScreen(u) {
+        saUnlocked = false;
+        document.querySelectorAll('.screen').forEach(sc => sc.classList.remove('active'));
+        document.getElementById('lock').classList.add('active');
+        window.scrollTo(0, 0);
+        document.getElementById('lk-email').textContent = u.email || u.displayName || '';
+        document.getElementById('lk-user').value = u.email || '';
+        document.getElementById('lk-pwd').value = '';
+        document.getElementById('lk-err').classList.remove('show');
+        const hasPwd = userHasPassword(u);
+        const bio = !!bioCredFor(u.uid) && await bioAvailable();
+        document.getElementById('lk-bio').style.display = bio ? '' : 'none';
+        document.getElementById('lk-bio-label').textContent = 'Déverrouiller avec ' + bioLabel();
+        document.getElementById('lk-or').style.display = bio ? '' : 'none';
+        document.getElementById('lk-pwd-form').style.display = hasPwd ? '' : 'none';
+        document.getElementById('lk-google').style.display = hasPwd ? 'none' : '';
+        document.getElementById('lk-hint').textContent = (!bio && await bioAvailable())
+            ? 'Astuce : active ' + bioLabel() + ' dans ⚙️ Paramètres → Compte pour te vérifier sans mot de passe.'
+            : '';
+        saAccountsHtml('lk-accounts', u.email, 'Changer de compte');
+    }
+    function lockErr(msg) {
+        const el = document.getElementById('lk-err');
+        el.textContent = msg;
+        el.classList.add('show');
+    }
+    async function lockUnlockBio() {
+        const u = auth.currentUser;
+        if (!u) return;
+        try {
+            await bioVerify(u.uid);
+            saEnter(u);
+        } catch (e) {
+            lockErr(e && e.name === 'NotAllowedError' ? 'Vérification annulée ou refusée.' : 'Échec de la vérification : ' + ((e && e.message) || e));
+        }
+    }
+    async function lockUnlockPwd() {
+        const u = auth.currentUser;
+        const pwd = document.getElementById('lk-pwd').value;
+        if (!u || !pwd) return lockErr('Entre ton mot de passe.');
+        try {
+            await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email, pwd));
+            document.getElementById('lk-pwd').value = '';
+            saEnter(u);
+        } catch (e) {
+            const c = e && e.code;
+            lockErr((c === 'auth/wrong-password' || c === 'auth/invalid-credential' || c === 'auth/invalid-login-credentials') ? 'Mot de passe incorrect.'
+                : c === 'auth/too-many-requests' ? 'Trop de tentatives, réessaie dans quelques minutes.'
+                : friendlyErr(c));
+        }
+    }
+    async function lockUnlockGoogle() {
+        const u = auth.currentUser;
+        if (!u) return;
+        try {
+            await u.reauthenticateWithPopup(new firebase.auth.GoogleAuthProvider());
+            saEnter(u);
+        } catch (e) {
+            lockErr(e && e.code === 'auth/user-mismatch' ? 'Choisis le compte Google ' + u.email + '.' : friendlyErr(e && e.code));
+        }
+    }
+    async function lockResetPwd() {
+        const u = auth.currentUser;
+        if (!u || !u.email) return;
+        try {
+            await auth.sendPasswordResetEmail(u.email);
+            lockErr('Email de réinitialisation envoyé à ' + u.email + '.');
+        } catch (e) { lockErr(friendlyErr(e && e.code)); }
+    }
+    async function lockSignOut() {
+        if (!confirm('Se déconnecter de ce compte sur cet appareil ?')) return;
         await signOutClean();
+    }
+
+    // ── Face ID / Touch ID (WebAuthn, authentificateur de l'appareil) ──
+    const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const unb64u = str => {
+        const b = str.replace(/-/g, '+').replace(/_/g, '/');
+        return Uint8Array.from(atob(b + '='.repeat((4 - b.length % 4) % 4)), c => c.charCodeAt(0));
+    };
+    function bioLabel() {
+        const ua = navigator.userAgent || '';
+        if (/iPhone|iPad|iPod/.test(ua)) return 'Face ID / Touch ID';
+        if (/Macintosh/.test(ua)) return 'Touch ID';
+        if (/Windows/.test(ua)) return 'Windows Hello';
+        return 'l\'empreinte / le visage';
+    }
+    function bioMap() {
+        try { return JSON.parse(localStorage.getItem('sphinx_bio')) || {}; } catch (e) { return {}; }
+    }
+    function bioCredFor(uid) { return bioMap()[uid] || null; }
+    async function bioAvailable() {
+        try {
+            return !!(window.PublicKeyCredential && window.isSecureContext && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable());
+        } catch (e) { return false; }
+    }
+    async function bioEnroll() {
+        const u = auth.currentUser;
+        if (!u) return;
+        try {
+            const cred = await navigator.credentials.create({ publicKey: {
+                challenge: crypto.getRandomValues(new Uint8Array(32)),
+                rp: { name: 'Sphinx Alliance' },
+                user: { id: new TextEncoder().encode(u.uid), name: u.email || u.uid, displayName: u.email || 'Sphinx Alliance' },
+                pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+                authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' },
+                attestation: 'none',
+                timeout: 60000
+            } });
+            const map = bioMap();
+            map[u.uid] = b64u(cred.rawId);
+            localStorage.setItem('sphinx_bio', JSON.stringify(map));
+            setMsg('set-bio-msg', bioLabel() + ' activé ✅ Il sera demandé à chaque ouverture du site.', 'ok');
+        } catch (e) {
+            setMsg('set-bio-msg', e && e.name === 'NotAllowedError' ? 'Activation annulée.' : 'Activation impossible : ' + ((e && e.message) || e), 'err');
+        }
+        renderBioSettings(true);
+    }
+    function bioDisable() {
+        const u = auth.currentUser;
+        if (!u) return;
+        const map = bioMap();
+        delete map[u.uid];
+        localStorage.setItem('sphinx_bio', JSON.stringify(map));
+        setMsg('set-bio-msg', bioLabel() + ' désactivé : le mot de passe sera demandé.', 'ok');
+        renderBioSettings(true);
+    }
+    async function bioVerify(uid) {
+        const id = bioCredFor(uid);
+        if (!id) throw new Error(bioLabel() + ' n\'est pas activé pour ce compte sur cet appareil.');
+        const challenge = crypto.getRandomValues(new Uint8Array(32));
+        const a = await navigator.credentials.get({ publicKey: {
+            challenge,
+            allowCredentials: [{ type: 'public-key', id: unb64u(id) }],
+            userVerification: 'required',
+            timeout: 60000
+        } });
+        const cd = JSON.parse(new TextDecoder().decode(a.response.clientDataJSON));
+        if (cd.type !== 'webauthn.get' || cd.challenge !== b64u(challenge)) throw new Error('réponse invalide');
+        const flags = new Uint8Array(a.response.authenticatorData)[32];
+        if (!(flags & 0x04)) throw new Error('identité non vérifiée par l\'appareil');
+        return true;
+    }
+    async function renderBioSettings(keepMsg) {
+        const block = document.getElementById('set-bio-block');
+        const u = auth && auth.currentUser;
+        if (!block) return;
+        if (!keepMsg) setMsg('set-bio-msg', '');
+        if (!u || !(await bioAvailable())) { block.style.display = 'none'; return; }
+        block.style.display = '';
+        const on = !!bioCredFor(u.uid);
+        block.querySelector('.set-lbl').textContent = bioLabel();
+        document.getElementById('set-bio-status').textContent = on
+            ? 'Activé sur cet appareil : à chaque ouverture du site, ' + bioLabel() + ' suffit pour te vérifier.'
+            : 'À chaque ouverture du site, ton mot de passe t\'est demandé. Active ' + bioLabel() + ' pour te vérifier plus vite sur cet appareil.';
+        document.getElementById('set-bio-on').style.display = on ? 'none' : '';
+        document.getElementById('set-bio-off').style.display = on ? '' : 'none';
     }
 
     // ── IA : fournisseur, clé et modèle (stockés sur cet appareil) ──
@@ -5029,11 +5380,11 @@ Ce qui manque ou est daté.`;
             fsList = []; fsDraft = null; fsDirty = false; fsRemoved = []; fsMigrated = false;
             fsEl('fs-list-view').style.display = '';
             fsEl('fs-edit-view').style.display = 'none';
+            fsEl('fs-read-view').style.display = 'none';
         }
         if (!fsWired) wireFundSetups();
         const editor = fsCanEdit();
         fsEl('fs-new').style.display = editor ? '' : 'none';
-        fsEl('fs-list-lock').style.display = editor ? 'none' : '';
         setSetupsTab(fsTab);
         loadFundSetups();
     }
@@ -5182,25 +5533,12 @@ Ce qui manque ou est daté.`;
             };
             fsRemoved = [];
             setMsg('fs-list-msg', '');
-            fsShowEditor();
-            setMsg('fs-msg', '');
+            fsShowReader();
         } catch (e) {
             setMsg('fs-list-msg', 'Ouverture impossible. ' + fsErr(e), 'err');
         }
     }
     function fsShowEditor() {
-        const editor = fsCanEdit();
-        fsEl('fs-edit-view').classList.toggle('readonly', !editor);
-        fsEl('fs-edit-lock').style.display = editor ? 'none' : '';
-        fsEl('fs-provider').style.display = editor ? '' : 'none';
-        fsEl('fs-form').style.display = editor ? '' : 'none';
-        fsEl('fs-ro').style.display = editor ? 'none' : '';
-        fsEl('fs-ro-pair').textContent = fsDraft.pair || '—';
-        const dir = fsEl('fs-ro-dir');
-        dir.className = 'fs-dir ' + (fsDraft.dir || '');
-        dir.textContent = FS_DIR_LABEL[fsDraft.dir] || 'Sens non précisé';
-        fsEl('fs-ro-notes').textContent = fsDraft.notes || 'Aucune note.';
-        fsEl('fs-ro-meta').textContent = [fsDraft.createdBy && 'Par ' + fsDraft.createdBy, fsDraft.updatedAt && 'mis à jour le ' + fsFmtDate(fsDraft.updatedAt)].filter(Boolean).join(' · ');
         fsEl('fs-pair').value = fsDraft.pair;
         fsEl('fs-dir').value = fsDraft.dir;
         fsEl('fs-notes').value = fsDraft.notes;
@@ -5211,14 +5549,96 @@ Ce qui manque ou est daté.`;
         renderFsShots();
         renderFsAnalysis();
         renderSetupsHeader();
+        setMsg('fs-msg', '');
         fsEl('fs-list-view').style.display = 'none';
+        fsEl('fs-read-view').style.display = 'none';
         fsEl('fs-edit-view').style.display = '';
         window.scrollTo(0, 0);
+    }
+    // Page de lecture : mise en page « article » (thèse, graphiques légendés, avis de l'IA).
+    function fsShowReader() {
+        const d = fsDraft, art = fsEl('fs-article');
+        const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+        art.textContent = '';
+        const head = mk('header', 'fs-art-head');
+        head.appendChild(mk('div', 'fs-art-kicker', 'Set-up fondamental' + (d.updatedAt ? ' · ' + new Date(d.updatedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '')));
+        head.appendChild(mk('h1', 'fs-art-pair', d.pair || '—'));
+        const pills = mk('div', 'fs-art-pills');
+        pills.appendChild(mk('span', 'fs-dir ' + (d.dir || ''), FS_DIR_LABEL[d.dir] ? FS_DIR_LABEL[d.dir] + ' de la paire' : 'Sens non précisé'));
+        if (FS_VERDICT_LABEL[d.verdict]) pills.appendChild(mk('span', 'fs-verdict ' + d.verdict, 'IA : ' + FS_VERDICT_LABEL[d.verdict]));
+        head.appendChild(pills);
+        if (d.createdBy) head.appendChild(mk('div', 'fs-art-by', 'Par ' + d.createdBy));
+        art.appendChild(head);
+
+        const thesis = mk('section', 'fs-art-sec');
+        thesis.appendChild(mk('h2', 'fs-art-h', 'La thèse'));
+        const notes = (d.notes || '').trim();
+        if (notes) {
+            const box = mk('div', 'fs-art-text');
+            notes.split(/\n\s*\n/).forEach(par => {
+                const p = mk('p');
+                par.split('\n').forEach((line, i) => { if (i) p.appendChild(document.createElement('br')); p.appendChild(document.createTextNode(line)); });
+                box.appendChild(p);
+            });
+            thesis.appendChild(box);
+        } else thesis.appendChild(mk('div', 'fs-art-empty', 'Pas de thèse rédigée pour ce set-up.'));
+        art.appendChild(thesis);
+
+        if (d.shots.length) {
+            const charts = mk('section', 'fs-art-sec');
+            charts.appendChild(mk('h2', 'fs-art-h', d.shots.length > 1 ? 'Les graphiques' : 'Le graphique'));
+            d.shots.forEach((s, i) => {
+                const fig = mk('figure', 'fs-art-fig');
+                const img = mk('img');
+                img.src = s.data;
+                img.alt = s.caption || 'Graphique ' + (i + 1);
+                img.loading = 'lazy';
+                img.onclick = () => openImgLightbox(s.data);
+                fig.appendChild(img);
+                const cap = mk('figcaption');
+                if (d.shots.length > 1) cap.appendChild(mk('span', 'fs-art-num', (i + 1) + '/' + d.shots.length));
+                const m = FS_TF_RE.exec(s.caption || '');
+                if (m) cap.appendChild(mk('span', 'fs-tf on', m[1].toUpperCase()));
+                const rest = m ? s.caption.replace(FS_TF_RE, '') : (s.caption || '');
+                if (rest) cap.appendChild(mk('span', '', rest));
+                if (cap.childNodes.length) fig.appendChild(cap);
+                charts.appendChild(fig);
+            });
+            art.appendChild(charts);
+        }
+
+        const a = d.analysis;
+        if (a && a.text) {
+            const ai = mk('section', 'fs-art-sec');
+            ai.appendChild(mk('h2', 'fs-art-h', 'Avis fondamental de l\'IA'));
+            const score = /note\s*:?\s*(\d+(?:[.,]\d+)?)\s*\/\s*10/i.exec(a.text.slice(0, 400));
+            const v = mk('div', 'fs-art-verdict');
+            if (FS_VERDICT_LABEL[d.verdict]) v.appendChild(mk('span', 'fs-verdict ' + d.verdict, FS_VERDICT_LABEL[d.verdict]));
+            if (score) { const sc = mk('div', 'fs-art-score', score[1]); sc.appendChild(mk('small', '', ' /10')); v.appendChild(sc); }
+            v.appendChild(mk('div', 'fs-art-vtxt', 'Lecture uniquement fondamentale (Macro Compass, attentes de taux, Daily FX) — analyse du ' + new Date(a.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + '.'));
+            ai.appendChild(v);
+            const body = mk('div', 'su-out fs-art-ai');
+            body.innerHTML = mdToSafeHtml(a.text.replace(/^\s*\**\s*VERDICT[^\n]*\n+/i, ''));
+            ai.appendChild(body);
+            art.appendChild(ai);
+        }
+
+        fsEl('fs-read-edit').style.display = fsCanEdit() ? '' : 'none';
+        fsEl('fs-list-view').style.display = 'none';
+        fsEl('fs-edit-view').style.display = 'none';
+        fsEl('fs-read-view').style.display = '';
+        window.scrollTo(0, 0);
+    }
+    function fsPreview() {
+        if (!fsDraft) return;
+        fsReadForm();
+        fsShowReader();
     }
     function closeFundSetup() {
         if (fsDirty && !confirm('Des modifications ne sont pas enregistrées. Quitter sans enregistrer ?')) return;
         fsDraft = null; fsRemoved = []; fsSetDirty(false);
         fsEl('fs-edit-view').style.display = 'none';
+        fsEl('fs-read-view').style.display = 'none';
         fsEl('fs-list-view').style.display = '';
         renderFundSetupList();
     }
@@ -5318,8 +5738,7 @@ Ce qui manque ou est daté.`;
                 mk('›', 'Déplacer après', () => fsMoveShot(i, 1), '', i === fsDraft.shots.length - 1),
                 mk('✕', 'Retirer ce graphique', () => fsRemoveShot(i), 'del')
             );
-            tools.append(lbl);
-            if (fsCanEdit()) tools.append(btns);
+            tools.append(lbl, btns);
             const img = document.createElement('img');
             img.src = s.data;
             img.alt = 'Graphique ' + (i + 1) + (s.caption ? ' — ' + s.caption : '');
@@ -5327,22 +5746,6 @@ Ce qui manque ou est daté.`;
             img.onclick = () => openImgLightbox(s.data);
             const cap = document.createElement('div');
             cap.className = 'fs-shot-cap';
-            if (!fsCanEdit()) {
-                const ro = document.createElement('div');
-                ro.className = 'fs-shot-cap-ro';
-                const m = FS_TF_RE.exec(s.caption || '');
-                if (m) {
-                    const tf = document.createElement('span');
-                    tf.className = 'fs-tf on';
-                    tf.textContent = m[1].toUpperCase();
-                    ro.appendChild(tf);
-                }
-                ro.appendChild(document.createTextNode((m ? s.caption.replace(FS_TF_RE, '') : s.caption) || (m ? '' : 'Sans légende')));
-                cap.appendChild(ro);
-                fig.append(tools, img, cap);
-                box.appendChild(fig);
-                return;
-            }
             const input = document.createElement('input');
             input.type = 'text'; input.className = 'fx-inp set-inp'; input.maxLength = 200;
             input.placeholder = 'Légende (ex. H4 — retest de la zone après la cassure)';
@@ -5491,7 +5894,7 @@ Ce qui manque ou est daté.`;
     }
     function fsUpdateStale() {
         const el = fsEl('fs-stale');
-        if (el && fsDraft && fsDraft.analysis) el.style.display = !fsCanEdit() || fsDraft.analysis.sig === fsSig() ? 'none' : '';
+        if (el && fsDraft && fsDraft.analysis) el.style.display = fsDraft.analysis.sig === fsSig() ? 'none' : '';
     }
     function renderFsAnalysis() {
         const out = fsEl('fs-analysis');
@@ -5553,8 +5956,10 @@ Ce qui manque ou est daté.`;
     // Tout le site est derrière la connexion : ces écrans exigent un user authentifié.
     const PROTECTED_SCREENS = ['hub', 'fxdesk', 'fxmacro', 'macroprep', 'setups'];
     function openScreen(id) {
-        if (PROTECTED_SCREENS.includes(id) && !(auth && auth.currentUser))
+        if (PROTECTED_SCREENS.includes(id) && !(auth && auth.currentUser && saUnlocked)) {
+            if (auth && auth.currentUser) return showLockScreen(auth.currentUser);
             id = 'landing';
+        }
         // ⚠️ Garde-fou anti-écran-noir : on vérifie que l'écran cible existe
         // AVANT de masquer les autres. Sinon, un id introuvable masquerait
         // tous les écrans et n'afficherait que le fond noir du body.
@@ -5623,32 +6028,33 @@ Ce qui manque ou est daté.`;
         initThemeGlobal();
         if (typeof firebase === 'undefined')
             return;
-        try {
-            firebase.initializeApp(firebaseConfig);
-        } catch (e) {}
-        auth = firebase.auth();
-        db = firebase.firestore();
+        // Session du compte actif sur cet appareil (une app Firebase nommée par compte).
+        saAppName = localStorage.getItem(SA_ACTIVE_KEY) || '[DEFAULT]';
+        let app;
+        try { app = saGetApp(saAppName); } catch (e) { saAppName = '[DEFAULT]'; app = saGetApp(saAppName); }
+        auth = app.auth();
+        db = app.firestore();
+        localStorage.removeItem('sphinx_switch_to');   // ancien mécanisme de bascule
         auth.onAuthStateChanged(function(user) {
             if (user) {
-                rememberAccount(user);
-                // Connexion réussie depuis le portail → on entre dans le hub.
-                if (document.getElementById('landing').classList.contains('active')) {
-                    resetAuthCard();
-                    openScreen('hub');
-                }
+                rememberAccount(user, saAppName);
+                // Juste connecté avec son mot de passe, ou déjà vérifié dans cet onglet → hub.
+                // Sinon (nouvelle ouverture du site) → vérification Face ID / Touch ID ou mot de passe.
+                if (saJustSignedIn || saIsUnlocked(user)) saEnter(user);
+                else showLockScreen(user);
             } else {
+                saUnlocked = false;
                 // Déconnecté (ou session expirée) → retour au portail.
                 openScreen('landing');
-                // Bascule de compte demandée depuis les paramètres → carte de connexion prête.
-                const sw = localStorage.getItem('sphinx_switch_to');
-                if (sw) {
-                    localStorage.removeItem('sphinx_switch_to');
-                    let email = '';
-                    try { email = JSON.parse(sw).email || ''; } catch (e) {}
+                // Bascule vers un compte dont la session a expiré → carte de connexion pré-remplie.
+                const list = getRememberedAccounts();
+                const stale = list.find(a => a.app === saAppName);
+                if (stale) {
+                    delete stale.app;
+                    saveRememberedAccounts(list);
                     showAuthCard('login');
-                    document.getElementById('loginEmailInp').value = email;
-                    document.getElementById('loginPwdInp').value = '';
-                    (email ? document.getElementById('loginPwdInp') : document.getElementById('loginEmailInp')).focus();
+                    document.getElementById('loginEmailInp').value = stale.email;
+                    document.getElementById('loginPwdInp').focus();
                 }
             }
         });
@@ -5659,9 +6065,16 @@ Ce qui manque ou est daté.`;
         document.getElementById('landing-intro').style.display = 'none';
         document.getElementById('fx-auth').style.display = 'flex';
         switchAuthTab(tab === 'signup' ? 'signup' : 'login');
+        saAccountsHtml('auth-accounts', auth && auth.currentUser ? auth.currentUser.email : null, 'Comptes sur cet appareil');
         window.scrollTo(0, 0);
     }
     function hideAuthCard() {
+        // Ouvert depuis un compte connecté (bascule) → retour à ce compte.
+        if (auth && auth.currentUser) {
+            resetAuthCard();
+            if (saUnlocked) openScreen('hub'); else showLockScreen(auth.currentUser);
+            return;
+        }
         document.getElementById('fx-auth').style.display = 'none';
         document.getElementById('landing-intro').style.display = '';
         hideAuthErr();
@@ -5719,7 +6132,7 @@ Ce qui manque ou est daté.`;
             return;
         }
         try {
-            await auth.signInWithEmailAndPassword(e, p);
+            await saSignIn(e, a => a.signInWithEmailAndPassword(e, p));
         } catch (err) {
             showAuthErr(friendlyErr(err.code));
         }
@@ -5734,7 +6147,7 @@ Ce qui manque ou est daté.`;
             return;
         }
         try {
-            await auth.createUserWithEmailAndPassword(e, p);
+            await saSignIn(null, a => a.createUserWithEmailAndPassword(e, p));
         } catch (err) {
             showAuthErr(friendlyErr(err.code));
         }
@@ -5743,7 +6156,7 @@ Ce qui manque ou est daté.`;
         if (!auth)
             return;
         try {
-            await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+            await saSignIn(null, a => a.signInWithPopup(new firebase.auth.GoogleAuthProvider()));
         } catch (err) {
             showAuthErr(friendlyErr(err.code));
         }
@@ -5761,6 +6174,12 @@ Ce qui manque ou est daté.`;
         }
         allTrades = [];
         document.getElementById('fx-main').classList.remove('active');
+        const email = auth.currentUser && auth.currentUser.email;
+        const list = getRememberedAccounts();
+        list.forEach(a => { if (a.email === email || a.app === saAppName) delete a.app; });
+        saveRememberedAccounts(list);
+        saUnlocked = false;
+        try { sessionStorage.removeItem(SA_UNLOCK_KEY); } catch (e) {}
         await auth.signOut();
         // onAuthStateChanged(null) ramène automatiquement au portail.
     }
@@ -6303,9 +6722,10 @@ Ce qui manque ou est daté.`;
         ).join('');
     }
     function allMacroTags() {
-        const s = new Set();
-        allMacroNotes.forEach(n => (n.tags || []).forEach(t => { if (t) s.add(t); }));
-        return [...s].sort((a, b) => a.localeCompare(b, 'fr'));
+        // Un même tag écrit différemment (CPI / cpi) n'apparaît qu'une fois.
+        const m = new Map();
+        allMacroNotes.forEach(n => (n.tags || []).forEach(t => { if (t && !m.has(t.toLowerCase())) m.set(t.toLowerCase(), t); }));
+        return [...m.values()].sort((a, b) => a.localeCompare(b, 'fr'));
     }
     function renderTagBar(containerId, active, onPick) {
         const c = document.getElementById(containerId);
@@ -6332,6 +6752,65 @@ Ce qui manque ou est daté.`;
             if (!hay.includes(q)) return false;
         }
         return true;
+    }
+    // ── Gestion des tags existants (rédacteurs) ──
+    function openTagManager() {
+        if (!isMacroEditor()) return showToast('Réservé aux rédacteurs');
+        setMsg('tagManagerMsg', '');
+        renderTagManager();
+        document.getElementById('tagManager').classList.add('open');
+    }
+    function closeTagManager() {
+        document.getElementById('tagManager').classList.remove('open');
+    }
+    function renderTagManager() {
+        const box = document.getElementById('tagManagerList');
+        if (!box) return;
+        box.textContent = '';
+        const tags = allMacroTags();
+        if (!tags.length) { box.innerHTML = '<div class="set-hint">Aucun tag utilisé pour l\'instant.</div>'; return; }
+        tags.forEach(t => {
+            const n = allMacroNotes.filter(x => (x.tags || []).some(y => y.toLowerCase() === t.toLowerCase())).length;
+            const row = document.createElement('div');
+            row.className = 'tm-row';
+            const name = document.createElement('div');
+            name.className = 'tm-name';
+            name.textContent = '#' + t;
+            const cnt = document.createElement('span');
+            cnt.className = 'tm-count';
+            cnt.textContent = n + ' synthèse' + (n > 1 ? 's' : '');
+            name.appendChild(cnt);
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'set-btn danger';
+            del.textContent = '🗑️ Supprimer';
+            del.onclick = () => deleteMacroTag(t, n);
+            row.append(name, del);
+            box.appendChild(row);
+        });
+    }
+    async function deleteMacroTag(tag, n) {
+        if (!isMacroEditor()) return;
+        if (!confirm('Supprimer le tag « #' + tag + ' » ?\n\nIl sera retiré de ' + n + ' synthèse' + (n > 1 ? 's' : '') + ' (les synthèses restent).')) return;
+        const low = tag.toLowerCase();
+        const hit = allMacroNotes.filter(x => (x.tags || []).some(y => y.toLowerCase() === low));
+        setMsg('tagManagerMsg', 'Suppression…');
+        try {
+            for (let i = 0; i < hit.length; i += 400) {
+                const batch = db.batch();
+                hit.slice(i, i + 400).forEach(x => batch.update(db.collection('macroNotes').doc(x.firestoreId), { tags: (x.tags || []).filter(y => y.toLowerCase() !== low) }));
+                await batch.commit();
+            }
+            hit.forEach(x => { x.tags = (x.tags || []).filter(y => y.toLowerCase() !== low); });
+            currentMacroTags = currentMacroTags.filter(y => y.toLowerCase() !== low);
+            renderTagChipsInput();
+            if (mpTagFilter && mpTagFilter.toLowerCase() === low) mpTagFilter = '';
+            if (mpWeekTagFilter && mpWeekTagFilter.toLowerCase() === low) mpWeekTagFilter = '';
+            renderTagManager();
+            setMsg('tagManagerMsg', 'Tag « #' + tag + ' » supprimé ✅', 'ok');
+        } catch (e) {
+            setMsg('tagManagerMsg', 'Erreur : ' + e.message, 'err');
+        }
     }
     function filterByTag(t) {
         if (mpView === 'hist' && mpHistWeek) { mpWeekTagFilter = t; renderHistoryWeek(); }
@@ -7380,11 +7859,8 @@ Ce qui manque ou est daté.`;
     function applyMacroEditorUI() {
         const editor = isMacroEditor();
         const formSec = document.getElementById('mp-form-section');
-        const ro = document.getElementById('mp-readonly');
         if (formSec)
             formSec.style.display = editor ? '' : 'none';
-        if (ro)
-            ro.style.display = editor ? 'none' : '';
         if (!editor)
             cancelMacroEdit();
     }

@@ -1959,7 +1959,7 @@
     .mp-expand:hover { border-color: var(--fx-vl); color: var(--fx-vl) }
     .mp-tools { display: flex; gap: 6px; margin-left: auto; align-items: flex-start }
     .mp-tools .mp-expand { margin-left: 0 }
-    /* Rapports journaliers PDF */
+    /* Rapports hebdomadaires PDF */
     .dr-section { margin-bottom: 22px }
     .dr-subtitle { font-size: 12px; font-weight: 700; color: var(--fx-vl); letter-spacing: .04em; margin: 4px 0 10px }
     .dr-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px }
@@ -1967,7 +1967,7 @@
     .dr-card:hover { border-color: var(--fx-vl); transform: translateY(-1px) }
     .dr-ico { width: 40px; height: 48px; flex: none; border-radius: 6px; background: linear-gradient(160deg, rgba(239, 68, 68, .2), rgba(239, 68, 68, .06)); border: 1px solid rgba(239, 68, 68, .35); color: #f87171; display: flex; align-items: flex-end; justify-content: center; font-size: 9.5px; font-weight: 800; letter-spacing: .06em; padding-bottom: 6px }
     .dr-info { flex: 1; min-width: 0 }
-    .dr-date { font-size: 11px; color: var(--fx-muted); text-transform: capitalize; margin-bottom: 2px }
+    .dr-date { font-size: 11px; color: var(--fx-muted); margin-bottom: 2px }
     .dr-name { font-size: 13.5px; font-weight: 600; color: var(--fx-text); overflow-wrap: anywhere }
     .dr-meta { font-size: 11px; color: var(--fx-muted2); margin-top: 3px }
     .dr-del { flex: none; background: transparent; border: 1px solid var(--fx-bd); color: var(--fx-muted2); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 13px }
@@ -1977,7 +1977,7 @@
     .dr-vhead { position: sticky; top: -44px; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--fx-card); border-bottom: 1px solid var(--fx-bd); border-radius: 14px 14px 0 0 }
     .dr-vtitle { flex: 1; min-width: 0 }
     .dr-vtitle b { display: block; font-size: 14px; color: var(--fx-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-    .dr-vtitle span { font-size: 11px; color: var(--fx-muted); text-transform: capitalize }
+    .dr-vtitle span { font-size: 11px; color: var(--fx-muted) }
     .dr-vbtn { flex: none; background: var(--fx-card2); border: 1px solid var(--fx-bd); color: var(--fx-text); border-radius: 8px; height: 34px; padding: 0 12px; cursor: pointer; font-size: 12.5px; font-family: inherit }
     .dr-vbtn:hover { border-color: var(--fx-vl) }
     .dr-vbody { padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 12px; background: var(--fx-bg2); min-height: 200px; border-radius: 0 0 14px 14px }
@@ -4212,19 +4212,19 @@
         </div>
     </div>
 
-    <!-- ══════ AJOUT D'UN RAPPORT JOURNALIER PDF (Daily FX, rédacteurs) ══════ -->
+    <!-- ══════ AJOUT D'UN RAPPORT HEBDOMADAIRE PDF (Daily FX, rédacteurs) ══════ -->
     <div class="modal-wrap" id="reportUpload">
         <div class="modal-overlay" onclick="closeReportUpload()"></div>
         <div class="modal-box">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                <div class="su-title" style="margin:0">📄 Nouveau rapport journalier</div>
+                <div class="su-title" style="margin:0">📄 Nouveau rapport hebdomadaire</div>
                 <button type="button" class="set-btn ghost" onclick="closeReportUpload()">✕</button>
             </div>
             <div class="set-hint" style="margin-bottom:14px">Le PDF apparaîtra sous forme de carte dans le Daily FX : les membres l'ouvrent en cliquant dessus.</div>
-            <label class="fx-lbl" for="dr-date">Date du rapport</label>
+            <label class="fx-lbl" for="dr-date">Date du rapport (il sera classé dans sa semaine)</label>
             <input type="date" id="dr-date" class="fx-inp set-inp">
             <label class="fx-lbl" for="dr-name">Titre</label>
-            <input type="text" id="dr-name" class="fx-inp set-inp" maxlength="120" placeholder="Rapport journalier">
+            <input type="text" id="dr-name" class="fx-inp set-inp" maxlength="120" placeholder="Rapport hebdomadaire">
             <label class="fx-lbl" for="dr-file">Fichier PDF</label>
             <input type="file" id="dr-file" accept="application/pdf,.pdf" class="fx-inp set-inp">
             <div class="set-row" style="margin-top:10px">
@@ -4365,15 +4365,15 @@
                             <button type="button" class="fx-submit" id="mp-cancel-btn" onclick="cancelMacroEdit()"
                                 style="display:none;background:var(--fx-card2);color:var(--fx-muted2)">Annuler la modification</button>
                             <button type="button" class="fx-submit" onclick="openReportUpload()"
-                                style="background:var(--fx-card2);color:var(--fx-muted2)">📄 Ajouter un rapport journalier (PDF)</button>
+                                style="background:var(--fx-card2);color:var(--fx-muted2)">📄 Ajouter un rapport hebdomadaire (PDF)</button>
                         </div>
                     </form>
                 </section>
 
-                <!-- ── Rapports journaliers (PDF) de la SEMAINE EN COURS ── -->
+                <!-- ── Rapports hebdomadaires (PDF) de la SEMAINE EN COURS ── -->
                 <section id="dr-section" class="dr-section" style="display:none" aria-labelledby="dr-title">
                     <div class="mp-toolbar">
-                        <h2 id="dr-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0">📄 Rapports journaliers</h2>
+                        <h2 id="dr-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0">📄 Rapports hebdomadaires</h2>
                         <span class="mp-count" id="dr-count"></span>
                     </div>
                     <div class="dr-list" id="dr-list"></div>
@@ -4423,7 +4423,7 @@
                                 oninput="renderHistoryWeek()" aria-label="Filtrer les synthèses de la semaine">
                         </div>
                         <section id="dr-week-section" class="dr-section" style="display:none">
-                            <div class="dr-subtitle">📄 Rapports journaliers</div>
+                            <div class="dr-subtitle">📄 Rapports hebdomadaires</div>
                             <div class="dr-list" id="dr-week-list"></div>
                         </section>
                         <div class="mp-tagbar" id="mp-week-tagbar"></div>
@@ -6819,7 +6819,7 @@ Ce qui manque ou est daté.`;
         }
         return true;
     }
-    // ── RAPPORTS JOURNALIERS (PDF) ─────────────────────────────────
+    // ── RAPPORTS HEBDOMADAIRES (PDF) ─────────────────────────────────
     //  dailyReports/{id} : métadonnées (date, titre, taille, nombre de morceaux)
     //  dailyReports/{id}/chunks/{nnn} : le PDF en base64, découpé pour rester
     //  sous la limite de 1 Mo par document Firestore. Lecture : tout connecté ;
@@ -6838,13 +6838,9 @@ Ce qui manque ou est daté.`;
                 .filter(r => r.ready)
                 .sort((a, b) => (a.date || '') !== (b.date || '') ? ((a.date || '') < (b.date || '') ? 1 : -1) : String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
             refreshMacroViews();
-        }, err => console.warn('Rapports journaliers :', err.message));
+        }, err => console.warn('Rapports hebdomadaires :', err.message));
     }
-    function drDateLabel(d) {
-        const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || '');
-        if (!m) return d || '';
-        return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-    }
+    function drWeekLabel(d) { const k = weekStartKey(d); return k ? 'Semaine du ' + weekLabel(k) : (d || ''); }
     function drSize(n) { return n >= 1048576 ? (n / 1048576).toFixed(1).replace('.', ',') + ' Mo' : Math.max(1, Math.round(n / 1024)) + ' Ko'; }
     function buildReportCard(r) {
         const card = document.createElement('div');
@@ -6861,10 +6857,10 @@ Ce qui manque ou est daté.`;
         info.className = 'dr-info';
         const dt = document.createElement('div');
         dt.className = 'dr-date';
-        dt.textContent = drDateLabel(r.date);
+        dt.textContent = drWeekLabel(r.date);
         const nm = document.createElement('div');
         nm.className = 'dr-name';
-        nm.textContent = r.title || 'Rapport journalier';
+        nm.textContent = r.title || 'Rapport hebdomadaire';
         const meta = document.createElement('div');
         meta.className = 'dr-meta';
         meta.textContent = [r.authorName, r.size ? drSize(r.size) : ''].filter(Boolean).join(' · ');
@@ -6924,7 +6920,7 @@ Ce qui manque ou est daté.`;
         if (!isMacroEditor()) return;
         const file = document.getElementById('dr-file').files[0];
         const date = document.getElementById('dr-date').value;
-        const title = document.getElementById('dr-name').value.trim() || 'Rapport journalier';
+        const title = document.getElementById('dr-name').value.trim() || 'Rapport hebdomadaire';
         if (!date) return setMsg('dr-msg', 'Choisis la date du rapport.', 'err');
         if (!file) return setMsg('dr-msg', 'Choisis le fichier PDF.', 'err');
         if (!(file.type === 'application/pdf' || /\.pdf$/i.test(file.name))) return setMsg('dr-msg', 'Le fichier doit être un PDF.', 'err');
@@ -6949,7 +6945,7 @@ Ce qui manque ou est daté.`;
             });
             drBytesCache.set(ref.id, bytes);
             setMsg('dr-msg', 'Rapport publié ✅', 'ok');
-            showToast('Rapport journalier publié');
+            showToast('Rapport hebdomadaire publié');
             setTimeout(closeReportUpload, 700);
         } catch (e) {
             btn.disabled = false;
@@ -6960,7 +6956,7 @@ Ce qui manque ou est daté.`;
     async function deleteDailyReport(id) {
         if (!isMacroEditor()) return;
         const r = allReports.find(x => x.id === id);
-        if (!confirm('Supprimer le rapport « ' + ((r && r.title) || 'Rapport journalier') + ' » du ' + drDateLabel(r && r.date) + ' ?')) return;
+        if (!confirm('Supprimer le rapport « ' + ((r && r.title) || 'Rapport hebdomadaire') + ' » (' + drWeekLabel(r && r.date) + ') ?')) return;
         try {
             const ref = db.collection('dailyReports').doc(id);
             const ch = await ref.collection('chunks').get();
@@ -7010,9 +7006,9 @@ Ce qui manque ou est daté.`;
         const tt = document.createElement('div');
         tt.className = 'dr-vtitle';
         const tb = document.createElement('b');
-        tb.textContent = r.title || 'Rapport journalier';
+        tb.textContent = r.title || 'Rapport hebdomadaire';
         const ts = document.createElement('span');
-        ts.textContent = drDateLabel(r.date);
+        ts.textContent = drWeekLabel(r.date);
         tt.append(tb, ts);
         const dl = document.createElement('button');
         dl.type = 'button';
@@ -7074,7 +7070,7 @@ Ce qui manque ou est daté.`;
             status.remove();
             const fr = document.createElement('iframe');
             fr.src = blobUrl;
-            fr.title = r.title || 'Rapport journalier';
+            fr.title = r.title || 'Rapport hebdomadaire';
             body.appendChild(fr);
         }
     }

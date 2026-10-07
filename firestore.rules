@@ -37,7 +37,7 @@ service cloud.firestore {
       allow delete: if isMacroEditor();
     }
 
-    // ── RAPPORTS JOURNALIERS PDF (Daily FX) ──────────────────────
+    // ── RAPPORTS HEBDOMADAIRES PDF (Daily FX) ──────────────────────
     //  Lecture : tout utilisateur connecté. Écriture : rédacteurs.
     //  Le PDF est découpé en morceaux dans la sous-collection « chunks ».
     match /dailyReports/{reportId} {

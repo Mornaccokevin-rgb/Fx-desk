@@ -37,6 +37,18 @@ service cloud.firestore {
       allow delete: if isMacroEditor();
     }
 
+    // ── RAPPORTS JOURNALIERS PDF (Daily FX) ──────────────────────
+    //  Lecture : tout utilisateur connecté. Écriture : rédacteurs.
+    //  Le PDF est découpé en morceaux dans la sous-collection « chunks ».
+    match /dailyReports/{reportId} {
+      allow read:  if isSignedIn();
+      allow write: if isMacroEditor();
+      match /chunks/{chunkId} {
+        allow read:  if isSignedIn();
+        allow write: if isMacroEditor();
+      }
+    }
+
     // ── CHAT DE L'ALLIANCE ───────────────────────────────────────
     //  Lecture + écriture : tout utilisateur connecté.
     //  Suppression autorisée aux connectés (purge auto des anciens

@@ -1959,13 +1959,44 @@
     .mp-expand:hover { border-color: var(--fx-vl); color: var(--fx-vl) }
     .mp-tools { display: flex; gap: 6px; margin-left: auto; align-items: flex-start }
     .mp-tools .mp-expand { margin-left: 0 }
+    /* Rapports journaliers PDF */
+    .dr-section { margin-bottom: 22px }
+    .dr-subtitle { font-size: 12px; font-weight: 700; color: var(--fx-vl); letter-spacing: .04em; margin: 4px 0 10px }
+    .dr-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px }
+    .dr-card { display: flex; align-items: center; gap: 12px; background: var(--fx-card); border: 1px solid var(--fx-bd); border-radius: 12px; padding: 12px 14px; cursor: pointer; text-align: left; font-family: inherit; color: inherit; width: 100%; transition: border-color .15s, transform .15s; min-width: 0 }
+    .dr-card:hover { border-color: var(--fx-vl); transform: translateY(-1px) }
+    .dr-ico { width: 40px; height: 48px; flex: none; border-radius: 6px; background: linear-gradient(160deg, rgba(239, 68, 68, .2), rgba(239, 68, 68, .06)); border: 1px solid rgba(239, 68, 68, .35); color: #f87171; display: flex; align-items: flex-end; justify-content: center; font-size: 9.5px; font-weight: 800; letter-spacing: .06em; padding-bottom: 6px }
+    .dr-info { flex: 1; min-width: 0 }
+    .dr-date { font-size: 11px; color: var(--fx-muted); text-transform: capitalize; margin-bottom: 2px }
+    .dr-name { font-size: 13.5px; font-weight: 600; color: var(--fx-text); overflow-wrap: anywhere }
+    .dr-meta { font-size: 11px; color: var(--fx-muted2); margin-top: 3px }
+    .dr-del { flex: none; background: transparent; border: 1px solid var(--fx-bd); color: var(--fx-muted2); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 13px }
+    .dr-del:hover { color: var(--fx-red); border-color: rgba(239, 68, 68, .5) }
+    .dr-empty { font-size: 12.5px; color: var(--fx-muted); padding: 4px 2px }
+    .dr-viewer { position: relative; width: 100%; max-width: 900px; margin: auto; background: var(--fx-card); border: 1px solid var(--fx-bd); border-radius: 14px; box-shadow: 0 20px 60px rgba(0, 0, 0, .5) }
+    .dr-vhead { position: sticky; top: -44px; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--fx-card); border-bottom: 1px solid var(--fx-bd); border-radius: 14px 14px 0 0 }
+    .dr-vtitle { flex: 1; min-width: 0 }
+    .dr-vtitle b { display: block; font-size: 14px; color: var(--fx-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+    .dr-vtitle span { font-size: 11px; color: var(--fx-muted); text-transform: capitalize }
+    .dr-vbtn { flex: none; background: var(--fx-card2); border: 1px solid var(--fx-bd); color: var(--fx-text); border-radius: 8px; height: 34px; padding: 0 12px; cursor: pointer; font-size: 12.5px; font-family: inherit }
+    .dr-vbtn:hover { border-color: var(--fx-vl) }
+    .dr-vbody { padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 12px; background: var(--fx-bg2); min-height: 200px; border-radius: 0 0 14px 14px }
+    .dr-vbody canvas { width: 100%; height: auto; display: block; background: #fff; border-radius: 4px; box-shadow: 0 4px 18px rgba(0, 0, 0, .35) }
+    .dr-vbody iframe { width: 100%; height: 75vh; border: 0; background: #fff; border-radius: 4px }
+    .dr-vstatus { font-size: 13px; color: var(--fx-muted2); padding: 40px 0; text-align: center }
+    @media (max-width: 600px) {
+        .dr-vbody { padding: 8px; gap: 8px }
+        .dr-vbtn .dr-lbl { display: none }
+    }
+    /* Page figée derrière une fenêtre au premier plan (voir syncScrollLock) */
+    body.scroll-locked { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden }
     /* Agrandissement au premier plan */
     .mp-note-ov {
         position: fixed; inset: 0; z-index: 99998;
         background: rgba(0, 0, 0, 0.55);
         backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
         display: flex; align-items: flex-start; justify-content: center;
-        padding: 44px 16px; overflow: auto
+        padding: 44px 16px; overflow: auto; overscroll-behavior: contain
     }
     .mp-note-ov-box { position: relative; width: 100%; max-width: 780px; margin: auto }
     .mp-note-ov-close {
@@ -1983,7 +2014,7 @@
         background: rgba(0, 0, 0, 0.55);
         backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
         display: flex; align-items: flex-start; justify-content: center;
-        padding: 44px 16px; overflow: auto
+        padding: 44px 16px; overflow: auto; overscroll-behavior: contain
     }
     .td-box {
         position: relative; width: 100%; max-width: 760px; margin: auto;
@@ -4181,6 +4212,28 @@
         </div>
     </div>
 
+    <!-- ══════ AJOUT D'UN RAPPORT JOURNALIER PDF (Daily FX, rédacteurs) ══════ -->
+    <div class="modal-wrap" id="reportUpload">
+        <div class="modal-overlay" onclick="closeReportUpload()"></div>
+        <div class="modal-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <div class="su-title" style="margin:0">📄 Nouveau rapport journalier</div>
+                <button type="button" class="set-btn ghost" onclick="closeReportUpload()">✕</button>
+            </div>
+            <div class="set-hint" style="margin-bottom:14px">Le PDF apparaîtra sous forme de carte dans le Daily FX : les membres l'ouvrent en cliquant dessus.</div>
+            <label class="fx-lbl" for="dr-date">Date du rapport</label>
+            <input type="date" id="dr-date" class="fx-inp set-inp">
+            <label class="fx-lbl" for="dr-name">Titre</label>
+            <input type="text" id="dr-name" class="fx-inp set-inp" maxlength="120" placeholder="Rapport journalier">
+            <label class="fx-lbl" for="dr-file">Fichier PDF</label>
+            <input type="file" id="dr-file" accept="application/pdf,.pdf" class="fx-inp set-inp">
+            <div class="set-row" style="margin-top:10px">
+                <button type="button" class="set-btn" id="dr-send" onclick="submitDailyReport()">⬆️ Publier le rapport</button>
+            </div>
+            <div class="set-msg" id="dr-msg"></div>
+        </div>
+    </div>
+
     <!-- ══════ GESTION DES TAGS (Daily FX, rédacteurs) ══════ -->
     <div class="modal-wrap" id="tagManager">
         <div class="modal-overlay" onclick="closeTagManager()"></div>
@@ -4311,11 +4364,19 @@
                             <button type="submit" class="fx-submit" id="mp-submit-btn">💾 Enregistrer l'analyse</button>
                             <button type="button" class="fx-submit" id="mp-cancel-btn" onclick="cancelMacroEdit()"
                                 style="display:none;background:var(--fx-card2);color:var(--fx-muted2)">Annuler la modification</button>
-                            <input type="file" id="macroImportFile" accept=".json" style="display:none" onchange="importMacroNotes(event)">
-                            <button type="button" class="fx-submit" onclick="document.getElementById('macroImportFile').click()"
-                                style="background:var(--fx-card2);color:var(--fx-muted2)">⬆️ Importer des synthèses (JSON)</button>
+                            <button type="button" class="fx-submit" onclick="openReportUpload()"
+                                style="background:var(--fx-card2);color:var(--fx-muted2)">📄 Ajouter un rapport journalier (PDF)</button>
                         </div>
                     </form>
+                </section>
+
+                <!-- ── Rapports journaliers (PDF) de la SEMAINE EN COURS ── -->
+                <section id="dr-section" class="dr-section" style="display:none" aria-labelledby="dr-title">
+                    <div class="mp-toolbar">
+                        <h2 id="dr-title" style="font-size:14px;font-weight:600;color:var(--fx-vl);margin:0">📄 Rapports journaliers</h2>
+                        <span class="mp-count" id="dr-count"></span>
+                    </div>
+                    <div class="dr-list" id="dr-list"></div>
                 </section>
 
                 <!-- ── Synthèses de la SEMAINE EN COURS ── -->
@@ -4361,6 +4422,10 @@
                             <input type="search" id="mp-week-filter" class="fx-fc mp-search" placeholder="🔍 Filtrer dans cette semaine…"
                                 oninput="renderHistoryWeek()" aria-label="Filtrer les synthèses de la semaine">
                         </div>
+                        <section id="dr-week-section" class="dr-section" style="display:none">
+                            <div class="dr-subtitle">📄 Rapports journaliers</div>
+                            <div class="dr-list" id="dr-week-list"></div>
+                        </section>
                         <div class="mp-tagbar" id="mp-week-tagbar"></div>
                         <ul class="mp-list" id="mp-week-list"></ul>
                     </div>
@@ -5988,6 +6053,7 @@ Ce qui manque ou est daté.`;
                 initMacroImageDropzone();
                 initMacroImageModal();
                 loadMacroNotes();
+                loadDailyReports();
                 applyMacroEditorUI();
                 loadChat();
             } catch (e) {
@@ -6753,6 +6819,266 @@ Ce qui manque ou est daté.`;
         }
         return true;
     }
+    // ── RAPPORTS JOURNALIERS (PDF) ─────────────────────────────────
+    //  dailyReports/{id} : métadonnées (date, titre, taille, nombre de morceaux)
+    //  dailyReports/{id}/chunks/{nnn} : le PDF en base64, découpé pour rester
+    //  sous la limite de 1 Mo par document Firestore. Lecture : tout connecté ;
+    //  écriture : rédacteurs (firestore.rules). Affichage via PDF.js (iPhone compris).
+    const DR_CHUNK = 700000;                 // caractères base64 par morceau
+    const DR_MAX_BYTES = 12 * 1024 * 1024;   // 12 Mo par rapport
+    const PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    const PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    let allReports = [], unsubReports = null, pdfjsPromise = null;
+    const drBytesCache = new Map();
+
+    function loadDailyReports() {
+        if (unsubReports) unsubReports();
+        unsubReports = db.collection('dailyReports').onSnapshot(snap => {
+            allReports = snap.docs.map(d => Object.assign({ id: d.id }, d.data()))
+                .filter(r => r.ready)
+                .sort((a, b) => (a.date || '') !== (b.date || '') ? ((a.date || '') < (b.date || '') ? 1 : -1) : String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+            refreshMacroViews();
+        }, err => console.warn('Rapports journaliers :', err.message));
+    }
+    function drDateLabel(d) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || '');
+        if (!m) return d || '';
+        return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    function drSize(n) { return n >= 1048576 ? (n / 1048576).toFixed(1).replace('.', ',') + ' Mo' : Math.max(1, Math.round(n / 1024)) + ' Ko'; }
+    function buildReportCard(r) {
+        const card = document.createElement('div');
+        card.className = 'dr-card';
+        card.setAttribute('role', 'button');
+        card.tabIndex = 0;
+        card.title = 'Ouvrir le rapport';
+        card.onclick = () => openReport(r.id);
+        card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openReport(r.id); } };
+        const ico = document.createElement('div');
+        ico.className = 'dr-ico';
+        ico.textContent = 'PDF';
+        const info = document.createElement('div');
+        info.className = 'dr-info';
+        const dt = document.createElement('div');
+        dt.className = 'dr-date';
+        dt.textContent = drDateLabel(r.date);
+        const nm = document.createElement('div');
+        nm.className = 'dr-name';
+        nm.textContent = r.title || 'Rapport journalier';
+        const meta = document.createElement('div');
+        meta.className = 'dr-meta';
+        meta.textContent = [r.authorName, r.size ? drSize(r.size) : ''].filter(Boolean).join(' · ');
+        info.append(dt, nm, meta);
+        card.append(ico, info);
+        if (isMacroEditor()) {
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'dr-del';
+            del.title = 'Supprimer ce rapport';
+            del.textContent = '🗑️';
+            del.onclick = e => { e.stopPropagation(); deleteDailyReport(r.id); };
+            card.appendChild(del);
+        }
+        return card;
+    }
+    function renderReportList(sectionId, listId, reports, showEmpty) {
+        const sec = document.getElementById(sectionId), list = document.getElementById(listId);
+        if (!sec || !list) return;
+        list.textContent = '';
+        sec.style.display = (reports.length || showEmpty) ? '' : 'none';
+        if (!reports.length) {
+            const e = document.createElement('div');
+            e.className = 'dr-empty';
+            e.textContent = 'Aucun rapport cette semaine pour l\'instant.';
+            list.appendChild(e);
+            return;
+        }
+        reports.forEach(r => list.appendChild(buildReportCard(r)));
+    }
+    function reportsOfWeek(key) { return allReports.filter(r => weekStartKey(r.date) === key); }
+
+    // ── Ajout (rédacteurs) ──
+    function openReportUpload() {
+        if (!isMacroEditor()) return showToast('Réservé aux rédacteurs');
+        document.getElementById('dr-date').value = todayLocalKey();
+        document.getElementById('dr-name').value = '';
+        document.getElementById('dr-file').value = '';
+        document.getElementById('dr-send').disabled = false;
+        setMsg('dr-msg', '');
+        document.getElementById('reportUpload').classList.add('open');
+    }
+    function closeReportUpload() {
+        document.getElementById('reportUpload').classList.remove('open');
+    }
+    function bytesToB64(bytes) {
+        let bin = '';
+        for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+        return btoa(bin);
+    }
+    function b64ToBytes(b64) {
+        const bin = atob(b64), out = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+        return out;
+    }
+    async function submitDailyReport() {
+        if (!isMacroEditor()) return;
+        const file = document.getElementById('dr-file').files[0];
+        const date = document.getElementById('dr-date').value;
+        const title = document.getElementById('dr-name').value.trim() || 'Rapport journalier';
+        if (!date) return setMsg('dr-msg', 'Choisis la date du rapport.', 'err');
+        if (!file) return setMsg('dr-msg', 'Choisis le fichier PDF.', 'err');
+        if (!(file.type === 'application/pdf' || /\.pdf$/i.test(file.name))) return setMsg('dr-msg', 'Le fichier doit être un PDF.', 'err');
+        if (file.size > DR_MAX_BYTES) return setMsg('dr-msg', 'PDF trop lourd (' + drSize(file.size) + ') : 12 Mo maximum. Exporte-le en qualité « web » ou compresse-le.', 'err');
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        if (String.fromCharCode.apply(null, bytes.subarray(0, 5)) !== '%PDF-') return setMsg('dr-msg', 'Ce fichier n\'est pas un PDF valide.', 'err');
+        const btn = document.getElementById('dr-send');
+        btn.disabled = true;
+        const ref = db.collection('dailyReports').doc();
+        try {
+            const b64 = bytesToB64(bytes);
+            const n = Math.ceil(b64.length / DR_CHUNK);
+            for (let i = 0; i < n; i++) {
+                setMsg('dr-msg', 'Envoi… ' + Math.round(i / n * 100) + ' %');
+                await ref.collection('chunks').doc(String(i).padStart(3, '0')).set({ i, data: b64.slice(i * DR_CHUNK, (i + 1) * DR_CHUNK) });
+            }
+            const u = auth.currentUser;
+            await ref.set({
+                date, title, fileName: file.name, size: file.size, chunks: n, ready: true,
+                createdAt: new Date().toISOString(), authorEmail: u.email || '',
+                authorName: (u.displayName || (u.email || '').split('@')[0] || '')
+            });
+            drBytesCache.set(ref.id, bytes);
+            setMsg('dr-msg', 'Rapport publié ✅', 'ok');
+            showToast('Rapport journalier publié');
+            setTimeout(closeReportUpload, 700);
+        } catch (e) {
+            btn.disabled = false;
+            setMsg('dr-msg', 'Échec de l\'envoi : ' + (/permission|insufficient/i.test(e.message) ? 'Firebase refuse l\'accès — publie les règles Firestore à jour (bloc « dailyReports »).' : e.message), 'err');
+            try { const ch = await ref.collection('chunks').get(); ch.forEach(d => d.ref.delete()); } catch (er) {}
+        }
+    }
+    async function deleteDailyReport(id) {
+        if (!isMacroEditor()) return;
+        const r = allReports.find(x => x.id === id);
+        if (!confirm('Supprimer le rapport « ' + ((r && r.title) || 'Rapport journalier') + ' » du ' + drDateLabel(r && r.date) + ' ?')) return;
+        try {
+            const ref = db.collection('dailyReports').doc(id);
+            const ch = await ref.collection('chunks').get();
+            const batch = db.batch();
+            ch.forEach(d => batch.delete(d.ref));
+            batch.delete(ref);
+            await batch.commit();
+            drBytesCache.delete(id);
+            showToast('Rapport supprimé');
+        } catch (e) { showToast('Suppression impossible : ' + e.message); }
+    }
+
+    // ── Lecture : fenêtre au premier plan, fond flouté, pages rendues par PDF.js ──
+    function loadPdfJs() {
+        if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+        if (!pdfjsPromise) pdfjsPromise = new Promise((resolve, reject) => {
+            const sc = document.createElement('script');
+            sc.src = PDFJS_URL;
+            sc.onload = () => {
+                if (!window.pdfjsLib) return reject(new Error('PDF.js indisponible'));
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+                resolve(window.pdfjsLib);
+            };
+            sc.onerror = () => { pdfjsPromise = null; reject(new Error('PDF.js indisponible')); };
+            document.head.appendChild(sc);
+        });
+        return pdfjsPromise;
+    }
+    async function drGetBytes(r) {
+        if (drBytesCache.has(r.id)) return drBytesCache.get(r.id);
+        const snap = await db.collection('dailyReports').doc(r.id).collection('chunks').get();
+        const parts = snap.docs.map(d => d.data()).sort((a, b) => a.i - b.i);
+        if (parts.length !== r.chunks) throw new Error('rapport incomplet (' + parts.length + '/' + r.chunks + ' morceaux)');
+        const bytes = b64ToBytes(parts.map(p => p.data).join(''));
+        drBytesCache.set(r.id, bytes);
+        return bytes;
+    }
+    async function openReport(id) {
+        const r = allReports.find(x => x.id === id);
+        if (!r) return;
+        const ov = document.createElement('div');
+        ov.className = 'mp-note-ov dr-ov';
+        const box = document.createElement('div');
+        box.className = 'dr-viewer';
+        const head = document.createElement('div');
+        head.className = 'dr-vhead';
+        const tt = document.createElement('div');
+        tt.className = 'dr-vtitle';
+        const tb = document.createElement('b');
+        tb.textContent = r.title || 'Rapport journalier';
+        const ts = document.createElement('span');
+        ts.textContent = drDateLabel(r.date);
+        tt.append(tb, ts);
+        const dl = document.createElement('button');
+        dl.type = 'button';
+        dl.className = 'dr-vbtn';
+        dl.innerHTML = '⬇️<span class="dr-lbl"> Télécharger</span>';
+        dl.disabled = true;
+        const cl = document.createElement('button');
+        cl.type = 'button';
+        cl.className = 'dr-vbtn';
+        cl.title = 'Fermer';
+        cl.textContent = '✕';
+        head.append(tt, dl, cl);
+        const body = document.createElement('div');
+        body.className = 'dr-vbody';
+        const status = document.createElement('div');
+        status.className = 'dr-vstatus';
+        status.textContent = 'Chargement du rapport…';
+        body.appendChild(status);
+        box.append(head, body);
+        ov.appendChild(box);
+        const close = () => { ov.remove(); document.removeEventListener('keydown', esc); };
+        const esc = e => { if (e.key === 'Escape') close(); };
+        cl.onclick = close;
+        ov.onclick = e => { if (e.target === ov) close(); };
+        document.addEventListener('keydown', esc);
+        document.body.appendChild(ov);
+
+        let bytes;
+        try { bytes = await drGetBytes(r); }
+        catch (e) { status.textContent = 'Impossible de charger le rapport : ' + e.message; return; }
+        const blobUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+        dl.disabled = false;
+        dl.onclick = () => {
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = r.fileName || ((r.title || 'rapport') + '.pdf');
+            document.body.appendChild(a); a.click(); a.remove();
+        };
+        try {
+            const lib = await loadPdfJs();
+            const pdf = await lib.getDocument({ data: bytes.slice() }).promise;
+            status.remove();
+            for (let p = 1; p <= pdf.numPages; p++) {
+                if (!ov.isConnected) break;   // fenêtre fermée pendant le rendu
+                const page = await pdf.getPage(p);
+                const cssW = Math.max(280, body.clientWidth - (window.innerWidth <= 600 ? 16 : 28));
+                const base = page.getViewport({ scale: 1 });
+                const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+                const vp = page.getViewport({ scale: cssW / base.width * dpr });
+                const cv = document.createElement('canvas');
+                cv.width = Math.floor(vp.width);
+                cv.height = Math.floor(vp.height);
+                cv.setAttribute('aria-label', 'Page ' + p + ' sur ' + pdf.numPages);
+                body.appendChild(cv);
+                await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+            }
+        } catch (e) {
+            // Repli : lecteur PDF du navigateur
+            status.remove();
+            const fr = document.createElement('iframe');
+            fr.src = blobUrl;
+            fr.title = r.title || 'Rapport journalier';
+            body.appendChild(fr);
+        }
+    }
+
     // ── Gestion des tags existants (rédacteurs) ──
     function openTagManager() {
         if (!isMacroEditor()) return showToast('Réservé aux rédacteurs');
@@ -7239,6 +7565,7 @@ Ce qui manque ou est daté.`;
     // affiche un bouton pour la retirer directement depuis l'éditeur.
     function openImgLightbox(src, onDelete) {
         const ov = document.createElement('div');
+        ov.className = 'img-lb-ov';
         ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;padding:24px;gap:14px';
         const im = document.createElement('img');
         im.src = src;
@@ -7256,6 +7583,31 @@ Ce qui manque ou est daté.`;
         ov.onclick = () => ov.remove();
         document.body.appendChild(ov);
     }
+
+    // ── Verrou de défilement : tant qu'une fenêtre au premier plan est ouverte
+    //  (synthèse agrandie, rapport PDF, image, fiche de trade), la page derrière
+    //  ne bouge plus — y compris sur iPhone, où overflow:hidden ne suffit pas.
+    const SCROLL_LOCK_SEL = '.mp-note-ov, .td-ov, .img-lb-ov';
+    let scrollLockY = null;
+    function syncScrollLock() {
+        const need = !!document.querySelector(SCROLL_LOCK_SEL);
+        const body = document.body;
+        if (need && scrollLockY === null) {
+            scrollLockY = window.scrollY || window.pageYOffset || 0;
+            body.style.top = -scrollLockY + 'px';
+            body.classList.add('scroll-locked');
+        } else if (!need && scrollLockY !== null) {
+            const y = scrollLockY;
+            scrollLockY = null;
+            body.classList.remove('scroll-locked');
+            body.style.top = '';
+            const html = document.documentElement, prev = html.style.scrollBehavior;
+            html.style.scrollBehavior = 'auto';
+            window.scrollTo(0, y);
+            html.style.scrollBehavior = prev;
+        }
+    }
+    new MutationObserver(syncScrollLock).observe(document.body, { childList: true });
 
     // Agrandit une synthèse au premier plan (fond flouté)
     function expandNote(fid) {
@@ -7951,53 +8303,6 @@ Ce qui manque ou est daté.`;
         }
     }
 
-    // Import de synthèses en JSON (réservé rédacteurs). Dédup par date+événement.
-    function importMacroNotes(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        if (!isMacroEditor()) { showToast('Réservé aux rédacteurs'); event.target.value = ''; return; }
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                if (!auth.currentUser) throw new Error('connexion requise.');
-                let raw;
-                try { raw = JSON.parse(e.target.result); } catch (pe) { throw new Error('JSON illisible (' + pe.message + ').'); }
-                const arr = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.notes) ? raw.notes : null);
-                if (!arr || !arr.length) throw new Error('aucune synthèse dans le fichier.');
-                const existing = new Set((allMacroNotes || []).map(n => (n.date || '') + '||' + (n.event || '')));
-                const fresh = arr.filter(n => n && n.date && n.event && !existing.has((n.date || '') + '||' + (n.event || '')));
-                if (!fresh.length) { showToast('Déjà à jour — ces synthèses sont déjà présentes.'); event.target.value = ''; return; }
-                document.getElementById('loadingScreen').style.display = 'flex';
-                const col = db.collection('macroNotes'), now = new Date().toISOString();
-                for (let i = 0; i < fresh.length; i += 400) {
-                    const batch = db.batch();
-                    fresh.slice(i, i + 400).forEach(n => {
-                        const o = {
-                            date: String(n.date || ''),
-                            event: String(n.event || ''),
-                            consensus: String(n.consensus || ''),
-                            actual: String(n.actual || ''),
-                            previous: String(n.previous || ''),
-                            subs: Array.isArray(n.subs) ? n.subs.map(s => ({ name: String(s.name || ''), consensus: String(s.consensus || ''), actual: String(s.actual || ''), previous: String(s.previous || '') })) : [],
-                            tags: Array.isArray(n.tags) ? n.tags.map(String) : [],
-                            images: [], image: '',
-                            analysis: String(n.analysis || ''),
-                            createdAt: now, authorEmail: auth.currentUser.email || '', authorUid: auth.currentUser.uid
-                        };
-                        batch.set(col.doc(), o);
-                    });
-                    await batch.commit();
-                }
-                document.getElementById('loadingScreen').style.display = 'none';
-                showToast(fresh.length + ' synthèse(s) importée(s) ✅');
-            } catch (err) {
-                document.getElementById('loadingScreen').style.display = 'none';
-                showToast('Erreur import : ' + err.message);
-            }
-            event.target.value = '';
-        };
-        reader.readAsText(file);
-    }
 
     function editMacroNote(fid) {
         if (!isMacroEditor())
@@ -8291,6 +8596,9 @@ Ce qui manque ou est daté.`;
         const wk = currentWeekKey();
         const range = document.getElementById('mp-week-range');
         if (range) range.textContent = '· ' + weekLabel(wk);
+        renderReportList('dr-section', 'dr-list', reportsOfWeek(wk), isMacroEditor());
+        const drc = document.getElementById('dr-count');
+        if (drc) { const n = reportsOfWeek(wk).length; drc.textContent = n ? n + ' rapport' + (n > 1 ? 's' : '') : ''; }
         const weekNotes = allMacroNotes.filter(n => weekStartKey(n.date) === wk);
         const q = (document.getElementById('mp-filter').value || '').toLowerCase().trim();
         const notes = weekNotes.filter(n => matchNote(n, q, mpTagFilter));
@@ -8320,11 +8628,17 @@ Ce qui manque ou est daté.`;
         const wrap = document.getElementById('mp-weeks');
         if (!wrap) return;
         const cur = currentWeekKey();
-        const byWeek = {};
+        const byWeek = {}, repWeek = {};
         allMacroNotes.forEach(n => {
             const k = weekStartKey(n.date);
             if (!k || k === cur) return; // la semaine courante reste dans le dashboard
             (byWeek[k] = byWeek[k] || []).push(n);
+        });
+        allReports.forEach(r => {
+            const k = weekStartKey(r.date);
+            if (!k || k === cur) return;
+            byWeek[k] = byWeek[k] || [];
+            repWeek[k] = (repWeek[k] || 0) + 1;
         });
         const keys = Object.keys(byWeek).sort((a, b) => a < b ? 1 : -1); // décroissant
         if (!keys.length) {
@@ -8332,10 +8646,11 @@ Ce qui manque ou est daté.`;
             return;
         }
         wrap.innerHTML = keys.map(k => {
-            const cnt = byWeek[k].length;
+            const cnt = byWeek[k].length, rc = repWeek[k] || 0;
+            const parts = [cnt ? cnt + ' synthèse' + (cnt > 1 ? 's' : '') : '', rc ? rc + ' rapport' + (rc > 1 ? 's' : '') : ''].filter(Boolean).join(' · ');
             return '<button class="mp-week-card" type="button" onclick="openHistWeek(\'' + k + '\')">' +
                 '<span class="mp-week-range">🗓️ ' + weekLabel(k) + '</span>' +
-                '<span class="mp-week-cnt">' + cnt + ' synthèse' + (cnt > 1 ? 's' : '') + '</span>' +
+                '<span class="mp-week-cnt">' + parts + '</span>' +
                 '</button>';
         }).join('');
     }
@@ -8346,6 +8661,7 @@ Ce qui manque ou est daté.`;
         if (!list || !mpHistWeek) return;
         document.getElementById('mp-week-title').textContent = '🗓️ Semaine du ' + weekLabel(mpHistWeek);
         renderTagBar('mp-week-tagbar', mpWeekTagFilter, t => { mpWeekTagFilter = (mpWeekTagFilter === t ? '' : t); renderHistoryWeek(); });
+        renderReportList('dr-week-section', 'dr-week-list', reportsOfWeek(mpHistWeek), false);
         const weekNotes = allMacroNotes.filter(n => weekStartKey(n.date) === mpHistWeek);
         const q = (document.getElementById('mp-week-filter').value || '').toLowerCase().trim();
         const notes = weekNotes.filter(n => matchNote(n, q, mpWeekTagFilter));

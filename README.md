@@ -23,6 +23,10 @@ Terminal macro temps réel sur **9 devises** (USD, EUR, GBP, JPY, CHF, AUD, NZD,
 - Rang de force relative, biais, driver dominant et thèses (semaine actuelle / à venir / le mois) : lus **en direct** depuis la page Notion « Biais & Force Relative » via le Cloudflare Worker `cloudflare-worker/notion-worker.js` — zéro donnée en dur, zéro API payante.
 - Les 4 piliers /100 par devise sont un **jugement** porté par Claude sur les pages Notion (Biais & Force Relative + Track Record Fondamental), écrit dans Firestore (collection `macroCompass`) à la demande de Kevin (« mets à jour le macro compass »), puis lu en direct par le site. Claude prépare un fichier `macro-compass-AAAA-MM-JJ.json`, qu'un rédacteur publie avec le bouton **📥 Importer une mise à jour** du Macro Compass. Affichage **N/A** si une devise n'est pas encore couverte — jamais de donnée périmée déguisée en live.
 
+### 🧠 Daily FX
+- Synthèses macro post-annonces (rédacteurs), avec tags gérables et historique par semaine.
+- **Rapports journaliers PDF** : un rédacteur publie un PDF (12 Mo max), les membres l'ouvrent depuis une carte dans une fenêtre au fond flouté. Stockage Firestore `dailyReports` (+ sous-collection `chunks`), affichage via PDF.js.
+
 ### 🎯 Set-ups fondamentaux
 - **Set-ups de l'alliance** : pour chaque paire, la thèse en texte libre + plusieurs captures de graphiques, chacune avec sa légende (time frame M5 → W1 en un clic). Collage (Ctrl+V), glisser-déposer et réorganisation des images. Contenu partagé comme le Daily FX : **tout le monde lit, seuls les rédacteurs créent, modifient, suppriment et lancent l'analyse**. Firestore : `fundSetups` (+ sous-collection `shots`), règles dans `firestore.rules`.
 - **Avis fondamental de l'IA** : elle lit tout le Sphinx Alliance (Macro Compass, attentes de taux, Daily FX) et rend un verdict *Favorable / Mitigé / Défavorable* sur la paire et ta thèse — fondamental uniquement, les graphiques ne sont pas envoyés à l'IA. Clé API (Gemini, Claude ou ChatGPT) gardée dans le navigateur, réglable dans ⚙️ Paramètres → IA.

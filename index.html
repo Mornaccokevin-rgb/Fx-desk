@@ -5146,15 +5146,18 @@
 
     // ── IA : fournisseur, clé et modèle (stockés sur cet appareil) ──
     const AI_PROVIDERS = {
-        gemini: { label: 'Gemini', model: 'gemini-2.5-flash', keyUrl: 'https://aistudio.google.com/apikey' },
+        gemini: { label: 'Gemini', model: 'gemini-3.8-flash', keyUrl: 'https://aistudio.google.com/apikey' },
         claude: { label: 'Claude', model: 'claude-opus-5', keyUrl: 'https://console.anthropic.com/settings/keys' },
         openai: { label: 'ChatGPT', model: 'gpt-5', keyUrl: 'https://platform.openai.com/api-keys' }
     };
     let aiDraftProvider = null;
     // Nom de modèle valide : lettres, chiffres, points, tirets (ex. gemini-2.5-flash).
     // Accepte "models/..." (format Google) et retire les espaces parasites.
+    // Modèles Gemini retirés par Google → remplacés automatiquement.
+    const AI_RETIRED = { gemini: /^gemini-(1\.|2\.0|2\.5)/ };
     function cleanModelName(provider, raw) {
         const v = String(raw || '').trim().replace(/^models\//, '');
+        if (AI_RETIRED[provider] && AI_RETIRED[provider].test(v)) return AI_PROVIDERS[provider].model;
         return /^[A-Za-z0-9][A-Za-z0-9._\-]*$/.test(v) ? v : AI_PROVIDERS[provider].model;
     }
     function readModelField(p) {
@@ -5261,7 +5264,18 @@
                     generationConfig: { maxOutputTokens: maxTokens }
                 })
             });
-            if (!r.ok) throw await readErr(r);
+            if (!r.ok) {
+                const err = await readErr(r);
+                // « This model … is no longer available … use models/xxx » → on bascule et on mémorise.
+                const m = /no longer available[\s\S]*?models\/([A-Za-z0-9._-]+)/i.exec(err.message);
+                if (m && m[1] !== cfg.model && !cfg._retried) {
+                    try { const st = getAiSettings(); if (st.provider === 'gemini' || st.models.gemini) { st.models.gemini = m[1]; localStorage.setItem('sphinx_ai', JSON.stringify(st)); } } catch (e) {}
+                    const f = document.getElementById('ai-model-input');
+                    if (f && aiDraftProvider === 'gemini') f.value = m[1];
+                    return callAi(Object.assign({}, cfg, { model: m[1], _retried: true }), system, user, maxTokens);
+                }
+                throw err;
+            }
             const d = await r.json();
             const parts = (((d.candidates || [])[0] || {}).content || {}).parts || [];
             const text = parts.map(x => x.text || '').join('').trim();

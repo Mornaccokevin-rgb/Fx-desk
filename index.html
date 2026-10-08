@@ -4660,7 +4660,8 @@
                         <button type="button" class="set-btn ghost danger-txt" onclick="removeAiKey()">Supprimer</button>
                     </div>
                     <div class="set-msg" id="ai-msg"></div>
-                    <div class="set-hint" style="margin-top:10px">🔒 La clé reste uniquement sur cet appareil (navigateur), elle n'est jamais envoyée à Firebase. C'est l'unique clé IA de tout le Sphinx Alliance : brief du Macro Compass, Set-ups fondamentaux et Coach IA du Performance Tracker. Les appels sont facturés sur ton compte du fournisseur.</div>
+                    <div class="set-hint" style="margin-top:10px">🔒 Ta clé est personnelle : elle reste uniquement dans ce navigateur, liée à ton compte, et n'est jamais envoyée à Firebase ni partagée avec les autres membres. Elle sert à toutes les fonctions IA du Sphinx Alliance : brief du Macro Compass, Set-ups fondamentaux et Coach IA du Performance Tracker. Les appels sont facturés sur ton compte du fournisseur (Gemini propose une clé gratuite via Google AI Studio).</div>
+                    <a class="set-link" style="display:inline-block;margin-top:8px" href="guide-cle-api.pdf" target="_blank" rel="noopener">📄 Guide : obtenir sa clé API (Gemini, Claude, ChatGPT)</a>
                 </div>
                 <div class="set-section" id="dk-block" style="display:none">
                     <div class="set-lbl">Clés de données de l'alliance (rédacteurs)</div>
@@ -4701,6 +4702,14 @@
         });
         localStorage.setItem('sphinx_theme', isLight ? 'light' : 'dark');
         if (typeof redrawCharts === 'function') redrawCharts();
+        syncCompassTheme();
+    }
+    // Le Macro Compass garde ses propres couleurs, mais suit le clair/sombre du hub.
+    function syncCompassTheme() {
+        try {
+            const w = document.getElementById('fxMacroFrame').contentWindow;
+            if (w && typeof w.setHubTheme === 'function') w.setHubTheme(document.body.classList.contains('light-mode'));
+        } catch (e) {}
     }
     function initThemeGlobal() {
         const isLight = localStorage.getItem('sphinx_theme') === 'light';
@@ -5180,9 +5189,22 @@
         field.value = model;
         return { model, fixed: null };
     }
+    // Chaque compte a sa propre clé IA, rangée sous son identifiant : sur un
+    // appareil partagé, un autre membre ne peut ni la voir ni l'utiliser.
+    function aiStoreKey() {
+        const u = auth && auth.currentUser;
+        if (!u) return 'sphinx_ai_anon';
+        const k = 'sphinx_ai_' + u.uid;
+        try {   // migration de l'ancienne clé (non liée à un compte) vers le compte actuel
+            const old = localStorage.getItem('sphinx_ai');
+            if (old && !localStorage.getItem(k)) localStorage.setItem(k, old);
+            if (old) localStorage.removeItem('sphinx_ai');
+        } catch (e) {}
+        return k;
+    }
     function getAiSettings() {
         let st = {};
-        try { st = JSON.parse(localStorage.getItem('sphinx_ai')) || {}; } catch (e) {}
+        try { st = JSON.parse(localStorage.getItem(aiStoreKey())) || {}; } catch (e) {}
         st.keys = st.keys || {};
         st.models = st.models || {};
         if (!AI_PROVIDERS[st.provider]) st.provider = 'gemini';
@@ -5253,7 +5275,7 @@
         st.provider = p;
         st.keys[p] = key;
         st.models[p] = model;
-        localStorage.setItem('sphinx_ai', JSON.stringify(st));
+        localStorage.setItem(aiStoreKey(), JSON.stringify(st));
         setMsg('ai-msg', AI_PROVIDERS[p].label + ' enregistré et sélectionné ✅ (' + model + ')' + (fixed ? ' — nom de modèle invalide « ' + fixed + ' » remplacé par le modèle par défaut.' : ''), 'ok');
         renderSetupsHeader();
     }
@@ -5261,7 +5283,7 @@
         const st = getAiSettings();
         const p = aiDraftProvider;
         delete st.keys[p];
-        localStorage.setItem('sphinx_ai', JSON.stringify(st));
+        localStorage.setItem(aiStoreKey(), JSON.stringify(st));
         fillAiFields();
         setMsg('ai-msg', 'Clé ' + AI_PROVIDERS[p].label + ' supprimée de cet appareil.', 'ok');
         renderSetupsHeader();
@@ -5303,7 +5325,7 @@
                 // « This model … is no longer available … use models/xxx » → on bascule et on mémorise.
                 const m = /no longer available[\s\S]*?models\/([A-Za-z0-9._-]+)/i.exec(err.message);
                 if (m && m[1] !== cfg.model && !cfg._retried) {
-                    try { const st = getAiSettings(); if (st.provider === 'gemini' || st.models.gemini) { st.models.gemini = m[1]; localStorage.setItem('sphinx_ai', JSON.stringify(st)); } } catch (e) {}
+                    try { const st = getAiSettings(); if (st.provider === 'gemini' || st.models.gemini) { st.models.gemini = m[1]; localStorage.setItem(aiStoreKey(), JSON.stringify(st)); } } catch (e) {}
                     const f = document.getElementById('ai-model-input');
                     if (f && aiDraftProvider === 'gemini') f.value = m[1];
                     return callAi(Object.assign({}, cfg, { model: m[1], _retried: true }), system, user, maxTokens);
@@ -6216,6 +6238,7 @@ Ce qui manque ou est daté.`;
         try { app = saGetApp(saAppName); } catch (e) { saAppName = '[DEFAULT]'; app = saGetApp(saAppName); }
         auth = app.auth();
         db = app.firestore();
+        try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch (e) {}
         localStorage.removeItem('sphinx_switch_to');   // ancien mécanisme de bascule
         auth.onAuthStateChanged(function(user) {
             if (user) {
@@ -6362,6 +6385,7 @@ Ce qui manque ou est daté.`;
         saveRememberedAccounts(list);
         saUnlocked = false;
         try { sessionStorage.removeItem(SA_UNLOCK_KEY); } catch (e) {}
+        if (unsubMacroNotes) { unsubMacroNotes(); unsubMacroNotes = null; macroNotesUid = null; allMacroNotes = []; }
         await auth.signOut();
         // onAuthStateChanged(null) ramène automatiquement au portail.
     }
@@ -6808,6 +6832,8 @@ Ce qui manque ou est daté.`;
 
     let allMacroNotes = [],
         unsubMacroNotes = null,
+        macroNotesUid = null,
+        macroNotesLoaded = false,
         editingMacroId = null,
         currentMacroTags = [],   // tags de la synthèse en cours d'édition
         mpDraggedImg = null,     // <img> en cours de glisser-déplacer dans #mp-analysis (évite la duplication)
@@ -7287,6 +7313,7 @@ Ce qui manque ou est daté.`;
                 else document.execCommand('foreColor', false, val);
             }
         }
+        stripInkColors(ed);   // « couleur par défaut » = suivre le thème, jamais blanc/noir figé
         updateRteToolbar();
     }
     function initRteToolbar() {
@@ -7432,11 +7459,32 @@ Ce qui manque ou est daté.`;
     // Nettoyage HTML : n'autorise que des balises de mise en forme.
     // stripColor = true → retire les couleurs (utilisé au collage pour que le
     // texte suive le thème automatiquement, blanc en sombre / noir en clair).
+    // Couleur « encre » (blanc, noir, gris neutres) : elle doit suivre le thème
+    // clair/sombre, donc on ne la fige jamais dans le texte. Les vraies couleurs
+    // (rouge, bleu, or…) choisies dans la barre d'outils sont conservées.
+    function isInkColor(c) {
+        const v = normColor(c);
+        if (!v) return false;
+        const [r, g, b] = v.split(',').map(Number);
+        const spread = Math.max(r, g, b) - Math.min(r, g, b);
+        const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+        return spread <= 32 && (lum > 0.7 || lum < 0.25);
+    }
+    function stripInkColors(root) {
+        if (!root) return;
+        root.querySelectorAll('[style], font[color]').forEach(el => {
+            if (el.style && el.style.color && isInkColor(el.style.color)) el.style.removeProperty('color');
+            if (el.style && el.style.backgroundColor && isInkColor(el.style.backgroundColor)) el.style.removeProperty('background-color');
+            if (el.tagName === 'FONT' && el.getAttribute('color') && isInkColor(el.getAttribute('color'))) el.removeAttribute('color');
+            if (el.getAttribute('style') === '') el.removeAttribute('style');
+        });
+    }
     function filterStyleRich(s, stripColor) {
         let allow = ['color', 'background-color', 'font-size', 'font-weight', 'font-style', 'text-decoration', 'text-decoration-line', 'text-align'];
         if (stripColor) allow = allow.filter(p => p !== 'color' && p !== 'background-color');
         return (s || '').split(';').map(x => x.trim()).filter(x => {
             const p = (x.split(':')[0] || '').trim().toLowerCase();
+            if ((p === 'color' || p === 'background-color') && isInkColor(x.slice(x.indexOf(':') + 1).trim())) return false;
             return allow.indexOf(p) > -1 && !/url\(|expression|javascript:/i.test(x);
         }).join('; ');
     }
@@ -7461,7 +7509,7 @@ Ce qui manque ou est daté.`;
                     const inner = clean(ch);
                     if (allowed[tag]) {
                         let style = (ch.getAttribute && ch.getAttribute('style')) ? filterStyleRich(ch.getAttribute('style'), stripColor) : '';
-                        if (!stripColor && tag === 'FONT' && ch.getAttribute && ch.getAttribute('color'))
+                        if (!stripColor && tag === 'FONT' && ch.getAttribute && ch.getAttribute('color') && !isInkColor(ch.getAttribute('color')))
                             style = ('color:' + ch.getAttribute('color') + ';' + style);
                         const t = (tag === 'FONT') ? 'span' : tag.toLowerCase();
                         out += '<' + t + (style ? ' style="' + style.replace(/"/g, '') + '"' : '') + '>' + inner + '</' + t + '>';
@@ -8330,8 +8378,15 @@ Ce qui manque ou est daté.`;
     }
 
     function loadMacroNotes() {
+        // Abonnement déjà actif pour ce compte : on garde les données en mémoire
+        // (affichage immédiat) au lieu de tout recharger à chaque ouverture.
+        const uid = auth.currentUser && auth.currentUser.uid;
+        if (unsubMacroNotes && macroNotesUid === uid) { refreshMacroViews(); return; }
         if (unsubMacroNotes)
             unsubMacroNotes();
+        macroNotesUid = uid;
+        macroNotesLoaded = false;
+        refreshMacroViews();
         unsubMacroNotes = db.collection('macroNotes')
         .orderBy('date', 'desc')
         .onSnapshot(snap => {
@@ -8344,11 +8399,15 @@ Ce qui manque ou est daté.`;
                     return (a.date || '') < (b.date || '') ? 1 : -1;
                 return (b.createdAt || '').localeCompare(a.createdAt || '');
             });
+            macroNotesLoaded = true;
             refreshMacroViews();
         }, err => {
             // Erreur fréquente : règles Firestore non configurées (permission-denied).
             // On l'affiche DANS l'écran pour qu'il ne reste jamais vide.
             console.error('Macro Prep — Firestore :', err);
+            macroNotesLoaded = true;
+            if (unsubMacroNotes) { try { unsubMacroNotes(); } catch (e) {} }
+            unsubMacroNotes = null; macroNotesUid = null;   // nouvel essai à la prochaine ouverture
             const empty = document.getElementById('mp-empty');
             if (empty) {
                 empty.style.display = '';
@@ -8387,7 +8446,7 @@ Ce qui manque ou est daté.`;
             tags: currentMacroTags.slice(),
             // Les images vivent désormais en ligne dans le HTML de l'analyse (voir
             // insertMacroImageNode) — plus de tableau images[] séparé pour les nouvelles notes.
-            analysis: (document.getElementById('mp-analysis').innerHTML || '').trim()
+            analysis: (stripInkColors(document.getElementById('mp-analysis')), document.getElementById('mp-analysis').innerHTML || '').trim()
         };
         const analysisText = (document.getElementById('mp-analysis').innerText || '').trim();
         if (!note.date || !note.event || !analysisText) {
@@ -8430,6 +8489,7 @@ Ce qui manque ou est daté.`;
         f.previous.value = n.previous || '';
         const ed = document.getElementById('mp-analysis');
         ed.innerHTML = n.analysis || '';
+        stripInkColors(ed);
         // Rétro-compatibilité : anciennes notes dont les images étaient dans un
         // tableau séparé (jamais dans le texte) → on les rajoute en fin de texte,
         // elles deviennent alors déplaçables comme toute image insérée.
@@ -8711,6 +8771,13 @@ Ce qui manque ou est daté.`;
         renderReportList('dr-section', 'dr-list', reportsOfWeek(wk), isMacroEditor());
         const drc = document.getElementById('dr-count');
         if (drc) { const n = reportsOfWeek(wk).length; drc.textContent = n ? n + ' rapport' + (n > 1 ? 's' : '') : ''; }
+        if (!macroNotesLoaded) {
+            list.innerHTML = '';
+            count.textContent = '';
+            empty.style.display = '';
+            empty.querySelector('.fx-empty-title').textContent = 'Chargement des synthèses…';
+            return;
+        }
         const weekNotes = allMacroNotes.filter(n => weekStartKey(n.date) === wk);
         const q = (document.getElementById('mp-filter').value || '').toLowerCase().trim();
         const notes = weekNotes.filter(n => matchNote(n, q, mpTagFilter));
@@ -8739,6 +8806,7 @@ Ce qui manque ou est daté.`;
     function renderHistoryLanding() {
         const wrap = document.getElementById('mp-weeks');
         if (!wrap) return;
+        if (!macroNotesLoaded) { wrap.innerHTML = '<div class="fx-empty"><div class="fx-empty-icon">⏳</div><div class="fx-empty-title">Chargement de l\'historique…</div></div>'; return; }
         const cur = currentWeekKey();
         const byWeek = {}, repWeek = {};
         allMacroNotes.forEach(n => {
@@ -8950,7 +9018,23 @@ Ce qui manque ou est daté.`;
     function dc(id) {
         if (chartsData[id]) { chartsData[id].destroy(); delete chartsData[id]; }
     }
+    // Ligne verticale de repère sous la souris (courbes) : on vise une date, pas un trait de 2 px.
+    const ptCrosshair = {
+        id: 'ptCrosshair',
+        afterDatasetsDraw(chart) {
+            const a = chart.tooltip && chart.tooltip.getActiveElements && chart.tooltip.getActiveElements();
+            if (!a || !a.length) return;
+            const x = a[0].element.x, ar = chart.chartArea, ctx = chart.ctx;
+            ctx.save();
+            ctx.beginPath(); ctx.moveTo(x, ar.top); ctx.lineTo(x, ar.bottom);
+            ctx.lineWidth = 1; ctx.strokeStyle = ptCol().muted; ctx.stroke();
+            ctx.restore();
+        }
+    };
     function ptChart(id, cfg) {
+        cfg.options = cfg.options || {};
+        cfg.options.events = ['mousemove', 'mouseout', 'touchstart', 'touchmove', 'touchend'];
+        if (cfg.type === 'line') cfg.plugins = (cfg.plugins || []).concat([ptCrosshair]);
         dc(id);
         const el = document.getElementById(id);
         if (!el || !window.Chart) return null;
@@ -8961,6 +9045,8 @@ Ce qui manque ou est daté.`;
         return Object.assign({
             backgroundColor: C.tip, titleColor: C.ink2, bodyColor: C.ink, footerColor: C.ink2,
             borderColor: C.grid, borderWidth: 1, padding: 10, cornerRadius: 8,
+            animation: false,            // l'info-bulle suit la souris sans glisser ni sauter
+            position: 'nearest', caretPadding: 8,
             boxWidth: 10, boxHeight: 2, boxPadding: 4, titleFont: { weight: '500' }, bodyFont: { weight: '600' }, footerFont: { weight: '400' }
         }, extra || {});
     }

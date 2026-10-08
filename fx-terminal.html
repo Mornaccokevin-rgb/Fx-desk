@@ -1471,6 +1471,14 @@ async function applyRatesPaste(){
 /* ══════════════════════════════════════════════════════════════
    NAV / THEME / CLOCK / INIT
 ═══════════════════════════════════════════════════════════════ */
+// Clair/sombre piloté par le hub Sphinx Alliance (localStorage « sphinx_theme ») ;
+// le bouton du terminal reste utilisable, jusqu'au prochain changement dans le hub.
+function setHubTheme(light){
+  document.body.classList.toggle('light',!!light);
+  const ic=document.getElementById('theme-icon'); if(ic) ic.className=light?'ti ti-moon':'ti ti-sun';
+  localStorage.setItem('fxmt_theme',light?'light':'dark');
+}
+window.addEventListener('storage',e=>{ if(e.key==='sphinx_theme'&&e.newValue) setHubTheme(e.newValue==='light'); });
 function toggleTheme(){
   document.body.classList.toggle('light');
   const light=document.body.classList.contains('light');
@@ -1785,7 +1793,8 @@ async function generateAiBrief(force){
 }
 
 function init(){
-  if(localStorage.getItem('fxmt_theme')==='light'){document.body.classList.add('light');document.getElementById('theme-icon').className='ti ti-moon';}
+  { const hub=localStorage.getItem('sphinx_theme'), own=localStorage.getItem('fxmt_theme');
+    setHubTheme((window.parent!==window&&hub) ? hub==='light' : own==='light'); }
   tickClock();setInterval(tickClock,1000);
   renderGrid();
   renderRateExpectations();

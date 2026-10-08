@@ -40,11 +40,13 @@ Les **rédacteurs** (liste identique dans `firestore.rules`, `MACRO_EDITORS` de 
 - Chaque compte utilisé sur l'appareil garde sa propre session : changer de compte ne demande que Face ID / Touch ID (ou le mot de passe) du compte choisi.
 
 ### 📈 Performance Tracker
-Journal de trading complet, synchronisé via **Firebase**.
+Journal de trading complet, synchronisé via **Firebase**, conçu sur le modèle des journaux pros (Tradezella, Edgewonk, TraderSync).
 
-- Dashboard : statistiques, win rate, courbe de capital, drawdown.
-- Suivi du capital et de l'équité.
-- Historique détaillé des trades, édition en place.
+- **Filtre de période** (Tout, 30 j, 90 j, 6 mois, année en cours) qui s'applique à tout le tableau de bord et à l'analyse.
+- **Tableau de bord** : P&L net, win rate, profit factor, ratio gain/perte, espérance (en $ et en R), max drawdown ; courbe d'équité + drawdown ; **score de performance /100** (six critères) ; calendrier P&L avec total par semaine ; derniers trades ; P&L journalier.
+- **Coach IA** : analyse personnalisée des trades de la période (bilan, psychologie, risque ou edge) avec la clé API de ⚙️ Paramètres → IA ; dernière analyse gardée par journal.
+- **Analyse** : évolution du P&L (semaine / mois / trimestre / année, axe continu), distribution des R-multiples, jour de la semaine, performance par critère (paire, session, direction, timeframe, ordre, condition, sentiment, géopolitique, psychologie, jour), points clés automatiques, qualité d'exécution, statistiques détaillées. Chaque graphique a sa vue tableau.
+- Couleurs des graphiques validées pour le daltonisme et le contraste, en mode clair comme sombre.
 
 ---
 

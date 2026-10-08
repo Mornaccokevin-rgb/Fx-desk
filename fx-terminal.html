@@ -521,7 +521,9 @@ Fed: 26 bps (90% probability of no change at the next meeting)
     </div>
     <div class="mfb-wrap" style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;overflow:auto">
       <div style="width:100%;text-align:center">
-        <script type="text/javascript" src="https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1"></script>
+        <!-- Widget dans sa propre iframe : s'il est lent ou bloqué, il ne fige plus le reste du Macro Compass ni la connexion au site. -->
+        <iframe title="Sentiment Myfxbook" loading="lazy" style="width:100%;height:520px;border:0;display:block;background:#fff"
+          srcdoc="<!doctype html><html><head><meta charset='utf-8'></head><body style='margin:0;text-align:center;background:#fff'><script src='https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1'></script></body></html>"></iframe>
       </div>
     </div>
 

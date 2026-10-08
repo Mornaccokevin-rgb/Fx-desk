@@ -6234,7 +6234,14 @@ Ce qui manque ou est daté.`;
     let chartsData = {};
     let editingTradeId = null;
 
-    window.addEventListener('load', function() {
+    // Démarrage dès que la page est prête (DOMContentLoaded), et non à « load » :
+    // « load » attend aussi l'iframe du Macro Compass et ses widgets externes
+    // (myfxbook…). Si l'un d'eux traîne, Firebase ne démarrait jamais et la
+    // connexion restait bloquée.
+    let saBooted = false;
+    function saBoot() {
+        if (saBooted) return;
+        saBooted = true;
         // Un souci d'affichage (thème…) ne doit jamais empêcher la connexion.
         try { initThemeGlobal(); } catch (e) { console.error('Thème :', e); }
         if (typeof firebase === 'undefined')
@@ -6269,7 +6276,9 @@ Ce qui manque ou est daté.`;
                 }
             }
         });
-    });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', saBoot);
+    else saBoot();
 
     // ── PORTAIL : bascule intro ↔ carte de connexion ──────────────
     function showAuthCard(tab) {

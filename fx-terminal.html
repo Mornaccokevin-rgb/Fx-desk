@@ -606,8 +606,9 @@ const CONFIG = {
   // Si vide : appels directs depuis le navigateur avec les clés ci-dessous (dev local).
   API_BASE: "",   // ex: "https://fx-proxy.ton-compte.workers.dev"
 
-  // Clé utilisée UNIQUEMENT en mode dev local (API_BASE vide).
-  FINNHUB_KEY: "d8njp6hr01qvvn98gudgd8njp6hr01qvvn98gue0",  // FX Squawk (news) — conservé
+  // Clé Finnhub : jamais dans le code — chargée après connexion depuis
+  // Firestore (config/dataKeys, réglée par un rédacteur dans Paramètres → IA).
+  FINNHUB_KEY: "",
 
   CACHE_TTL_MS: 6 * 60 * 60 * 1000,   // 6h
   // Poids du score composite (somme = 1)
@@ -720,6 +721,7 @@ async function fetchJSON(url,opts){
 
 async function finnhubNews(category){
   if(CONFIG.API_BASE) return fetchJSON(CONFIG.API_BASE+'/finnhub?category='+category);
+  if(!CONFIG.FINNHUB_KEY) throw new Error('clé Finnhub non configurée (Paramètres → IA, rédacteurs)');
   return fetchJSON(`https://finnhub.io/api/v1/news?category=${category}&token=${CONFIG.FINNHUB_KEY}`);
 }
 
@@ -1020,6 +1022,11 @@ function relTime(ts){
   return Math.floor(s/86400)+' j';
 }
 async function loadNews(){
+  if(!CONFIG.API_BASE && !CONFIG.FINNHUB_KEY){
+    const nf=document.getElementById('news-feed');
+    if(nf) nf.innerHTML='<div class="news-loading">Flux de news en attente : un rédacteur doit renseigner la clé Finnhub dans ⚙️ Paramètres → IA du Sphinx Alliance.</div>';
+    return;
+  }
   try{
     const cats=['forex','general'];
     const results=await Promise.all(cats.map(cat=>finnhubNews(cat).catch(()=>[])));
@@ -1099,6 +1106,15 @@ const RATE_FB_CONFIG={apiKey:"AIzaSyA0T_I8fj5HJyIMJSm39j5PBJQ-4y8f1R0",authDomai
 const MACRO_EDITORS_FX=['mornaccokevin@gmail.com','malikaboubacarkoda@gmail.com'];
 let fxDb=null, fxAuthUser=null, rateMeta={updatedAt:null,updatedBy:''};
 function mpIsEditor(){return !!(fxAuthUser&&fxAuthUser.email&&MACRO_EDITORS_FX.includes(fxAuthUser.email.toLowerCase()));}
+// Clés Finnhub / Polygon : lues dans Firestore (membres connectés uniquement), une fois.
+let dataKeysLoaded=false;
+async function loadDataKeys(){
+  if(dataKeysLoaded||!fxDb) return;
+  dataKeysLoaded=true;
+  try{ const d=await fxDb.collection('config').doc('dataKeys').get(); const v=d.exists?d.data():{}; CONFIG.FINNHUB_KEY=v.finnhub||''; POLY_KEY=v.polygon||''; }
+  catch(e){ console.warn('dataKeys',e.message); }
+  loadNews(); startNewsAutoRefresh(); initTrends();
+}
 function initRateSync(){
   if(typeof firebase==='undefined') return;
   // Même session que le compte actif du hub (une app Firebase nommée par compte).
@@ -1109,7 +1125,7 @@ function initRateSync(){
   }catch(e){ try{fxApp=firebase.initializeApp(RATE_FB_CONFIG);}catch(e2){fxApp=firebase.app();} }
   try{
     fxDb=fxApp.firestore();
-    fxApp.auth().onAuthStateChanged(u=>{fxAuthUser=u;const ib=document.getElementById('mc-import-btn');if(ib)ib.style.display=mpIsEditor()?'':'none';renderRateExpectations();loadMacroNotes();loadMacroCompassScores();});
+    fxApp.auth().onAuthStateChanged(u=>{fxAuthUser=u;if(u)loadDataKeys();const ib=document.getElementById('mc-import-btn');if(ib)ib.style.display=mpIsEditor()?'':'none';renderRateExpectations();loadMacroNotes();loadMacroCompassScores();});
     fxDb.collection('config').doc('rateExpectations').onSnapshot(doc=>{
       if(doc.exists){
         const data=doc.data()||{};
@@ -1659,9 +1675,8 @@ async function fetchFxTicker(){
 /* ══ TENDANCES FX — sparklines via Polygon.io ══
    Plan gratuit = 5 requêtes/min + données différées. On limite le débit
    et on met en cache 20h (les données sont journalières). */
-// Proxy qui cache les clés API (voir cloudflare-worker/). Remplace par TON URL Worker.
-// Fichier LOCAL uniquement (retiré du site en ligne). Clés en direct = OK ici.
-const POLY_KEY='qd6eeiAxHOnQs1FtDmEFfkwbNc4sxArx';
+// Clé Polygon : jamais dans le code — chargée depuis Firestore (config/dataKeys).
+let POLY_KEY='';
 const FX_TRENDS=[['EUR/USD','EURUSD',4],['GBP/USD','GBPUSD',4],['USD/JPY','USDJPY',2],['USD/CHF','USDCHF',4],['AUD/USD','AUDUSD',4],['USD/CAD','USDCAD',4],['NZD/USD','NZDUSD',4],['XAU/USD','XAUUSD',1]];
 let polyQ=[], polyBusy=false, polyCount=0, polyMinStart=Date.now();
 function polyThrottle(fn){ polyQ.push(fn); polyPump(); }
@@ -1677,6 +1692,7 @@ function polyPump(){
 function trendCacheGet(sym){ try{const c=JSON.parse(localStorage.getItem('poly_tr_'+sym)); if(c && Date.now()-c.t < 20*3600*1000) return c.v;}catch(e){} return null; }
 function trendCacheSet(sym,v){ try{localStorage.setItem('poly_tr_'+sym, JSON.stringify({t:Date.now(),v})); }catch(e){} }
 async function fetchTrend(sym){
+  if(!POLY_KEY) return [];
   const to=new Date().toISOString().slice(0,10);
   const from=new Date(Date.now()-45*864e5).toISOString().slice(0,10);
   const url='https://api.polygon.io/v2/aggs/ticker/C:'+sym+'/range/1/day/'+from+'/'+to+'?adjusted=true&sort=asc&limit=60&apiKey='+POLY_KEY;
@@ -1713,9 +1729,8 @@ function initTrends(){
 /* ══ ANALYSE IA DU MARCHÉ (Gemini) ══
    L'IA analyse les VRAIS scores du terminal + l'actu (recherche web).
    Elle ne produit pas de données chiffrées : que du texte d'analyse. */
-// Fichier LOCAL uniquement : clé Gemini en direct. Repli multi-modèles.
-const GEMINI_KEY='AQ.Ab8RN6Ifg1zGbECBJY_fVCl5Ag5Ky_bripuLqE9oZxC8RzvXsA';
-const GEMINI_MODELS=['gemini-3.8-flash','gemini-flash-latest','gemini-flash-lite-latest','gemini-2.5-flash-lite','gemini-2.5-flash'];
+// Clé IA : uniquement celle de ⚙️ Paramètres → IA du Sphinx Alliance (page parente,
+// même origine). Aucune clé n'est écrite dans ce fichier.
 function mdToHtmlFx(t){
   let s=(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   s=s.replace(/^\s*###\s+(.+)$/gm,'<h3>$1</h3>').replace(/^\s*##\s+(.+)$/gm,'<h3>$1</h3>');
@@ -1724,26 +1739,17 @@ function mdToHtmlFx(t){
   s=s.replace(/\r?\n/g,'<br>');
   return s;
 }
-async function geminiCall(prompt, model, useSearch){
-  const body={contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.6,maxOutputTokens:1100}};
-  if(useSearch) body.tools=[{google_search:{}}];
-  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+GEMINI_KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const d=await r.json();
-  if(!r.ok){ const e=new Error((d.error&&d.error.message)||('HTTP '+r.status)); e.status=r.status; throw e; }
-  const cand=d.candidates&&d.candidates[0];
-  const parts=cand&&cand.content&&cand.content.parts;
-  return parts?parts.map(p=>p.text||'').join(''):'';
+function sphinxAi(){
+  try{ const P=window.parent; if(P&&P!==window&&typeof P.callAi==='function'&&typeof P.activeAiConfig==='function') return P; }catch(e){}
+  return null;
 }
-// Essaie chaque modèle (avec recherche web, puis sans) jusqu'à en trouver un qui répond
-async function geminiTry(prompt){
-  let lastErr='aucun modèle disponible';
-  for(const model of GEMINI_MODELS){
-    for(const useSearch of [true,false]){
-      try{ const t=await geminiCall(prompt, model, useSearch); if(t&&t.trim()) return t; }
-      catch(e){ lastErr=e.message; if(!useSearch && !/tool|search|grounding/i.test(e.message)) break; /* modèle KO → suivant */ }
-    }
-  }
-  throw new Error(lastErr);
+async function aiAsk(prompt){
+  const P=sphinxAi();
+  if(!P) throw new Error('ouvre le Macro Compass depuis le Sphinx Alliance');
+  const cfg=P.activeAiConfig();
+  if(!cfg.key) throw new Error('ajoute ta clé dans ⚙️ Paramètres → IA du Sphinx Alliance');
+  const txt=await P.callAi(cfg,'Tu es un stratège macro Forex. Réponds en français, en Markdown simple.',prompt,1500);
+  return { txt, label:(P.AI_PROVIDERS&&P.AI_PROVIDERS[cfg.provider]?P.AI_PROVIDERS[cfg.provider].label:cfg.provider)+' · '+cfg.model };
 }
 function aiBriefContext(){
   const arr=(typeof CURRENCIES!=='undefined'?CURRENCIES:[]).map(c=>({code:c.code,score:(CCY_DATA[c.code]?CCY_DATA[c.code].score:null)}))
@@ -1764,13 +1770,13 @@ async function generateAiBrief(force){
   const prompt="Tu es un stratège macro spécialisé Forex. Voici les scores de force macro (0-100) calculés par mon terminal, du plus fort au plus faible : "+ctx.scores+". "
     +(ctx.rates?("Taux directeurs & prochaines réunions : "+ctx.rates+". "):"")
     +"Rédige en FRANÇAIS un brief FX du jour, concis (~180 mots) et structuré : 1) les devises fortes et les devises faibles du moment, avec les thèmes macro qui l'expliquent ; 2) 2 à 3 paires ou situations à surveiller cette semaine. "
-    +"Appuie-toi sur l'actualité macro/banques centrales la plus récente (recherche web). Reste cohérent avec les scores fournis et N'INVENTE AUCUN chiffre précis (cours, %, niveaux) que tu ne connais pas. Utilise **gras** pour les points clés. Pas de titre d'introduction.";
+    +"Appuie-toi sur l'actualité macro/banques centrales la plus récente que tu connais. Reste cohérent avec les scores fournis et N'INVENTE AUCUN chiffre précis (cours, %, niveaux) que tu ne connais pas. Utilise **gras** pour les points clés. Pas de titre d'introduction.";
   const old=btn?btn.innerHTML:''; if(btn){btn.disabled=true;btn.innerHTML='⏳ Analyse…';}
   out.innerHTML='<div class="empty-mini">L\'IA analyse le marché (scores + actualité)…</div>';
   try{
-    const txt=await geminiTry(prompt);
+    const res=await aiAsk(prompt), txt=res.txt;
     if(!txt||!txt.trim()) throw new Error('réponse vide (quota atteint ?)');
-    const html=mdToHtmlFx(txt.trim())+'<div style="margin-top:12px;font-size:10px;color:var(--t3);font-family:var(--mono)">✨ Généré par IA (Gemini) à partir des scores du terminal + actualité — à recouper, ce n\'est pas un conseil.</div>';
+    const html=mdToHtmlFx(txt.trim())+'<div style="margin-top:12px;font-size:10px;color:var(--t3);font-family:var(--mono)">✨ Généré par IA ('+res.label.replace(/[<>&"]/g,'')+') à partir des scores du terminal + actualité — à recouper, ce n\'est pas un conseil.</div>';
     out.innerHTML=html;
     try{ localStorage.setItem('ai_brief_v1',JSON.stringify({t:Date.now(),html})); }catch(e){}
     if(meta) meta.textContent='MAJ à l\'instant';
@@ -1785,14 +1791,11 @@ function init(){
   renderRateExpectations();
   buildFromNotion();
   loadReport();
-  loadNews();
-  startNewsAutoRefresh();
   fetchFxTicker(); setInterval(fetchFxTicker, 15*60*1000);
   initRateSync();
   fetchPredictions(); setInterval(fetchPredictions, 10*60*1000);
   fetchCOT();
   setInterval(fetchCOT, 3 * 60 * 60 * 1000); // re-vérifie le rapport COT toutes les 3h
-  initTrends();
   generateAiBrief(false); // charge le dernier brief en cache (sans appel API)
 }
 window.addEventListener('load',init);

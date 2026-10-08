@@ -4660,7 +4660,15 @@
                         <button type="button" class="set-btn ghost danger-txt" onclick="removeAiKey()">Supprimer</button>
                     </div>
                     <div class="set-msg" id="ai-msg"></div>
-                    <div class="set-hint" style="margin-top:10px">🔒 La clé reste uniquement sur cet appareil (navigateur), elle n'est jamais envoyée à Firebase. Elle est utilisée par le module <b>Set-ups fondamentaux</b> pour analyser le Macro Compass et le Daily FX. Les appels sont facturés sur ton compte du fournisseur.</div>
+                    <div class="set-hint" style="margin-top:10px">🔒 La clé reste uniquement sur cet appareil (navigateur), elle n'est jamais envoyée à Firebase. C'est l'unique clé IA de tout le Sphinx Alliance : brief du Macro Compass, Set-ups fondamentaux et Coach IA du Performance Tracker. Les appels sont facturés sur ton compte du fournisseur.</div>
+                </div>
+                <div class="set-section" id="dk-block" style="display:none">
+                    <div class="set-lbl">Clés de données de l'alliance (rédacteurs)</div>
+                    <div class="set-hint" style="margin-bottom:8px">Utilisées par le Macro Compass pour tous les membres : Finnhub (flux de news) et Polygon (tendances FX). Stockées dans Firestore, lisibles seulement par les membres connectés — jamais dans le code du site.</div>
+                    <input type="password" id="dk-finnhub" class="fx-inp set-inp set-masked" placeholder="Clé Finnhub" autocomplete="off">
+                    <input type="password" id="dk-polygon" class="fx-inp set-inp set-masked" placeholder="Clé Polygon.io" autocomplete="off">
+                    <div class="set-row"><button type="button" class="set-btn" onclick="saveDataKeys()">Enregistrer les clés de données</button></div>
+                    <div class="set-msg" id="dk-msg"></div>
                 </div>
             </div>
 
@@ -5150,6 +5158,7 @@
         claude: { label: 'Claude', model: 'claude-opus-5', keyUrl: 'https://console.anthropic.com/settings/keys' },
         openai: { label: 'ChatGPT', model: 'gpt-5', keyUrl: 'https://platform.openai.com/api-keys' }
     };
+    window.AI_PROVIDERS = AI_PROVIDERS;   // lu par le Macro Compass (iframe, même origine)
     let aiDraftProvider = null;
     // Nom de modèle valide : lettres, chiffres, points, tirets (ex. gemini-2.5-flash).
     // Accepte "models/..." (format Google) et retire les espaces parasites.
@@ -5187,6 +5196,31 @@
     function renderAiSettings() {
         aiDraftProvider = getAiSettings().provider;
         fillAiFields();
+        renderDataKeys();
+    }
+    // Clés Finnhub / Polygon partagées (Firestore config/dataKeys, écriture rédacteurs)
+    async function renderDataKeys() {
+        const box = document.getElementById('dk-block');
+        if (!box) return;
+        const ed = auth && auth.currentUser && isMacroEditor();
+        box.style.display = ed ? '' : 'none';
+        if (!ed) return;
+        setMsg('dk-msg', '');
+        try {
+            const d = await db.collection('config').doc('dataKeys').get();
+            const v = d.exists ? d.data() : {};
+            document.getElementById('dk-finnhub').value = v.finnhub || '';
+            document.getElementById('dk-polygon').value = v.polygon || '';
+        } catch (e) { setMsg('dk-msg', 'Lecture impossible : ' + e.message, 'err'); }
+    }
+    async function saveDataKeys() {
+        if (!isMacroEditor()) return;
+        const finnhub = document.getElementById('dk-finnhub').value.trim();
+        const polygon = document.getElementById('dk-polygon').value.trim();
+        try {
+            await db.collection('config').doc('dataKeys').set({ finnhub, polygon, updatedAt: new Date().toISOString(), updatedBy: auth.currentUser.email || '' });
+            setMsg('dk-msg', 'Clés enregistrées ✅ Recharge le Macro Compass pour les utiliser.', 'ok');
+        } catch (e) { setMsg('dk-msg', 'Échec : ' + e.message, 'err'); }
     }
     function fillAiFields() {
         const st = getAiSettings();

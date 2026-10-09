@@ -4950,27 +4950,49 @@
         saUnlockedUid = u.uid;
         try { sessionStorage.setItem(SA_UNLOCK_KEY, saAppName + '|' + u.uid); } catch (e) {}
     }
+    // Google : toujours afficher le sélecteur de comptes (sinon Google reprend
+    // en silence le dernier compte utilisé → impossible d'en ajouter un autre).
+    function googleProvider(hint) {
+        const p = new firebase.auth.GoogleAuthProvider();
+        const params = { prompt: 'select_account' };
+        if (hint) params.login_hint = hint;
+        p.setCustomParameters(params);
+        return p;
+    }
     // Connexion (email, inscription ou Google) dans la session du bon compte.
-    async function saSignIn(email, fn) {
+    // viaGoogle : la session Google du navigateur suffit à se connecter, donc si
+    // Face ID / Touch ID est activé pour ce compte sur l'appareil, on le demande.
+    async function saSignIn(email, fn, viaGoogle) {
         const acc = email && getRememberedAccounts().find(a => a.email.toLowerCase() === email.toLowerCase());
         const target = (acc && acc.app) ? acc.app : (auth.currentUser ? saNewAppName() : saAppName);
         if (target === saAppName) {
-            saJustSignedIn = true;
+            saJustSignedIn = viaGoogle ? 'google' : true;
             try { await fn(auth); } catch (e) { saJustSignedIn = false; throw e; }
-            if (auth.currentUser) saEnter(auth.currentUser);
+            const u = auth.currentUser;
+            if (!u) return;
+            if (viaGoogle && bioCredFor(u.uid)) { saJustSignedIn = false; showLockScreen(u); return; }
+            saEnter(u);
             return;
         }
         const other = saGetApp(target).auth();
         await fn(other);
         const u = other.currentUser;
         if (!u) return;
+        // Compte choisi = compte déjà ouvert → rien à ajouter.
+        if (auth.currentUser && auth.currentUser.uid === u.uid) {
+            try { await other.signOut(); } catch (e) {}
+            throw Object.assign(new Error('same'), { code: 'sa/same-account' });
+        }
         const prev = getRememberedAccounts().find(a => a.email === u.email);
         if (prev && prev.app && prev.app !== target && prev.app !== saAppName) {
             try { await saGetApp(prev.app).auth().signOut(); } catch (e) {}
         }
         rememberAccount(u, target);
         localStorage.setItem(SA_ACTIVE_KEY, target);
-        try { sessionStorage.setItem(SA_UNLOCK_KEY, target + '|' + u.uid); } catch (e) {}   // vient de saisir son mot de passe
+        // Vient de saisir son mot de passe → pas de 2e vérification. Via Google avec
+        // Face ID activé → l'écran de vérification s'affichera après le rechargement.
+        if (!(viaGoogle && bioCredFor(u.uid)))
+            try { sessionStorage.setItem(SA_UNLOCK_KEY, target + '|' + u.uid); } catch (e) {}
         location.reload();
     }
     // Utilisateur vérifié → hub.
@@ -5063,7 +5085,7 @@
         const u = auth.currentUser;
         if (!u) return;
         try {
-            await u.reauthenticateWithPopup(new firebase.auth.GoogleAuthProvider());
+            await u.reauthenticateWithPopup(googleProvider(u.email));
             saEnter(u);
         } catch (e) {
             lockErr(e && e.code === 'auth/user-mismatch' ? 'Choisis le compte Google ' + u.email + '.' : friendlyErr(e && e.code));
@@ -6258,8 +6280,8 @@ Ce qui manque ou est daté.`;
                 rememberAccount(user, saAppName);
                 // Juste connecté avec son mot de passe, ou déjà vérifié dans cet onglet → hub.
                 // Sinon (nouvelle ouverture du site) → vérification Face ID / Touch ID ou mot de passe.
-                if (saJustSignedIn || saIsUnlocked(user)) saEnter(user);
-                else showLockScreen(user);
+                if (saJustSignedIn === true || saIsUnlocked(user)) saEnter(user);
+                else if (saJustSignedIn !== 'google') showLockScreen(user);   // Google : décidé par saSignIn
             } else {
                 saUnlocked = false;
                 // Déconnecté (ou session expirée) → retour au portail.
@@ -6345,7 +6367,9 @@ Ce qui manque ou est daté.`;
             'auth/popup-closed-by-user': 'Fenêtre Google fermée avant la fin de la connexion.',
             'auth/cancelled-popup-request': 'Connexion Google annulée.',
             'auth/unauthorized-domain': 'Ce domaine n\'est pas autorisé dans Firebase (Authentication → Settings → Authorized domains).',
-            'auth/network-request-failed': 'Problème de réseau.'
+            'auth/network-request-failed': 'Problème de réseau.',
+            'auth/operation-not-supported-in-this-environment': 'Connexion Google impossible dans ce mode (app sur l\'écran d\'accueil) : ouvre le site dans Safari/Chrome ou utilise email + mot de passe.',
+            'sa/same-account': 'Tu es déjà connecté avec ce compte : choisis un autre compte Google.'
         };
         return m[code] || ('Erreur' + (code ? ' (' + code + ')' : '') + '. Réessayez.');
     }
@@ -6384,7 +6408,7 @@ Ce qui manque ou est daté.`;
         if (!auth)
             return showAuthErr(SA_NOT_READY);
         try {
-            await saSignIn(null, a => a.signInWithPopup(new firebase.auth.GoogleAuthProvider()));
+            await saSignIn(null, a => a.signInWithPopup(googleProvider()), true);
         } catch (err) {
             showAuthErr(friendlyErr(err.code));
         }

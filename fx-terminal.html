@@ -1114,7 +1114,7 @@ async function loadDataKeys(){
   if(dataKeysLoaded||!fxDb) return;
   dataKeysLoaded=true;
   try{ const d=await fxDb.collection('config').doc('dataKeys').get(); const v=d.exists?d.data():{}; CONFIG.FINNHUB_KEY=v.finnhub||''; POLY_KEY=v.polygon||''; }
-  catch(e){ console.warn('dataKeys',e.message); }
+  catch(e){ console.warn('dataKeys',e.message); dataKeysLoaded=false; return; }   // nouvel essai à la prochaine connexion
   loadNews(); startNewsAutoRefresh(); initTrends();
 }
 function initRateSync(){
@@ -1127,8 +1127,16 @@ function initRateSync(){
   }catch(e){ try{fxApp=firebase.initializeApp(RATE_FB_CONFIG);}catch(e2){fxApp=firebase.app();} }
   try{
     fxDb=fxApp.firestore();
-    fxApp.auth().onAuthStateChanged(u=>{fxAuthUser=u;if(u)loadDataKeys();const ib=document.getElementById('mc-import-btn');if(ib)ib.style.display=mpIsEditor()?'':'none';renderRateExpectations();loadMacroNotes();loadMacroCompassScores();});
-    fxDb.collection('config').doc('rateExpectations').onSnapshot(doc=>{
+    fxApp.auth().onAuthStateChanged(u=>{fxAuthUser=u;if(u){loadDataKeys();subscribeRates();}const ib=document.getElementById('mc-import-btn');if(ib)ib.style.display=mpIsEditor()?'':'none';renderRateExpectations();loadMacroNotes();loadMacroCompassScores();});
+  }catch(e){console.warn('initRateSync',e.message);}
+}
+// Attentes de taux : abonnement lancé seulement une fois connecté (avant, Firestore
+// refuse et l'abonnement mourait sans jamais être relancé après la connexion).
+let rateUnsub=null;
+function subscribeRates(){
+  if(rateUnsub||!fxDb) return;
+  try{
+    rateUnsub=fxDb.collection('config').doc('rateExpectations').onSnapshot(doc=>{
       if(doc.exists){
         const data=doc.data()||{};
         rateMeta.updatedAt=data.updatedAt||null; rateMeta.updatedBy=data.updatedBy||'';
@@ -1140,8 +1148,8 @@ function initRateSync(){
         });
         renderRateExpectations(); updateRateBadge();
       }
-    }, err=>console.warn('rateExpectations',err.message));
-  }catch(e){console.warn('initRateSync',e.message);}
+    }, err=>{ console.warn('rateExpectations',err.message); rateUnsub=null; });
+  }catch(e){ rateUnsub=null; console.warn('subscribeRates',e.message); }
 }
 function updateRateBadge(){
   const b=document.getElementById('rate-updated');

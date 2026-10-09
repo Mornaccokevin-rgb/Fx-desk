@@ -4936,6 +4936,18 @@
         return name === '[DEFAULT]' ? firebase.initializeApp(firebaseConfig) : firebase.initializeApp(firebaseConfig, name);
     }
     function saNewAppName() { return 'acc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+    // Session du compte qu'on s'apprête à AJOUTER, créée à l'avance : sur iPhone /
+    // Safari, Firebase prépare la fenêtre Google d'une session dès sa création
+    // (chargement réseau). Créée seulement au clic, la fenêtre s'ouvrait trop tard
+    // et Safari la bloquait → impossible d'ajouter un compte Google sur mobile.
+    let saPendingApp = null;
+    function saPrepareNewApp() {
+        if (!saPendingApp) {
+            saPendingApp = saNewAppName();
+            try { saGetApp(saPendingApp).auth(); } catch (e) {}
+        }
+        return saPendingApp;
+    }
     function saActivateApp(name) {
         localStorage.setItem(SA_ACTIVE_KEY, name);
         try { sessionStorage.removeItem(SA_UNLOCK_KEY); } catch (e) {}
@@ -4964,7 +4976,7 @@
     // Face ID / Touch ID est activé pour ce compte sur l'appareil, on le demande.
     async function saSignIn(email, fn, viaGoogle) {
         const acc = email && getRememberedAccounts().find(a => a.email.toLowerCase() === email.toLowerCase());
-        const target = (acc && acc.app) ? acc.app : (auth.currentUser ? saNewAppName() : saAppName);
+        const target = (acc && acc.app) ? acc.app : (auth.currentUser ? saPrepareNewApp() : saAppName);
         if (target === saAppName) {
             saJustSignedIn = viaGoogle ? 'google' : true;
             try { await fn(auth); } catch (e) { saJustSignedIn = false; throw e; }
@@ -6307,6 +6319,7 @@ Ce qui manque ou est daté.`;
         document.getElementById('landing-intro').style.display = 'none';
         document.getElementById('fx-auth').style.display = 'flex';
         switchAuthTab(tab === 'signup' ? 'signup' : 'login');
+        if (auth && auth.currentUser) saPrepareNewApp();   // ajout d'un compte : session prête avant le clic
         saAccountsHtml('auth-accounts', auth && auth.currentUser ? auth.currentUser.email : null, 'Comptes sur cet appareil');
         window.scrollTo(0, 0);
     }

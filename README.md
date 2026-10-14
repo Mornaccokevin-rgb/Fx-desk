@@ -20,8 +20,10 @@ Terminal macro temps réel sur **9 devises** (USD, EUR, GBP, JPY, CHF, AUD, NZD,
 - Note globale **/100** par devise (> 50 = biais acheteur).
 - 4 piliers : **croissance · inflation · politique monétaire · géopolitique**.
 - **News Feed** live (Finnhub) avec auto-refresh toutes les 15 min + rafraîchissement manuel.
-- Rang de force relative, biais, driver dominant et thèses (semaine actuelle / à venir / le mois) : lus **en direct** depuis la page Notion « Biais & Force Relative » via le Cloudflare Worker `cloudflare-worker/notion-worker.js` — zéro donnée en dur, zéro API payante.
+- Rang de force relative, biais et driver dominant : lus **en direct** depuis la page Notion « Biais & Force Relative » via le Cloudflare Worker `cloudflare-worker/notion-worker.js` — zéro donnée en dur, zéro API payante.
 - Les 4 piliers /100 par devise sont un **jugement** porté par Claude sur les pages Notion (Biais & Force Relative + Track Record Fondamental), écrit dans Firestore (collection `macroCompass`) à la demande de Kevin (« mets à jour le macro compass »), puis lu en direct par le site. Claude prépare un fichier `macro-compass-AAAA-MM-JJ.json`, qu'un rédacteur publie avec le bouton **📥 Importer une mise à jour** du Macro Compass. Affichage **N/A** si une devise n'est pas encore couverte — jamais de donnée périmée déguisée en live.
+- Fiche devise : driver dominant + **récap du mois** (résumé + frise des faits datés). Clic sur un pilier → **vue dédiée** : verdict, tableau de toutes les données (réel / consensus / précédent / lecture), analyse, à surveiller, synthèses Daily FX liées. Le contenu vient de la skill `macro-compass-fx` (format d'import v2 : Notion + recherches web, dont le CNH).
+- **Attentes de taux** : date de la prochaine réunion calculée depuis le calendrier des banques centrales (`config/rateExpectations.meetings`, avec un calendrier par défaut dans `fx-terminal.html`). Clic sur une banque → **historique des attentes** (graphique cumulatif hausse / statu quo / baisse + bps fin d'année), alimenté à chaque collage, modification ou import (`config/rateHistory`).
 
 ### 🧠 Daily FX
 - Synthèses macro post-annonces (rédacteurs), avec tags gérables et historique par semaine.

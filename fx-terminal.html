@@ -26,11 +26,16 @@
   --accent:#5b8cff;--accent-dim:rgba(91,140,255,.12);
   --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
   --r:6px;--r2:10px;--r3:14px;
+  --t1:#e6e9f0;
+  /* Attentes de taux : hausse / statu quo / baisse (palette divergente validée CVD sur --panel) */
+  --rx-hike:#3987e5;--rx-hold:#b4b2a9;--rx-cut:#e66767;--rx-bps:#d95926;
 }
 body.light{
   --bg:#eef1f6;--bg2:#e4e8f0;--panel:#ffffff;--panel2:#f4f6fa;--panel3:#e9edf4;
   --bd:rgba(0,0,0,.09);--bd2:rgba(0,0,0,.15);
   --t:#10131a;--t2:#4a5163;--t3:#6b7185;--t4:#9aa0b2;
+  --t1:#10131a;
+  --rx-hike:#2a78d6;--rx-hold:#898781;--rx-cut:#e34948;--rx-bps:#eb6834;
 }
 html,body{min-height:100vh}
 body{background:var(--bg);color:var(--t);font-family:var(--sans);transition:background .25s,color .25s}
@@ -299,9 +304,13 @@ a{color:inherit;text-decoration:none}
 .rate-meet b{color:var(--t2)}
 .rate-bars{display:flex;height:30px;border-radius:var(--r);overflow:hidden;background:var(--panel3)}
 .rate-seg{display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;font-family:var(--mono);color:#06070a;transition:width .5s ease;min-width:0;overflow:hidden;white-space:nowrap}
-.seg-hike{background:var(--buy)}
-.seg-hold{background:var(--amber)}
-.seg-cut{background:var(--sell)}
+.seg-hike{background:var(--rx-hike)}
+.seg-hold{background:var(--rx-hold)}
+.seg-cut{background:var(--rx-cut)}
+.rate-seg+.rate-seg{border-left:2px solid var(--panel)}
+.rate-card{cursor:pointer;transition:border-color .15s}
+.rate-card:hover{border-color:var(--bd2)}
+.rate-cd{color:var(--t3);font-weight:400}
 .rate-legend{display:flex;gap:14px;margin-top:9px;font-size:10px;color:var(--t3)}
 .rate-legend span{display:flex;align-items:center;gap:5px}
 .rate-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
@@ -318,8 +327,9 @@ a{color:inherit;text-decoration:none}
 .empty-mini{padding:30px;text-align:center;color:var(--t3);font-size:12.5px}
 .rate-edit{background:none;border:1px solid var(--bd2);border-radius:6px;color:var(--t2);cursor:pointer;font-size:12px;line-height:1;padding:3px 6px;margin-left:8px}
 .rate-edit:hover{border-color:var(--accent);color:var(--accent)}
-.rx-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:20px}
-.rx-box{background:var(--panel);border:1px solid var(--bd2);border-radius:14px;padding:24px;width:100%;max-width:420px;font-family:'Space Grotesk',sans-serif}
+.rx-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.rx-box{background:var(--panel);border:1px solid var(--bd2);border-radius:14px;padding:24px;width:100%;max-width:420px;font-family:'Space Grotesk',sans-serif;margin:auto;position:relative}
+html.rx-lock,html.rx-lock body{overflow:hidden;overscroll-behavior:none}
 .rx-box h3{margin:0 0 16px;font-size:15px;color:var(--t)}
 .rx-fld{margin-bottom:12px}
 .rx-fld label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:5px}
@@ -438,6 +448,81 @@ a{color:inherit;text-decoration:none}
 .sub-analysis img{max-width:100%;height:auto;border-radius:6px}
 .sub-context{margin-top:14px;padding-top:12px;border-top:1px dashed var(--bd)}
 .sub-context-h{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+/* Vue d'ensemble : récap du mois */
+.ov-wrap{margin-top:4px}
+.recap{margin-top:14px}
+.recap-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.recap-per{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--t3);text-transform:none;letter-spacing:0}
+.recap-p{font-size:13px;line-height:1.65;color:var(--t2);overflow-wrap:anywhere}
+.recap-p strong{color:var(--t1)}
+.recap-list{list-style:none;margin:12px 0 0;padding:0;border-left:2px solid var(--bd2)}
+.recap-list li{position:relative;display:grid;grid-template-columns:62px 1fr;gap:10px;padding:6px 0 6px 14px;font-size:12.5px;line-height:1.55;color:var(--t2);overflow-wrap:anywhere}
+.recap-list li::before{content:'';position:absolute;left:-5px;top:12px;width:8px;height:8px;border-radius:50%;background:var(--panel);border:2px solid var(--accent)}
+.recap-list strong{color:var(--t1)}
+.recap-d{font-family:var(--mono);font-size:11px;color:var(--t3);padding-top:1px}
+.recap-next{margin-top:14px;font-size:12px;color:var(--t2);line-height:1.55;padding:9px 12px;background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2)}
+.recap-next b{color:var(--t1)}
+/* Vue pilier */
+.pv-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.pv-back{background:var(--panel2);border:1px solid var(--bd);color:var(--t2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.pv-back:hover{border-color:var(--accent);color:var(--accent)}
+.pv-title{font-size:15px;font-weight:700;color:var(--t1)}
+.pv-score{font-family:var(--mono);font-size:15px;font-weight:700;margin-left:auto}
+.pv-sec{margin-top:18px}
+.pv-h{font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.pv-verdict{padding:11px 14px;background:var(--panel2);border:1px solid var(--bd);border-left:3px solid var(--accent);border-radius:var(--r2);font-size:13px;line-height:1.6;color:var(--t2);overflow-wrap:anywhere}
+.pv-verdict strong{color:var(--t1)}
+.pv-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.pv-tbl th{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;text-align:right;padding:6px 8px;border-bottom:1px solid var(--bd2);white-space:nowrap}
+.pv-tbl th:first-child,.pv-tbl td:first-child{text-align:left}
+.pv-tbl td{padding:8px;border-bottom:1px solid var(--bd);text-align:right;font-family:var(--mono);color:var(--t2);vertical-align:top}
+.pv-tbl td.pv-ind{font-family:var(--sans);color:var(--t1);font-weight:600}
+.pv-tbl td.pv-act{color:var(--t1);font-weight:700}
+.pv-per{display:block;font-family:var(--mono);font-size:10.5px;font-weight:400;color:var(--t3);margin-top:2px}
+.pv-com td{font-family:var(--sans);font-size:12px;color:var(--t2);text-align:left;padding-top:0;line-height:1.5}
+.pv-imp{display:inline-flex;align-items:center;gap:4px;font-family:var(--sans);font-size:11px;font-weight:600;white-space:nowrap}
+.pv-src{font-size:10px;color:var(--t3);font-family:var(--mono);margin-left:6px;font-weight:400}
+.pv-txt{font-size:13px;line-height:1.65;color:var(--t2);overflow-wrap:anywhere}
+.pv-txt strong{color:var(--t1)}
+.pv-watch{list-style:none;padding:0;margin:0}
+.pv-watch li{display:grid;grid-template-columns:62px 1fr;gap:10px;padding:5px 0;font-size:12.5px;color:var(--t2);border-bottom:1px dashed var(--bd)}
+.pv-empty{font-size:12.5px;color:var(--t3);line-height:1.6}
+.pv-foot{margin-top:16px;font-size:10.5px;color:var(--t3);font-family:var(--mono)}
+@media(max-width:620px){
+  .pv-tbl thead{display:none}
+  .pv-tbl,.pv-tbl tbody,.pv-tbl tr,.pv-tbl td{display:block;width:100%}
+  .pv-tbl tr.pv-row{display:grid;grid-template-columns:repeat(3,1fr);gap:2px 8px;padding:8px 0 4px;border-top:1px solid var(--bd)}
+  .pv-tbl tr.pv-row td{border:0;padding:2px 0;text-align:left}
+  .pv-tbl tr.pv-row td.pv-ind{grid-column:1/-1}
+  .pv-tbl tr.pv-row td[data-l]::before{content:attr(data-l);display:block;font-family:var(--sans);font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+  .pv-tbl tr.pv-com td{border:0;padding:0 0 8px}
+  .recap-list li,.pv-watch li{grid-template-columns:52px 1fr}
+}
+/* Détail d'une banque centrale : historique des attentes */
+.rd-box{max-width:760px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain}
+.rd-bar{display:flex;height:26px;border-radius:var(--r);overflow:hidden;background:var(--panel3)}
+.rd-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:8px;background:var(--panel2);border:1px solid var(--bd);color:var(--t2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.rd-close:hover{color:var(--t)}
+.rd-meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:var(--t2);margin:-6px 0 16px}
+.rd-meta b{color:var(--t1)}
+.rd-next{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 16px}
+.rd-chip{font-family:var(--mono);font-size:10.5px;color:var(--t2);background:var(--panel2);border:1px solid var(--bd);border-radius:20px;padding:3px 9px}
+.rd-chip.first{color:var(--t1);border-color:var(--accent)}
+.rd-h{font-size:11.5px;font-weight:700;color:var(--t1);margin:18px 0 4px}
+.rd-sub{font-size:11px;color:var(--t3);margin-bottom:8px}
+.rd-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--t2);margin-bottom:6px}
+.rd-legend span{display:flex;align-items:center;gap:6px}
+.rd-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.rd-chart{position:relative;height:220px}
+.rd-chart.sm{height:150px}
+.rd-empty{font-size:12px;color:var(--t3);line-height:1.6;padding:14px;background:var(--panel2);border:1px dashed var(--bd2);border-radius:var(--r2)}
+.rd-tbl{width:100%;border-collapse:collapse;font-size:11.5px;font-family:var(--mono);margin-top:8px}
+.rd-tbl th{font-size:9.5px;color:var(--t3);font-weight:600;text-transform:uppercase;padding:5px 6px;border-bottom:1px solid var(--bd2);text-align:right}
+.rd-tbl td{padding:5px 6px;border-bottom:1px solid var(--bd);text-align:right;color:var(--t2)}
+.rd-tbl th:first-child,.rd-tbl td:first-child{text-align:left}
+.rd-box details summary{cursor:pointer;font-size:11.5px;color:var(--t2);margin-top:14px}
+.rd-note{font-size:12.5px;color:var(--t2);line-height:1.6;margin-top:6px}
+@media(max-width:620px){.rd-box{padding:18px 16px}.rd-chart{height:200px}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -648,6 +733,35 @@ const RATE_EXPECTATIONS = {
   NZD:{ bank:'RBNZ', flag:'🇳🇿', rate:'3.00%',      meeting:'9 juil. 2026',     hike:0,  hold:62, cut:38 },
   CAD:{ bank:'BoC',  flag:'🇨🇦', rate:'2.75%',      meeting:'29 juil. 2026',    hike:0,  hold:68, cut:32 },
 };
+// Calendrier des réunions (jour de la DÉCISION), relevé en oct. 2026 sur les calendriers
+// officiels (Fed, BCE, BoE, BoC, RBA 2026, BoJ…) — 2027 : RBA, RBNZ (fin), SNB et BoJ encore
+// à confirmer. La skill du Macro Compass le rafraîchit à chaque import (config/rateExpectations.meetings),
+// et la date affichée passe toute seule à la réunion suivante.
+const DEFAULT_MEETINGS={
+  USD:['2026-10-28','2026-12-09','2027-01-27','2027-03-17','2027-04-28','2027-06-09','2027-07-28','2027-09-15','2027-10-27','2027-12-08'],
+  EUR:['2026-10-29','2026-12-17','2027-02-04','2027-03-18','2027-04-29','2027-06-10','2027-07-22','2027-09-09','2027-10-28','2027-12-16'],
+  GBP:['2026-11-05','2026-12-17','2027-02-04','2027-03-18','2027-04-29','2027-06-17','2027-07-29','2027-09-16','2027-11-04','2027-12-16'],
+  JPY:['2026-10-30','2026-12-18','2027-01-22','2027-03-18','2027-04-28','2027-06-11','2027-07-22','2027-09-22','2027-10-29','2027-12-17'],
+  CHF:['2026-12-10','2027-03-18','2027-06-24','2027-09-23','2027-12-16'],
+  AUD:['2026-11-03','2026-12-08','2027-02-09','2027-03-23','2027-05-04','2027-06-22','2027-08-10','2027-09-21','2027-11-02','2027-12-14'],
+  NZD:['2026-10-28','2026-12-09','2027-02-10','2027-03-17','2027-05-05','2027-06-16','2027-08-04','2027-09-15'],
+  CAD:['2026-10-28','2026-12-09','2027-01-27','2027-03-03','2027-04-28','2027-06-02','2027-07-21','2027-09-08','2027-10-27','2027-12-08'],
+};
+let RATE_MEETINGS={};   // calendrier publié (Firestore) : prioritaire sur DEFAULT_MEETINGS
+let RATE_HISTORY=[];    // config/rateHistory.entries : une entrée par collage / modification / import
+const ISO_DAY=/^\d{4}-\d{2}-\d{2}$/;
+function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function isoToDate(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
+function meetingsOf(code){ const m=RATE_MEETINGS[code]; return (Array.isArray(m)&&m.length?m:DEFAULT_MEETINGS[code])||[]; }
+function upcomingMeetings(code){ const t=todayKey(); return meetingsOf(code).filter(x=>ISO_DAY.test(x)&&x>=t).sort(); }
+function fmtMeetDate(iso){ return isoToDate(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}); }
+function daysUntil(iso){ const t=new Date(); t.setHours(0,0,0,0); return Math.round((isoToDate(iso)-t)/864e5); }
+function meetingInfo(code,r){
+  const up=upcomingMeetings(code)[0];
+  if(!up) return {txt:(r&&r.meeting)||'—',cd:''};
+  const n=daysUntil(up);
+  return {txt:fmtMeetDate(up),cd:n===0?"aujourd'hui":n===1?'demain':'dans '+n+' j',iso:up};
+}
 
 /* ══════════════════════════════════════════════════════════════
    NOTION = API — force des devises en LIVE depuis le Worker Cloudflare
@@ -662,6 +776,7 @@ let NOTION_UPDATED = '';
 // Fondamental). Rien n'est en dur ici — voir loadMacroCompassScores().
 let NOTION_DIMS = {};
 let PILLAR_NOTES = {}; // code -> {croissance,inflation,monetaire,geo}: texte de verdict
+let MC_DOCS = {};      // code -> fiche complète importée (récap du mois, données des piliers…)
 let macroCompassLoaded = false;
 function loadMacroCompassScores(){
   if(!fxDb||!fxAuthUser||macroCompassLoaded) return;
@@ -674,6 +789,7 @@ function loadMacroCompassScores(){
         return;
       }
       const data=doc.data()||{}; const p=data.pillars||{};
+      MC_DOCS[code]=data;
       NOTION_DIMS[code]={
         croissance: p.croissance ? p.croissance.score : null,
         inflation:  p.inflation ? p.inflation.score : null,
@@ -733,6 +849,14 @@ function scoreColor(s){return s>=50?'var(--buy)':'var(--sell)';}
    SOURCE PRINCIPALE : NOTION (remplace les API pour la force des devises)
 ═══════════════════════════════════════════════════════════════ */
 // Récupère le scoreboard en LIVE depuis le Worker Notion (avec cache de secours)
+// Devise absente de la page Notion (ex. CNH, couvert par recherche web) : on reprend
+// biais, rang et driver de la fiche importée par la skill.
+function mcNotionFallback(code){
+  const d=MC_DOCS[code]; if(!d||d.notCovered) return {};
+  const o={}; ['bias','biasLabel','driver'].forEach(k=>{ if(d[k]) o[k]=d[k]; });
+  if(d.rank!=null) o.rank=d.rank;
+  return o;
+}
 async function buildFromNotion(){
   let data=null;
   try{
@@ -744,7 +868,9 @@ async function buildFromNotion(){
     try{ data=JSON.parse(localStorage.getItem('fxmt_notion_biais')); }catch(e){}
   }
   const up=document.getElementById('dash-updated');
-  if(!data||!data.currencies){ if(up) up.textContent='Notion indisponible'; return; }
+  // Notion injoignable : on affiche quand même les notes publiées dans le Compass.
+  const notionOk=!!(data&&data.currencies);
+  if(!notionOk) data={currencies:{}};
   NOTION_UPDATED=data.updated||NOTION_UPDATED;
   const W=CONFIG.WEIGHTS;
   CURRENCIES.forEach(c=>{
@@ -765,12 +891,12 @@ async function buildFromNotion(){
         monetaire:{score:dm?dm.monetaire:null,live:false},
         geo:{score:dm?dm.geo:null,live:false}
       },
-      notion:Object.assign({bias:'neutre',rank:null}, n||{})
+      notion:Object.assign({bias:'neutre',rank:null}, mcNotionFallback(c.code), n||{})
     };
   });
   renderGrid();
   if(activeCcy) renderDetail();
-  if(up) up.textContent='Notion · MAJ '+(NOTION_UPDATED||'');
+  if(up) up.textContent=notionOk?('Notion · MAJ '+(NOTION_UPDATED||'')):'Notion indisponible · notes du Compass';
 }
 // ── Rapport hebdo Notion : détail par dimension (live, depuis le Worker) ──
 let REPORT_BY_CCY={}, REPORT_GLOBAL='', REPORT_TITLE='', activeDim=null;
@@ -849,7 +975,7 @@ function noteRecapHTML(n){
   if(n.previous) figs.push('Préc. '+esc(n.previous));
   return `<div class="sub-recap"><div class="sub-recap-h">${esc(n.event)} <span class="sub-date">${esc(n.date||'')}</span></div>${figs.length?'<div class="sub-figs">'+figs.join(' · ')+'</div>':''}<div class="sub-analysis">${n.analysis||''}</div></div>`;
 }
-function openDimDetail(dim){ activeDim=(activeDim===dim?null:dim); activeSub=null; renderDetail(); }
+function openDimDetail(dim){ activeDim=(!dim||activeDim===dim)?null:dim; activeSub=null; renderDetail(); }
 function openSub(id){ activeSub=(activeSub===id?null:id); renderDetail(); }
 
 function signalOfBias(bias){
@@ -915,6 +1041,85 @@ function closeDetail(){activeCcy=null;document.getElementById('detail-mount').in
 
 function dimDot(s){const c=s==null?'var(--t4)':scoreColor(s);return c;}
 
+const PILLAR_META={
+  croissance:{key:'croissance',  lbl:'Croissance',          ico:'📈', notes:['croissance','emploi']},
+  inflation: {key:'inflation',   lbl:'Inflation',           ico:'🔥', notes:['inflation']},
+  monetaire: {key:'politiqueMonetaire', lbl:'Politique monétaire', ico:'🏦', notes:['monetaire']},
+  geo:       {key:'geopolitique',lbl:'Géopolitique',        ico:'🌍', notes:[]}
+};
+function escH(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtDay(iso){
+  const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso||''); if(!m) return escH(iso||'');
+  return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}).replace('.','');
+}
+// Lecture d'une donnée pour la devise : + soutien, - pèse, = neutre (toujours avec un libellé, jamais la couleur seule)
+function impactHTML(v){
+  const t=String(v||'').trim();
+  if(t==='+'||/^(soutien|positif|haussier)/i.test(t)) return '<span class="pv-imp" style="color:var(--buy)">▲ Soutien</span>';
+  if(t==='-'||t==='−'||/^(p[eè]se|n[ée]gatif|baissier)/i.test(t)) return '<span class="pv-imp" style="color:var(--sell)">▼ Pèse</span>';
+  if(t) return '<span class="pv-imp" style="color:var(--t3)">● Neutre</span>';
+  return '';
+}
+// Synthèses Daily FX liées au pilier (sous-composantes datées)
+function pillarNotesHTML(code,dim){
+  const meta=PILLAR_META[dim]; if(!meta||!meta.notes.length) return '';
+  const seen=new Set(), notes=[];
+  meta.notes.forEach(k=>dimNotes(code,k).forEach(n=>{ if(!seen.has(n.id)){ seen.add(n.id); notes.push(n); } }));
+  notes.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  if(!notes.length) return '';
+  let h='<div class="pv-sec"><div class="pv-h">📝 Synthèses Daily FX liées</div><div class="sub-chips">'+notes.map(n=>`<button class="sub-chip${activeSub===n.id?' active':''}" onclick="openSub('${n.id}')">${escH(subLabel(n.event))} <span class="sub-chip-date">${escH((n.date||'').slice(5))}</span></button>`).join('')+'</div>';
+  if(activeSub){ const n=notes.find(x=>x.id===activeSub); if(n) h+=noteRecapHTML(n); }
+  return h+'</div>';
+}
+function pillarViewHTML(code,dim,d){
+  const meta=PILLAR_META[dim]; const doc=MC_DOCS[code]||{};
+  const p=(doc.pillars||{})[meta.key]||{};
+  const sc=d.dims[dim]&&d.dims[dim].score;
+  const scCol=sc==null?'var(--t4)':scoreColor(sc);
+  const md=t=>mdToHtmlFx(String(t||''));
+  let h=`<div class="pv-top"><button class="pv-back" onclick="openDimDetail(null)">← Vue d'ensemble</button><span class="pv-title">${meta.ico} ${meta.lbl} · ${code}</span><span class="pv-score" style="color:${scCol}">${sc!=null?sc:'—'}<span style="font-size:10px;color:var(--t3)"> /100</span></span></div>`;
+  if(p.note) h+=`<div class="pv-verdict">🧭 <b>Verdict :</b> ${md(p.note)}</div>`;
+  const rows=Array.isArray(p.data)?p.data:[];
+  if(rows.length){
+    h+='<div class="pv-sec"><div class="pv-h">📊 Données</div><table class="pv-tbl"><thead><tr><th>Indicateur</th><th>Réel</th><th>Consensus</th><th>Précédent</th><th>Lecture</th></tr></thead><tbody>';
+    rows.forEach(r=>{
+      const per=[r.periode,r.date?fmtDay(r.date):''].filter(Boolean).join(' · ');
+      const src=r.source&&/web/i.test(r.source)?'<span class="pv-src">web</span>':'';
+      h+=`<tr class="pv-row"><td class="pv-ind">${escH(r.indicateur||r.nom||'')}${src}${per?`<span class="pv-per">${per}</span>`:''}</td><td class="pv-act" data-l="Réel">${escH(r.actuel!=null?r.actuel:'—')}</td><td data-l="Consensus">${escH(r.consensus!=null&&r.consensus!==''?r.consensus:'—')}</td><td data-l="Précédent">${escH(r.precedent!=null&&r.precedent!==''?r.precedent:'—')}</td><td data-l="Lecture">${impactHTML(r.impact)}</td></tr>`;
+      if(r.commentaire) h+=`<tr class="pv-com"><td colspan="5">${md(r.commentaire)}</td></tr>`;
+    });
+    h+='</tbody></table></div>';
+  }
+  if(p.analyse) h+=`<div class="pv-sec"><div class="pv-h">🔎 Analyse</div><div class="pv-txt">${md(p.analyse)}</div></div>`;
+  const watch=Array.isArray(p.aSurveiller)?p.aSurveiller:[];
+  if(watch.length) h+='<div class="pv-sec"><div class="pv-h">⏭️ À surveiller</div><ul class="pv-watch">'+watch.map(w=>`<li><span class="recap-d">${fmtDay(w.date)}</span><span>${md(w.evenement||w.texte||'')}</span></li>`).join('')+'</ul></div>';
+  h+=pillarNotesHTML(code,dim);
+  if(!p.note&&!rows.length&&!p.analyse) h+='<div class="pv-empty">Pas encore de données détaillées pour ce pilier : elles arrivent avec la prochaine mise à jour du Macro Compass.</div>';
+  else if(!rows.length&&!p.analyse) h+='<div class="pv-empty" style="margin-top:14px">Le tableau détaillé des données arrive avec la prochaine mise à jour du Macro Compass (nouvelle version de la skill).</div>';
+  if(Array.isArray(p.sources)&&p.sources.length) h+=`<div class="pv-foot">Sources : ${p.sources.map(escH).join(' · ')}</div>`;
+  return h;
+}
+function overviewHTML(code,n){
+  const doc=MC_DOCS[code]||{};
+  const md=t=>mdToHtmlFx(String(t||''));
+  const driver=n.driver||doc.driver;
+  let h='<div class="ov-wrap">';
+  if(driver) h+=`<div class="these-driver"><i class="ti ti-target"></i> <b>Driver dominant :</b> ${md(driver)}</div>`;
+  const rc=doc.recap||null;
+  const faits=rc&&Array.isArray(rc.faits)?rc.faits:[];
+  if(rc&&(rc.resume||faits.length)){
+    h+=`<div class="recap"><div class="recap-h">🗓️ Récap du mois${rc.periode?`<span class="recap-per">${escH(rc.periode)}</span>`:''}</div>`;
+    if(rc.resume) h+=`<div class="recap-p">${md(rc.resume)}</div>`;
+    if(faits.length) h+='<ul class="recap-list">'+faits.map(f=>`<li><span class="recap-d">${fmtDay(f.date)}</span><span>${md(f.texte||'')}</span></li>`).join('')+'</ul>';
+    h+='</div>';
+  } else if(n.mois){
+    // Pas encore de récap importé : repli sur « Le mois » de la page Biais & Force Relative
+    h+=`<div class="recap"><div class="recap-h">🗓️ Récap du mois</div><div class="recap-p">${md(n.mois)}</div></div>`;
+  }
+  if(doc.catalyseur) h+=`<div class="recap-next">⏭️ <b>À venir :</b> ${md(doc.catalyseur)}</div>`;
+  return h+'</div>';
+}
+
 function renderDetail(){
   const c=CURRENCIES.find(x=>x.code===activeCcy);
   const d=CCY_DATA[activeCcy];if(!c||!d)return;
@@ -927,38 +1132,9 @@ function renderDetail(){
     const cc=o&&o.score!=null?scoreColor(o.score):'var(--t4)';
     const w=o&&o.score!=null?o.score:0;
     const act=activeDim===key?' sb-active':'';
-    return `<div class="sb-cell sb-click${act}" onclick="openDimDetail('${key}')"><div class="sb-top"><span class="sb-name">${lbl}</span><span class="sb-val" style="color:${cc}">${v}</span></div><div class="sb-bar-bg"><div class="sb-bar" style="width:${w}%;background:${cc}"></div></div></div>`;
+    return `<div class="sb-cell sb-click${act}" role="button" tabindex="0" aria-pressed="${activeDim===key}" onclick="openDimDetail('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDimDetail('${key}')}"><div class="sb-top"><span class="sb-name">${lbl}</span><span class="sb-val" style="color:${cc}">${v}</span></div><div class="sb-bar-bg"><div class="sb-bar" style="width:${w}%;background:${cc}"></div></div></div>`;
   };
-  const dimLbls={croissance:'Croissance',emploi:'Marché du travail',inflation:'Inflation',monetaire:'Politique monétaire',geo:'Géopolitique / contexte'};
-  let dimPanel='';
-  if(activeDim){
-    let inner='';
-    if(activeDim!=='geo'){
-      const notes=dimNotes(activeCcy,activeDim);
-      if(notes.length){
-        inner+='<div class="sub-chips">'+notes.map(n=>`<button class="sub-chip${activeSub===n.id?' active':''}" onclick="openSub('${n.id}')">${subLabel(n.event)} <span class="sub-chip-date">${(n.date||'').slice(5)}</span></button>`).join('')+'</div>';
-        if(activeSub){ const n=notes.find(x=>x.id===activeSub); if(n) inner+=noteRecapHTML(n); }
-        else inner+='<div style="font-size:11px;color:var(--t3)">👆 Clique une sous-composante pour son recap daté.</div>';
-      } else {
-        inner+='<div style="font-size:12px;color:var(--t3)">Aucune donnée récente ('+NOTE_MAX_AGE+' j max) pour cette dimension'+(MACRO_NOTES.length?'':' — synthèses non chargées (ouvre le Compass connecté au site)')+'.</div>';
-      }
-    }
-    const ex=dimExcerpt(activeCcy, activeDim==='emploi'?'croissance':activeDim);
-    const ctx=ex?`<div class="sub-context"><div class="sub-context-h">📄 Contexte — ${REPORT_TITLE||'rapport hebdo'}</div><div class="dim-detail-body">${mdToHtmlFx(ex)}</div></div>`:'';
-    const noteKey=activeDim==='emploi'?'croissance':activeDim;
-    const verdict=(PILLAR_NOTES[activeCcy]||{})[noteKey];
-    const verdictHtml=verdict?`<div class="these-callout" style="border-left-color:${col}">🧭 <b>Verdict :</b> ${mdToHtmlFx(verdict)}</div>`:'';
-    dimPanel=`<div class="dim-detail"><div class="dim-detail-h">${dimLbls[activeDim]}</div>${verdictHtml}${inner}${ctx}</div>`;
-  }
-
-  const these=(n.actuelle||n.avenir||n.mois)?`
-    <div class="these-wrap">
-      ${n.driver?`<div class="these-driver"><i class="ti ti-target"></i> <b>Driver dominant :</b> ${mdToHtmlFx(n.driver)}</div>`:''}
-      <div class="these-h">📅 Semaine actuelle</div><div class="these-p">${mdToHtmlFx(n.actuelle||'—')}</div>
-      <div class="these-h">🔜 Semaine à venir</div><div class="these-p">${mdToHtmlFx(n.avenir||'—')}</div>
-      <div class="these-h">🗓️ Le mois</div><div class="these-p">${mdToHtmlFx(n.mois||'—')}</div>
-      ${n.callout?`<div class="these-callout" style="border-left-color:${col}">${mdToHtmlFx(n.callout)}</div>`:''}
-    </div>`:'';
+  const body=activeDim&&PILLAR_META[activeDim] ? pillarViewHTML(activeCcy,activeDim,d) : overviewHTML(activeCcy,n);
 
   document.getElementById('detail-mount').innerHTML=`
   <div class="detail">
@@ -969,14 +1145,14 @@ function renderDetail(){
         <div class="detail-name">${c.name} · ${c.country}</div>
         <div class="detail-meta">
           <span class="detail-sig ${sig.cls}" style="color:${col}">${n.biasLabel||sig.txt}</span>
-          <span style="font-size:11px;color:var(--t3);font-family:var(--mono)">Source : Notion (Biais &amp; Force Relative + Track Record Fondamental)${NOTION_UPDATED?' · MAJ '+NOTION_UPDATED:''}</span>
+          <span style="font-size:11px;color:var(--t3);font-family:var(--mono)">Source : Notion (Biais &amp; Force Relative + Track Record Fondamental) + recherches${NOTION_UPDATED?' · MAJ '+NOTION_UPDATED:''}</span>
         </div>
       </div>
       <div class="detail-scorebox">
         <div class="num" style="color:${col}">${d.score!=null?d.score:'—'}</div>
         <div class="lbl">/ 100</div>
       </div>
-      <button class="detail-close" onclick="closeDetail()"><i class="ti ti-x"></i></button>
+      <button class="detail-close" onclick="closeDetail()" aria-label="Fermer"><i class="ti ti-x"></i></button>
     </div>
     <div class="detail-body">
       <div class="score-break">
@@ -985,12 +1161,7 @@ function renderDetail(){
         ${sbCell('Monétaire',d.dims.monetaire,'monetaire')}
         ${sbCell('Géopolitique',d.dims.geo,'geo')}
       </div>
-      <div class="emploi-row">
-        <button class="emploi-btn${activeDim==='emploi'?' active':''}" onclick="openDimDetail('emploi')">💼 Marché du travail</button>
-        <span style="font-size:10.5px;color:var(--t3)">💡 Clique une dimension (ou l'emploi) → sous-composantes datées + contexte hebdo.</span>
-      </div>
-      ${dimPanel}
-      ${these}
+      ${body}
     </div>
   </div>`;
 }
@@ -1136,9 +1307,11 @@ let rateUnsub=null;
 function subscribeRates(){
   if(rateUnsub||!fxDb) return;
   try{
+    subscribeRateHistory();
     rateUnsub=fxDb.collection('config').doc('rateExpectations').onSnapshot(doc=>{
       if(doc.exists){
         const data=doc.data()||{};
+        if(data.meetings&&typeof data.meetings==='object') RATE_MEETINGS=data.meetings;
         rateMeta.updatedAt=data.updatedAt||null; rateMeta.updatedBy=data.updatedBy||'';
         if(data.manual) configManual=true; // attentes collées → priment sur le Fed auto
         const banks=data.banks||{};
@@ -1150,6 +1323,36 @@ function subscribeRates(){
       }
     }, err=>{ console.warn('rateExpectations',err.message); rateUnsub=null; });
   }catch(e){ rateUnsub=null; console.warn('subscribeRates',e.message); }
+}
+let rateHistUnsub=null;
+function subscribeRateHistory(){
+  if(rateHistUnsub||!fxDb) return;
+  try{
+    rateHistUnsub=fxDb.collection('config').doc('rateHistory').onSnapshot(doc=>{
+      RATE_HISTORY=(doc.exists&&Array.isArray((doc.data()||{}).entries))?doc.data().entries:[];
+      if(rdOpenCode) renderRateDetailCharts();
+    }, err=>{ console.warn('rateHistory',err.message); rateHistUnsub=null; });
+  }catch(e){ rateHistUnsub=null; }
+}
+// Ajoute des points à l'historique des attentes (rédacteurs). arrayUnion : un même point n'est jamais doublé.
+function rateHistEntry(src,banks){
+  const clean={};
+  Object.entries(banks||{}).forEach(([c,b])=>{
+    if(!b) return; const o={};
+    ['hike','hold','cut'].forEach(k=>{ const v=Number(b[k]); o[k]=isFinite(v)?Math.round(v):0; });
+    if(b.bpsYE!==undefined&&b.bpsYE!==null&&isFinite(Number(b.bpsYE))) o.bpsYE=Math.round(Number(b.bpsYE));
+    clean[c]=o;
+  });
+  return {at:new Date().toISOString(),src,by:(fxAuthUser&&fxAuthUser.email)||'',banks:clean};
+}
+async function pushRateHistory(entries){
+  entries=(entries||[]).filter(e=>e&&e.at&&e.banks&&Object.keys(e.banks).length);
+  if(!fxDb||!mpIsEditor()||!entries.length) return;
+  try{
+    const FV=firebase.firestore&&firebase.firestore.FieldValue;
+    if(!FV) return;
+    await fxDb.collection('config').doc('rateHistory').set({entries:FV.arrayUnion(...entries),updatedAt:new Date().toISOString()},{merge:true});
+  }catch(e){ console.warn('rateHistory',e.message); }
 }
 function updateRateBadge(){
   const b=document.getElementById('rate-updated');
@@ -1164,7 +1367,7 @@ function openRateEdit(code){
   ov.innerHTML=`<div class="rx-box">
     <h3>Attentes — ${r.bank} · ${code}</h3>
     <div class="rx-fld"><label>Taux directeur actuel</label><input id="rx-rate" value="${(r.rate||'').replace(/"/g,'&quot;')}"></div>
-    <div class="rx-fld"><label>Prochaine réunion</label><input id="rx-meet" value="${(r.meeting||'').replace(/"/g,'&quot;')}"></div>
+    <div class="rx-fld"><label>Réunions à venir (AAAA-MM-JJ, séparées par des virgules)</label><input id="rx-meet" value="${upcomingMeetings(code).join(', ')}" placeholder="2026-10-28, 2026-12-09"></div>
     <label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:5px">Probabilités (%)</label>
     <div class="rx-row">
       <div class="rx-fld" style="margin:0"><label>Hausse</label><input id="rx-hike" type="number" min="0" max="100" value="${r.hike||0}"></div>
@@ -1181,17 +1384,22 @@ function openRateEdit(code){
   g('rx-cancel').onclick=()=>ov.remove();
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
   g('rx-save').onclick=()=>{
-    const vals={rate:g('rx-rate').value.trim(),meeting:g('rx-meet').value.trim(),hike:+g('rx-hike').value||0,hold:+g('rx-hold').value||0,cut:+g('rx-cut').value||0};
-    saveRateEdit(code,vals); ov.remove();
+    const meets=g('rx-meet').value.split(/[,;\s]+/).map(x=>x.trim()).filter(x=>ISO_DAY.test(x)).sort();
+    const vals={rate:g('rx-rate').value.trim(),hike:+g('rx-hike').value||0,hold:+g('rx-hold').value||0,cut:+g('rx-cut').value||0};
+    if(meets.length) vals.meeting=fmtMeetDate(meets[0]);
+    saveRateEdit(code,vals,meets); ov.remove();
   };
 }
-async function saveRateEdit(code,vals){
-  Object.assign(RATE_EXPECTATIONS[code],vals); renderRateExpectations();
+async function saveRateEdit(code,vals,meets){
+  Object.assign(RATE_EXPECTATIONS[code],vals);
+  if(meets&&meets.length) RATE_MEETINGS=Object.assign({},RATE_MEETINGS,{[code]:meets});
+  renderRateExpectations();
   if(!fxDb||!mpIsEditor()){toast('Sauvegarde impossible (non connecté)');return;}
   try{
-    await fxDb.collection('config').doc('rateExpectations').set({
-      banks:{[code]:vals}, updatedAt:new Date().toISOString(), updatedBy:fxAuthUser.email||''
-    },{merge:true});
+    const upd={banks:{[code]:vals}, updatedAt:new Date().toISOString(), updatedBy:fxAuthUser.email||''};
+    if(meets&&meets.length) upd.meetings={[code]:meets};
+    await fxDb.collection('config').doc('rateExpectations').set(upd,{merge:true});
+    pushRateHistory([rateHistEntry('modification',{[code]:vals})]);
     rateMeta.updatedAt=new Date().toISOString(); updateRateBadge();
     toast('Attentes mises à jour ✅');
   }catch(e){toast('Erreur : '+e.message);}
@@ -1210,7 +1418,19 @@ function mcParse(text){
     const x=d.currencies[c];
     if(x.notCovered) return;
     MC_PILLARS.forEach(([k])=>{ const s=x.pillars&&x.pillars[k]&&x.pillars[k].score; if(typeof s!=='number'||s<0||s>100) throw new Error(c+' : note « '+k+' » manquante ou hors 0-100.'); });
+    if(x.recap!=null&&typeof x.recap!=='object') throw new Error(c+' : « recap » doit être un objet {periode, resume, faits}.');
+    MC_PILLARS.forEach(([k])=>{ const dt=x.pillars[k].data; if(dt!=null&&!Array.isArray(dt)) throw new Error(c+' : « '+k+'.data » doit être une liste.'); });
   });
+  // Bloc « rates » (v2) : calendrier des réunions + points d'historique datés
+  const R=d.rates;
+  if(R!=null){
+    if(typeof R!=='object') throw new Error('« rates » doit être un objet.');
+    Object.entries(R.banks||{}).forEach(([c,b])=>{
+      if(!RATE_EXPECTATIONS[c]) throw new Error('rates : banque centrale inconnue pour '+c+'.');
+      if(b.meetings!=null&&(!Array.isArray(b.meetings)||b.meetings.some(x=>!ISO_DAY.test(x)))) throw new Error('rates.'+c+'.meetings : dates au format AAAA-MM-JJ attendues.');
+    });
+    (R.history||[]).forEach((e,i)=>{ if(!e||!e.at||isNaN(Date.parse(e.at))||!e.banks) throw new Error('rates.history['+i+'] : « at » (date) et « banks » obligatoires.'); });
+  }
   return d;
 }
 function mcPreview(d){
@@ -1218,7 +1438,12 @@ function mcPreview(d){
     if(x.notCovered) return '<tr><td>'+x.code+'</td><td colspan="6" style="color:var(--t3)">non couvert (N/A)</td></tr>';
     return '<tr><td>'+(x.rank?'#'+x.rank+' ':'')+x.code+'</td>'+MC_PILLARS.map(([k])=>'<td>'+x.pillars[k].score+'</td>').join('')+'<td><b>'+(x.score!=null?x.score:'—')+'</b></td><td>'+(CCY_DATA[x.code]&&CCY_DATA[x.code].score!=null?CCY_DATA[x.code].score:'—')+'</td></tr>';
   }).join('');
-  return '<table class="mc-prev"><tr><th>Devise</th>'+MC_PILLARS.map(([,l])=>'<th>'+l+'</th>').join('')+'<th>Note</th><th>Avant</th></tr>'+rows+'</table>';
+  const cs=Object.values(d.currencies).filter(x=>!x.notCovered);
+  const nRecap=cs.filter(x=>x.recap&&(x.recap.resume||(x.recap.faits||[]).length)).length;
+  const nData=cs.reduce((a,x)=>a+MC_PILLARS.reduce((b,[k])=>b+((x.pillars[k].data||[]).length),0),0);
+  const R=d.rates||{}, nBanks=Object.values(R.banks||{}).filter(b=>b.meetings&&b.meetings.length).length, nHist=(R.history||[]).length;
+  const extra='<div class="mc-hint" style="margin-top:10px">Récap du mois : <b>'+nRecap+'/'+cs.length+'</b> devises · Données détaillées : <b>'+nData+'</b> indicateurs · Calendrier des réunions : <b>'+nBanks+'</b> banques · Historique des taux : <b>'+nHist+'</b> point(s)</div>';
+  return '<table class="mc-prev"><tr><th>Devise</th>'+MC_PILLARS.map(([,l])=>'<th>'+l+'</th>').join('')+'<th>Note</th><th>Avant</th></tr>'+rows+'</table>'+extra;
 }
 function openCompassImport(){
   if(!mpIsEditor()){toast('Réservé aux rédacteurs');return;}
@@ -1227,7 +1452,7 @@ function openCompassImport(){
   ov.innerHTML=`<div class="rx-box mc-box">
     <h3>📥 Mettre à jour la force des devises</h3>
     <div class="mc-hint">Choisis le fichier <b>macro-compass-….json</b> préparé par Claude, ou colle son contenu. Vérifie l'aperçu, puis publie : toute l'alliance verra les nouvelles notes.</div>
-    <input type="file" id="mc-file" accept=".json,application/json" style="margin-bottom:10px;font-size:12px;color:var(--t2)">
+    <input type="file" id="mc-file" accept=".json,application/json" style="margin-bottom:10px;font-size:12px;color:var(--t2);max-width:100%">
     <textarea id="mc-text" placeholder="…ou colle le JSON ici"></textarea>
     <div id="mc-prev"></div>
     <div class="mc-msg" id="mc-msg"></div>
@@ -1254,6 +1479,22 @@ function openCompassImport(){
       const batch=fxDb.batch(), col=fxDb.collection('macroCompass');
       Object.entries(mcPending.currencies).forEach(([code,x])=>batch.set(col.doc(code),Object.assign({},x,{code})));
       batch.set(col.doc('_meta'),Object.assign({},mcPending.meta||{},{updatedAt:(mcPending.meta&&mcPending.meta.updatedAt)||new Date().toISOString(),publishedBy:fxAuthUser.email||'',publishedAt:new Date().toISOString()}));
+      // Taux : calendrier des réunions (+ taux directeur) et points d'historique datés
+      const R=mcPending.rates;
+      if(R){
+        const meetings={}, banks={};
+        Object.entries(R.banks||{}).forEach(([c,b])=>{
+          if(Array.isArray(b.meetings)&&b.meetings.length) meetings[c]=b.meetings.slice().sort();
+          if(b.rate) banks[c]={rate:String(b.rate)};
+        });
+        const upd={};
+        if(Object.keys(meetings).length) upd.meetings=meetings;
+        if(Object.keys(banks).length) upd.banks=banks;
+        if(Object.keys(upd).length) batch.set(fxDb.collection('config').doc('rateExpectations'),upd,{merge:true});
+        const FV=firebase.firestore&&firebase.firestore.FieldValue;
+        const hist=(R.history||[]).map(e=>{ const x=rateHistEntry(e.src||'import',e.banks); x.at=new Date(e.at).toISOString(); x.by='skill'; if(e.source) x.src=String(e.source).slice(0,60); return x; }).filter(e=>Object.keys(e.banks).length);
+        if(hist.length&&FV) batch.set(fxDb.collection('config').doc('rateHistory'),{entries:FV.arrayUnion(...hist),updatedAt:new Date().toISOString()},{merge:true});
+      }
       await batch.commit();
       msg('✅ Macro Compass mis à jour pour toute l\'alliance.','var(--buy)');
       toast('Macro Compass mis à jour ✅');
@@ -1262,32 +1503,119 @@ function openCompassImport(){
   };
 }
 
-/* ── Détail d'une carte d'attentes (clic) : graphique des probabilités ── */
+/* ── Détail d'une banque centrale (clic sur sa carte) : historique des attentes ── */
+let rdOpenCode=null, rdCharts=[], chartJsP=null;
+function loadChartJs(){
+  if(window.Chart) return Promise.resolve(window.Chart);
+  if(chartJsP) return chartJsP;
+  chartJsP=new Promise((res,rej)=>{
+    const sc=document.createElement('script');
+    sc.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+    sc.onload=()=>res(window.Chart); sc.onerror=()=>{chartJsP=null;rej(new Error('Chart.js indisponible'));};
+    document.head.appendChild(sc);
+  });
+  return chartJsP;
+}
+// Fond figé tant qu'une fenêtre est ouverte (aussi pour l'import et l'édition)
+new MutationObserver(()=>document.documentElement.classList.toggle('rx-lock',!!document.querySelector('.rx-modal'))).observe(document.body,{childList:true});
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; const m=[...document.querySelectorAll('.rx-modal')].pop(); if(m){ if(m.id==='rd-modal') closeRateDetail(); else m.remove(); } });
+function rateHistoryPoints(code){
+  const r=RATE_EXPECTATIONS[code]||{};
+  const pts=RATE_HISTORY.filter(e=>e&&e.banks&&e.banks[code]&&e.at).map(e=>{
+    const b=e.banks[code]; return {t:Date.parse(e.at),hike:+b.hike||0,hold:+b.hold||0,cut:+b.cut||0,bpsYE:(b.bpsYE!=null&&isFinite(b.bpsYE))?+b.bpsYE:null,src:e.src||''};
+  }).filter(p=>isFinite(p.t)).sort((a,b)=>a.t-b.t);
+  // État affiché aujourd'hui (dernier collage ou Polymarket live) s'il n'est pas déjà le dernier point
+  const live=code==='USD'&&fedLive&&!configManual;
+  const cur={t:live?Date.now():(Date.parse(rateMeta.updatedAt||'')||Date.now()),hike:+r.hike||0,hold:+r.hold||0,cut:+r.cut||0,bpsYE:(r.bpsYE!=null&&isFinite(r.bpsYE))?+r.bpsYE:null,src:live?'Polymarket (live)':'actuel'};
+  const last=pts[pts.length-1];
+  if(!last||(cur.t>last.t+60000&&(last.hike!==cur.hike||last.hold!==cur.hold||last.cut!==cur.cut||last.bpsYE!==cur.bpsYE))) pts.push(cur);
+  return pts;
+}
+function closeRateDetail(){
+  rdCharts.forEach(c=>{try{c.destroy();}catch(e){}}); rdCharts=[]; rdOpenCode=null;
+  const m=document.getElementById('rd-modal'); if(m) m.remove();
+}
 function openRateDetail(code){
   const r=RATE_EXPECTATIONS[code]; if(!r) return;
+  closeRateDetail();
+  rdOpenCode=code;
   const monScore=(NOTION_DIMS[code]||{}).monetaire;
-  const m={
-    stance: monScore==null?'':(monScore>=65?'Hawkish':monScore>=42?'Neutre':'Dovish'),
-    note: (PILLAR_NOTES[code]||{}).monetaire||''
-  };
-  const bar=(lbl,v,col)=>`<div class="rx-bd-row"><div class="rx-bd-top"><span>${lbl}</span><b>${v}%</b></div><div class="rx-bd-bar"><span style="width:${Math.max(0,Math.min(100,v))}%;background:${col}"></span></div></div>`;
-  const ov=document.createElement('div'); ov.className='rx-modal';
-  ov.innerHTML=`<div class="rx-box">
-    <h3>${r.flag} ${r.bank} · ${code}${code==='USD'?' <span style="font-size:10px;color:var(--accent)">· LIVE Polymarket</span>':''}</h3>
-    <div style="font-size:12px;color:var(--t2);margin-bottom:2px">Taux directeur : <b style="color:var(--t)">${r.rate}</b></div>
-    <div style="font-size:12px;color:var(--t2);margin-bottom:16px">Prochaine réunion : <b style="color:var(--t)">${r.meeting}</b></div>
-    <div class="rx-bars-detail">
-      ${bar('Hausse',r.hike,'var(--buy)')}
-      ${bar('Statu quo',r.hold,'var(--amber)')}
-      ${bar('Baisse',r.cut,'var(--sell)')}
-    </div>
-    ${m.stance?`<div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:5px">Biais — ${m.stance}</div>`:''}
-    ${m.note?`<div style="font-size:12.5px;color:var(--t2);line-height:1.6">${m.note}</div>`:''}
-    <div class="rx-btns" style="margin-top:16px"><button class="rx-cancel" id="rd-close">Fermer</button></div>
+  const stance=monScore==null?'':(monScore>=65?'Hawkish':monScore>=42?'Neutre':'Dovish');
+  const note=(PILLAR_NOTES[code]||{}).monetaire||'';
+  const mi=meetingInfo(code,r), up=upcomingMeetings(code);
+  const seg=(cls,v,lbl)=>v>0?`<div class="rate-seg ${cls}" style="width:${v}%" title="${lbl} ${v}%">${v>=12?lbl+' '+v+'%':''}</div>`:'';
+  const ov=document.createElement('div'); ov.className='rx-modal'; ov.id='rd-modal';
+  ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true'); ov.setAttribute('aria-labelledby','rd-title');
+  ov.innerHTML=`<div class="rx-box rd-box">
+    <button class="rd-close" id="rd-close" aria-label="Fermer">✕</button>
+    <h3 id="rd-title">${r.flag} ${r.bank} · ${code}${code==='USD'&&fedLive&&!configManual?' <span style="font-size:10px;color:var(--accent)">· LIVE Polymarket</span>':''}</h3>
+    <div class="rd-meta"><span>Taux directeur : <b>${escH(r.rate||'—')}</b></span><span>Prochaine réunion : <b>${escH(mi.txt)}</b>${mi.cd?' · '+mi.cd:''}</span>${(r.bpsYE!=null)?`<span>Fin d'année : <b>${r.bpsYE>=0?'+':''}${r.bpsYE} bps</b></span>`:''}</div>
+    ${up.length>1?`<div class="rd-next">${up.slice(0,5).map((d,i)=>`<span class="rd-chip${i===0?' first':''}">${fmtMeetDate(d)}</span>`).join('')}</div>`:''}
+    <div class="rd-bar" role="img" aria-label="Aujourd'hui : hausse ${r.hike} %, statu quo ${r.hold} %, baisse ${r.cut} %">${seg('seg-hike',r.hike,'Hausse')}${seg('seg-hold',r.hold,'Statu quo')}${seg('seg-cut',r.cut,'Baisse')}</div>
+    <div id="rd-hist"></div>
+    ${stance?`<div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin:16px 0 4px">Biais — ${stance}</div>`:''}
+    ${note?`<div class="rd-note">${mdToHtmlFx(note)}</div>`:''}
   </div>`;
   document.body.appendChild(ov);
-  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
-  ov.querySelector('#rd-close').onclick=()=>ov.remove();
+  ov.addEventListener('click',e=>{if(e.target===ov)closeRateDetail();});
+  ov.querySelector('#rd-close').onclick=closeRateDetail;
+  ov.querySelector('#rd-close').focus({preventScroll:true});
+  renderRateDetailCharts();
+}
+function renderRateDetailCharts(){
+  const code=rdOpenCode, box=document.getElementById('rd-hist'); if(!code||!box) return;
+  rdCharts.forEach(c=>{try{c.destroy();}catch(e){}}); rdCharts=[];
+  const pts=rateHistoryPoints(code);
+  const dShort=t=>new Date(t).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}).replace('.','');
+  // Point daté sans heure (historique reconstitué par la skill) → date seule
+  const dLong=t=>{ const d=new Date(t); const o={day:'2-digit',month:'short',year:'numeric'}; if(d.getUTCHours()||d.getUTCMinutes()){o.hour='2-digit';o.minute='2-digit';} return d.toLocaleString('fr-FR',o); };
+  const bpsPts=pts.filter(p=>p.bpsYE!=null);
+  const span=pts.length>1?` · du ${dShort(pts[0].t)} au ${dShort(pts[pts.length-1].t)}`:'';
+  const lastP=pts[pts.length-1];
+  const table=`<details><summary>Voir les données (${pts.length} point${pts.length>1?'s':''})</summary><table class="rd-tbl"><tr><th>Date</th><th>Hausse</th><th>Statu quo</th><th>Baisse</th><th>Fin d'année</th><th>Source</th></tr>${pts.slice().reverse().map(p=>`<tr><td>${dLong(p.t)}</td><td>${p.hike} %</td><td>${p.hold} %</td><td>${p.cut} %</td><td>${p.bpsYE!=null?(p.bpsYE>=0?'+':'')+p.bpsYE+' bps':'—'}</td><td>${escH(p.src)}</td></tr>`).join('')}</table></details>`;
+  let h=`<div class="rd-h">Évolution des attentes pour la prochaine réunion</div><div class="rd-sub">Probabilités cumulées (total 100 %) à chaque mise à jour${span}</div>`;
+  if(pts.length<2){
+    box.innerHTML=h+`<div class="rd-empty">L'historique se construit à chaque collage ou modification des attentes (et à chaque import du Macro Compass) : ${pts.length} point pour l'instant. Le graphique apparaît dès le 2ᵉ point.</div>`+table;
+    return;
+  }
+  h+=`<div class="rd-legend"><span><i style="background:var(--rx-hike)"></i>Hausse ${lastP.hike} %</span><span><i style="background:var(--rx-hold)"></i>Statu quo ${lastP.hold} %</span><span><i style="background:var(--rx-cut)"></i>Baisse ${lastP.cut} %</span></div>
+    <div class="rd-chart"><canvas id="rd-c1" role="img" aria-label="Évolution des probabilités de hausse, statu quo et baisse"></canvas></div>`;
+  if(bpsPts.length>=2) h+=`<div class="rd-h">bps attendus d'ici la fin d'année</div><div class="rd-sub">Ce que le marché price en cumul jusqu'en décembre (au-dessus de 0 : hausses, en dessous : baisses)</div><div class="rd-chart sm"><canvas id="rd-c2" role="img" aria-label="Évolution des bps attendus d'ici la fin d'année"></canvas></div>`;
+  box.innerHTML=h+table;
+  loadChartJs().then(Chart=>{
+    if(rdOpenCode!==code) return;
+    const cs=getComputedStyle(document.body), v=n=>cs.getPropertyValue(n).trim();
+    const surf=v('--panel'), ink=v('--t2'), muted=v('--t3'), grid=document.body.classList.contains('light')?'#e1e0d9':'#2c2c2a';
+    const xMin=pts[0].t, xMax=pts[pts.length-1].t;
+    const wide=box.clientWidth>=480, padR=wide?96:8;   // étiquettes directes seulement si la place le permet
+    const xScale={type:'linear',min:xMin,max:xMax,ticks:{color:muted,maxTicksLimit:6,callback:t=>dShort(t),font:{size:10}},grid:{display:false},border:{color:grid}};
+    const crosshair={id:'rdCross',afterDatasetsDraw(ch){const a=ch.tooltip&&ch.tooltip.getActiveElements();if(!a||!a.length)return;const x=a[0].element.x,ar=ch.chartArea,c=ch.ctx;c.save();c.beginPath();c.moveTo(x,ar.top);c.lineTo(x,ar.bottom);c.lineWidth=1;c.strokeStyle=muted;c.stroke();c.restore();}};
+    // Étiquettes directes à droite, au milieu de chaque bande (texte en encre, pas en couleur de série)
+    const endLabels={id:'rdEnd',afterDatasetsDraw(ch){if(!wide)return;const c=ch.ctx,ar=ch.chartArea;c.save();c.font='600 10.5px Inter, sans-serif';c.fillStyle=ink;c.textBaseline='middle';
+      let acc=0; ch.data.datasets.forEach((ds,i)=>{const val=ds.data[ds.data.length-1].y; const y0=ch.scales.y.getPixelForValue(acc), y1=ch.scales.y.getPixelForValue(acc+val); acc+=val; if(Math.abs(y0-y1)<13) return; c.fillText(ds.label+' '+val+' %',ar.right+8,(y0+y1)/2);}); c.restore();}};
+    const mk=(lbl,key,col,fill)=>({label:lbl,data:pts.map(p=>({x:p.t,y:p[key]})),backgroundColor:col,borderColor:surf,borderWidth:2,fill,pointRadius:0,pointHitRadius:12,pointHoverRadius:5,pointHoverBackgroundColor:col,pointHoverBorderColor:surf,pointHoverBorderWidth:2,tension:0});
+    const tip={backgroundColor:v('--panel2'),titleColor:v('--t1'),bodyColor:ink,borderColor:v('--bd2'),borderWidth:1,padding:10,boxPadding:4,animation:false,caretPadding:8};
+    const c1=new Chart(document.getElementById('rd-c1'),{type:'line',
+      data:{datasets:[mk('Baisse','cut',v('--rx-cut'),'origin'),mk('Statu quo','hold',v('--rx-hold'),'-1'),mk('Hausse','hike',v('--rx-hike'),'-1')]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,layout:{padding:{right:padR}},interaction:{mode:'index',intersect:false},
+        events:['mousemove','mouseout','touchstart','touchmove','touchend'],
+        scales:{x:xScale,y:{stacked:true,min:0,max:100,ticks:{stepSize:25,color:muted,callback:t=>t+' %',font:{size:10}},grid:{color:grid},border:{display:false}}},
+        plugins:{legend:{display:false},tooltip:Object.assign({},tip,{itemSort:(a,b)=>b.datasetIndex-a.datasetIndex,callbacks:{title:it=>dLong(it[0].parsed.x),label:it=>' '+it.dataset.label+' : '+it.parsed.y+' %'}})}},
+      plugins:[crosshair,endLabels]});
+    rdCharts.push(c1);
+    const c2el=document.getElementById('rd-c2');
+    if(c2el){
+      const col=v('--rx-bps');
+      const c2=new Chart(c2el,{type:'line',
+        data:{datasets:[{label:'bps fin d\'année',data:bpsPts.map(p=>({x:p.t,y:p.bpsYE})),borderColor:col,backgroundColor:col,borderWidth:2,pointRadius:bpsPts.length<12?3:0,pointHitRadius:12,pointHoverRadius:5,pointHoverBorderColor:surf,pointHoverBorderWidth:2,tension:0}]},
+        options:{responsive:true,maintainAspectRatio:false,animation:false,layout:{padding:{right:padR}},interaction:{mode:'index',intersect:false},
+          events:['mousemove','mouseout','touchstart','touchmove','touchend'],
+          scales:{x:Object.assign({},xScale,{min:bpsPts[0].t,max:bpsPts[bpsPts.length-1].t}),y:{ticks:{color:muted,maxTicksLimit:5,callback:t=>(t>0?'+':'')+t+' bps',font:{size:10}},grid:{color:ctx=>ctx.tick&&ctx.tick.value===0?muted:grid},border:{display:false}}},
+          plugins:{legend:{display:false},tooltip:Object.assign({},tip,{callbacks:{title:it=>dLong(it[0].parsed.x),label:it=>' '+(it.parsed.y>0?'+':'')+it.parsed.y+' bps d\'ici fin d\'année'}})}},
+        plugins:[crosshair]});
+      rdCharts.push(c2);
+    }
+  }).catch(e=>{ const c=document.getElementById('rd-c1'); if(c&&c.parentNode) c.parentNode.innerHTML='<div class="rd-empty">Graphique indisponible ('+escH(e.message)+') — les données sont dans le tableau ci-dessous.</div>'; });
 }
 
 /* ══ MARCHÉS DE PRÉDICTION (Polymarket) + Fed auto ══ */
@@ -1414,22 +1742,23 @@ function renderRateExpectations(){
   ['rate-paste','rate-help'].forEach(id=>{const el=document.getElementById(id); if(el) el.style.display=editor?'':'none';});
   grid.innerHTML=Object.entries(RATE_EXPECTATIONS).map(([code,r])=>{
     const seg=(cls,v,lbl)=>v>0?`<div class="rate-seg ${cls}" style="width:${v}%" title="${lbl} ${v}%">${v>=12?v+'%':''}</div>`:'';
-    return `<div class="rate-card" onclick="openRateDetail('${code}')">
+    const mi=meetingInfo(code,r);
+    return `<div class="rate-card" role="button" tabindex="0" onclick="openRateDetail('${code}')" onkeydown="if(event.key==='Enter'){openRateDetail('${code}')}" aria-label="${r.bank} : historique des attentes">
       <div class="rate-hd">
         <div class="rate-cb"><span class="rate-flag">${r.flag}</span><span class="rate-bank">${r.bank} · ${code}</span></div>
         <span class="rate-now">${r.rate}</span>
         ${mpIsEditor()?`<button class="rate-edit" onclick="event.stopPropagation();openRateEdit('${code}')" title="Modifier les attentes">✏️</button>`:''}
       </div>
-      <div class="rate-meet">Prochaine réunion : <b>${r.meeting}</b></div>
+      <div class="rate-meet">Prochaine réunion : <b>${mi.txt}</b>${mi.cd?` <span class="rate-cd">· ${mi.cd}</span>`:''}</div>
       <div class="rate-bars">
         ${seg('seg-hike',r.hike,'Hausse')}
         ${seg('seg-hold',r.hold,'Statu quo')}
         ${seg('seg-cut',r.cut,'Baisse')}
       </div>
       <div class="rate-legend">
-        <span><i style="background:var(--buy)"></i>Hausse ${r.hike}%</span>
-        <span><i style="background:var(--amber)"></i>Statu quo ${r.hold}%</span>
-        <span><i style="background:var(--sell)"></i>Baisse ${r.cut}%</span>
+        <span><i style="background:var(--rx-hike)"></i>Hausse ${r.hike}%</span>
+        <span><i style="background:var(--rx-hold)"></i>Statu quo ${r.hold}%</span>
+        <span><i style="background:var(--rx-cut)"></i>Baisse ${r.cut}%</span>
       </div>
       ${(r.bpsYE!==undefined&&r.bpsYE!==null)?`<div class="rate-bps">📅 Marché : <b>${r.bpsYE>=0?'+':''}${r.bpsYE} bps</b> attendus d'ici fin d'année</div>`:''}
     </div>`;
@@ -1473,6 +1802,7 @@ async function applyRatesPaste(){
   try{
     const banks={}; codes.forEach(c=>banks[c]=parsed[c]);
     await fxDb.collection('config').doc('rateExpectations').set({ banks:banks, manual:true, updatedAt:new Date().toISOString(), updatedBy:(fxAuthUser&&fxAuthUser.email)||'' },{merge:true});
+    pushRateHistory([rateHistEntry('collage',banks)]);
     rateMeta.updatedAt=new Date().toISOString(); updateRateBadge();
     if(st){st.textContent='✅ '+codes.length+' banques mises à jour et partagées à l\'alliance.';st.style.color='var(--buy)';}
   }catch(e){ if(st){st.textContent='Erreur : '+e.message;st.style.color='var(--sell)';} }
@@ -1817,5 +2147,5 @@ function init(){
   setInterval(fetchCOT, 3 * 60 * 60 * 1000); // re-vérifie le rapport COT toutes les 3h
   generateAiBrief(false); // charge le dernier brief en cache (sans appel API)
 }
-window.addEventListener('load',init);
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 </script>

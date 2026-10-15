@@ -1317,6 +1317,7 @@ function subscribeRates(){
       if(doc.exists){
         const data=doc.data()||{};
         if(data.meetings&&typeof data.meetings==='object') RATE_MEETINGS=data.meetings;
+        RATE_DOC=data; seedRateHistory();
         rateMeta.updatedAt=data.updatedAt||null; rateMeta.updatedBy=data.updatedBy||'';
         if(data.manual) configManual=true; // attentes collées → priment sur le Fed auto
         const banks=data.banks||{};
@@ -1329,12 +1330,28 @@ function subscribeRates(){
     }, err=>{ console.warn('rateExpectations',err.message); rateUnsub=null; });
   }catch(e){ rateUnsub=null; console.warn('subscribeRates',e.message); }
 }
-let rateHistUnsub=null;
+let rateHistUnsub=null, rateHistLoaded=false, RATE_DOC=null, rateSeeded=false;
+// Premier point de l'historique = le dernier collage déjà enregistré (avant que l'historique existe).
+// Fait une seule fois, par un rédacteur, pour les banques qui n'ont encore aucun point.
+function seedRateHistory(){
+  if(rateSeeded||!rateHistLoaded||!RATE_DOC||!mpIsEditor()) return;
+  const at=RATE_DOC.updatedAt; if(!at||isNaN(Date.parse(at))) return;
+  const banks={};
+  Object.entries(RATE_DOC.banks||{}).forEach(([c,b])=>{
+    if(!b||!RATE_EXPECTATIONS[c]||RATE_HISTORY.some(e=>e&&e.banks&&e.banks[c])) return;
+    if(['hike','hold','cut'].some(k=>isFinite(Number(b[k])))) banks[c]=b;
+  });
+  rateSeeded=true;
+  if(!Object.keys(banks).length) return;
+  const e=rateHistEntry('collage',banks); e.at=new Date(at).toISOString();
+  pushRateHistory([e]);
+}
 function subscribeRateHistory(){
   if(rateHistUnsub||!fxDb) return;
   try{
     rateHistUnsub=fxDb.collection('config').doc('rateHistory').onSnapshot(doc=>{
       RATE_HISTORY=(doc.exists&&Array.isArray((doc.data()||{}).entries))?doc.data().entries:[];
+      rateHistLoaded=true; seedRateHistory();
       if(rdOpenCode) renderRateDetailCharts();
     }, err=>{ console.warn('rateHistory',err.message); rateHistUnsub=null; });
   }catch(e){ rateHistUnsub=null; }
@@ -1524,8 +1541,38 @@ function loadChartJs(){
 // Fond figé tant qu'une fenêtre est ouverte (aussi pour l'import et l'édition)
 new MutationObserver(()=>document.documentElement.classList.toggle('rx-lock',!!document.querySelector('.rx-modal'))).observe(document.body,{childList:true});
 document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; const m=[...document.querySelectorAll('.rx-modal')].pop(); if(m){ if(m.id==='rd-modal') closeRateDetail(); else m.remove(); } });
+// Historique des probabilités du marché Polymarket « Fed decision » (prochaine réunion),
+// un point par jour depuis l'ouverture du marché. Mis en cache 6 h.
+let PM_FED_HIST=[], PM_FED_TITLE='';
+async function fetchFedHistory(ev){
+  if(!ev||!Array.isArray(ev.markets)) return;
+  PM_FED_TITLE=ev.title||'';
+  const ck='fxmt_pmfedhist_'+(ev.id||ev.slug||'');
+  try{ const c=JSON.parse(localStorage.getItem(ck)); if(c&&Date.now()-c.t<6*3600e3&&Array.isArray(c.v)&&c.v.length>1){ PM_FED_HIST=c.v; return; } }catch(e){}
+  const day={};   // jour → {hold,hike,cut}
+  await Promise.all(ev.markets.map(async mk=>{
+    const t=(mk.groupItemTitle||'').toLowerCase();
+    const key=t.indexOf('no change')>-1?'hold':t.indexOf('decrease')>-1?'cut':t.indexOf('increase')>-1?'hike':null;
+    let ids=[]; try{ ids=JSON.parse(mk.clobTokenIds||'[]'); }catch(e){}
+    if(!key||!ids[0]) return;
+    try{
+      const r=await fetch('https://clob.polymarket.com/prices-history?market='+encodeURIComponent(ids[0])+'&interval=max&fidelity=720');
+      const j=await r.json();
+      (j.history||[]).forEach(h=>{ const d=new Date(h.t*1000).toISOString().slice(0,10); day[d]=day[d]||{hold:0,hike:0,cut:0,n:{}}; if(!day[d].n[mk.id]){ day[d].n[mk.id]=1; } day[d]['_'+mk.id]=[key,+h.p||0]; });
+    }catch(e){}
+  }));
+  const pts=Object.keys(day).sort().map(d=>{
+    const o={hold:0,hike:0,cut:0}; Object.keys(day[d]).filter(k=>k[0]==='_').forEach(k=>{ const [kk,v]=day[d][k]; o[kk]+=v; });
+    const tot=o.hold+o.hike+o.cut; if(!tot) return null;
+    const hike=Math.round(o.hike/tot*100), cut=Math.round(o.cut/tot*100);
+    return {t:Date.parse(d+'T12:00:00Z'),hike,cut,hold:100-hike-cut,bpsYE:null,src:'Polymarket'};
+  }).filter(Boolean);
+  if(pts.length>1){ PM_FED_HIST=pts; try{ localStorage.setItem(ck,JSON.stringify({t:Date.now(),v:pts})); }catch(e){} if(rdOpenCode==='USD') renderRateDetailCharts(); }
+}
 function rateHistoryPoints(code){
   const r=RATE_EXPECTATIONS[code]||{};
+  // Fed : tant que tes collages ne forment pas encore une vraie série, on montre l'historique Polymarket
+  if(code==='USD'&&PM_FED_HIST.length>1&&RATE_HISTORY.filter(e=>e&&e.banks&&e.banks.USD).length<3) return PM_FED_HIST.slice();
   const pts=RATE_HISTORY.filter(e=>e&&e.banks&&e.banks[code]&&e.at).map(e=>{
     const b=e.banks[code]; return {t:Date.parse(e.at),hike:+b.hike||0,hold:+b.hold||0,cut:+b.cut||0,bpsYE:(b.bpsYE!=null&&isFinite(b.bpsYE))?+b.bpsYE:null,src:e.src||''};
   }).filter(p=>isFinite(p.t)).sort((a,b)=>a.t-b.t);
@@ -1578,7 +1625,8 @@ function renderRateDetailCharts(){
   const span=pts.length>1?` · du ${dShort(pts[0].t)} au ${dShort(pts[pts.length-1].t)}`:'';
   const lastP=pts[pts.length-1];
   const table=`<details><summary>Voir les données (${pts.length} point${pts.length>1?'s':''})</summary><table class="rd-tbl"><tr><th>Date</th><th>Hausse</th><th>Statu quo</th><th>Baisse</th><th>Fin d'année</th><th>Source</th></tr>${pts.slice().reverse().map(p=>`<tr><td>${dLong(p.t)}</td><td>${p.hike} %</td><td>${p.hold} %</td><td>${p.cut} %</td><td>${p.bpsYE!=null?(p.bpsYE>=0?'+':'')+p.bpsYE+' bps':'—'}</td><td>${escH(p.src)}</td></tr>`).join('')}</table></details>`;
-  let h=`<div class="rd-h">Évolution des attentes pour la prochaine réunion</div><div class="rd-sub">Probabilités cumulées (total 100 %) à chaque mise à jour${span}</div>`;
+  const pmSrc=pts.length&&pts[0].src==='Polymarket';
+  let h=`<div class="rd-h">Évolution des attentes pour la prochaine réunion</div><div class="rd-sub">${pmSrc?'Probabilités cumulées (total 100 %) du marché Polymarket'+(PM_FED_TITLE?' « '+escH(PM_FED_TITLE)+' »':'')+', un point par jour':'Probabilités cumulées (total 100 %) à chaque mise à jour'}${span}</div>`;
   if(pts.length<2){
     box.innerHTML=h+`<div class="rd-empty">L'historique se construit à chaque collage ou modification des attentes (et à chaque import du Macro Compass) : ${pts.length} point pour l'instant. Le graphique apparaît dès le 2ᵉ point.</div>`+table;
     return;
@@ -1663,6 +1711,7 @@ async function fetchPredictions(){
     const cards=[];
     if(fed){
       applyFedToRates(fed);
+      fetchFedHistory(fedEv);
       cards.push(`<div class="pm-card"><div class="pm-q">🏦 ${fed.title}</div>${pmOutRow('Statu quo',fed.hold,'var(--amber)')}${pmOutRow('Baisse',fed.cut,'var(--buy)')}${pmOutRow('Hausse',fed.hike,'var(--sell)')}<div class="pm-foot"><span>FOMC</span><span>${fmtPmDate(fed.meeting)}</span></div></div>`);
     }
     const mk=await topR.json();

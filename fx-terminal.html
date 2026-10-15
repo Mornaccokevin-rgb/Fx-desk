@@ -330,6 +330,9 @@ a{color:inherit;text-decoration:none}
 .rx-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 .rx-box{background:var(--panel);border:1px solid var(--bd2);border-radius:14px;padding:24px;width:100%;max-width:420px;font-family:'Space Grotesk',sans-serif;margin:auto;position:relative}
 html.rx-lock,html.rx-lock body{overflow:hidden;overscroll-behavior:none}
+/* Taille d'affichage choisie dans le hub : appliquée au contenu (pas aux fenêtres, qui restent calées sur l'écran) */
+body.hz-lg .cmdbar,body.hz-lg .ticker,body.hz-lg .wrap{zoom:1.12}
+body.hz-xl .cmdbar,body.hz-xl .ticker,body.hz-xl .wrap{zoom:1.25}
 .rx-box h3{margin:0 0 16px;font-size:15px;color:var(--t)}
 .rx-fld{margin-bottom:12px}
 .rx-fld label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:5px}
@@ -1035,7 +1038,9 @@ function renderGrid(){
 function openDetail(code){
   activeCcy=code;activeDim=null;
   renderGrid();renderDetail();
-  document.getElementById('detail-mount').scrollIntoView({behavior:'smooth',block:'start'});
+  // Défilement limité au Compass : scrollIntoView ferait aussi défiler la page du hub (iframe)
+  const dm=document.getElementById('detail-mount');
+  window.scrollTo({top:Math.max(0,dm.getBoundingClientRect().top+window.scrollY-70),behavior:'smooth'});
 }
 function closeDetail(){activeCcy=null;document.getElementById('detail-mount').innerHTML='';renderGrid();}
 
@@ -1818,7 +1823,16 @@ function setHubTheme(light){
   const ic=document.getElementById('theme-icon'); if(ic) ic.className=light?'ti ti-moon':'ti ti-sun';
   localStorage.setItem('fxmt_theme',light?'light':'dark');
 }
-window.addEventListener('storage',e=>{ if(e.key==='sphinx_theme'&&e.newValue) setHubTheme(e.newValue==='light'); });
+window.addEventListener('storage',e=>{
+  if(e.key==='sphinx_theme'&&e.newValue) setHubTheme(e.newValue==='light');
+  if(e.key==='sphinx_zoom') applyHubZoom();
+});
+// Taille d'affichage du hub (Normal / Grand / Très grand), seulement quand le Compass est dans le hub
+function applyHubZoom(){
+  const z=window.parent!==window?localStorage.getItem('sphinx_zoom'):'normal';
+  document.body.classList.toggle('hz-lg',z==='lg');
+  document.body.classList.toggle('hz-xl',z==='xl');
+}
 function toggleTheme(){
   document.body.classList.toggle('light');
   const light=document.body.classList.contains('light');
@@ -2135,6 +2149,7 @@ async function generateAiBrief(force){
 function init(){
   { const hub=localStorage.getItem('sphinx_theme'), own=localStorage.getItem('fxmt_theme');
     setHubTheme((window.parent!==window&&hub) ? hub==='light' : own==='light'); }
+  applyHubZoom();
   tickClock();setInterval(tickClock,1000);
   renderGrid();
   renderRateExpectations();

@@ -185,6 +185,27 @@
         display: block
     }
 
+    /* Macro Compass : l'écran occupe exactement la fenêtre, quel que soit le zoom
+       d'affichage (Grand / Très grand). Sinon l'iframe dépassait, la page du hub
+       défilait et les fenêtres du Compass (Fed, BCE…) se centraient hors de l'écran. */
+    #fxmacro.active {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden
+    }
+    #fxmacro.active > .fx-topbar { flex: none }
+    #fxmacro.active > #fxMacroFrame { flex: 1 1 auto; height: auto !important; min-height: 0 }
+    /* Le zoom « Taille d'affichage » est neutralisé sur cet écran (produit = 1) pour que
+       l'iframe fasse exactement la taille de la fenêtre ; le Compass l'applique lui-même
+       à son contenu (classe hz-lg / hz-xl, voir fx-terminal.html). */
+    html:has(#fxmacro.active), body:has(#fxmacro.active) { overflow: hidden }
+    body.zoom-lg #fxmacro.active { zoom: 0.892857 }
+    body.zoom-xl #fxmacro.active { zoom: 0.8 }
+    body.zoom-lg #fxmacro.active > .fx-topbar { zoom: 1.12 }
+    body.zoom-xl #fxmacro.active > .fx-topbar { zoom: 1.25 }
+
     .theme-toggle-btn {
         background: var(--fx-card2);
         border: 1px solid var(--fx-bd);

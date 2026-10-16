@@ -502,7 +502,23 @@ body.hz-xl .cmdbar,body.hz-xl .ticker,body.hz-xl .wrap{zoom:1.25}
   .recap-list li,.pv-watch li{grid-template-columns:52px 1fr}
 }
 /* Détail d'une banque centrale : historique des attentes */
-.rd-box{max-width:760px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain}
+.rd-box{max-width:1180px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain}
+.rd-stats{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px 14px;padding:12px 0 16px;border-bottom:1px solid var(--bd);margin-bottom:14px}
+.rd-stat-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.rd-stat-v{font-size:15px;font-weight:700;color:var(--t1);font-family:var(--mono);white-space:nowrap}
+.rd-stat-s{font-size:10.5px;color:var(--t3);margin-top:3px}
+.rd-prob{display:flex;align-items:center;gap:7px;font-size:13px}
+.rd-prob i{flex:1;min-width:30px;height:6px;border-radius:3px;background:var(--panel3);overflow:hidden;display:block}
+.rd-prob i b{display:block;height:100%;border-radius:3px}
+.rd-prob em{font-style:normal;font-size:11px;color:var(--t2)}
+.rd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rd-panel{background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2);padding:12px 14px;min-width:0}
+.rd-panel.rd-wide{grid-column:1/-1}
+.rd-panel .rd-h:first-child{margin-top:0}
+.rd-ph{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:3px}
+.rd-chart.md{height:200px}
+@media(max-width:1000px){.rd-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:620px){.rd-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rd-grid{grid-template-columns:1fr}.rd-stat-v{font-size:13.5px;white-space:normal}}
 .rd-bar{display:flex;height:26px;border-radius:var(--r);overflow:hidden;background:var(--panel3)}
 .rd-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:8px;background:var(--panel2);border:1px solid var(--bd);color:var(--t2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 .rd-close:hover{color:var(--t)}
@@ -1318,6 +1334,7 @@ function subscribeRates(){
         const data=doc.data()||{};
         if(data.meetings&&typeof data.meetings==='object') RATE_MEETINGS=data.meetings;
         RATE_DOC=data; seedRateHistory();
+        if(data.curves&&typeof data.curves==='object') RATE_CURVES=data.curves;
         rateMeta.updatedAt=data.updatedAt||null; rateMeta.updatedBy=data.updatedBy||'';
         if(data.manual) configManual=true; // attentes collées → priment sur le Fed auto
         const banks=data.banks||{};
@@ -1352,7 +1369,7 @@ function subscribeRateHistory(){
     rateHistUnsub=fxDb.collection('config').doc('rateHistory').onSnapshot(doc=>{
       RATE_HISTORY=(doc.exists&&Array.isArray((doc.data()||{}).entries))?doc.data().entries:[];
       rateHistLoaded=true; seedRateHistory();
-      if(rdOpenCode) renderRateDetailCharts();
+      if(rdOpenCode){ renderRateCurveCharts(); renderRateDetailCharts(); }
     }, err=>{ console.warn('rateHistory',err.message); rateHistUnsub=null; });
   }catch(e){ rateHistUnsub=null; }
 }
@@ -1363,6 +1380,7 @@ function rateHistEntry(src,banks){
     if(!b) return; const o={};
     ['hike','hold','cut'].forEach(k=>{ const v=Number(b[k]); o[k]=isFinite(v)?Math.round(v):0; });
     if(b.bpsYE!==undefined&&b.bpsYE!==null&&isFinite(Number(b.bpsYE))) o.bpsYE=Math.round(Number(b.bpsYE));
+    if(Array.isArray(b.curve)){ const cv=b.curve.filter(p=>p&&ISO_DAY.test(p.date)&&isFinite(Number(p.bps))).map(p=>({date:p.date,bps:Math.round(Number(p.bps)*100)/100})); if(cv.length) o.curve=cv; }
     clean[c]=o;
   });
   return {at:new Date().toISOString(),src,by:(fxAuthUser&&fxAuthUser.email)||'',banks:clean};
@@ -1450,6 +1468,7 @@ function mcParse(text){
     Object.entries(R.banks||{}).forEach(([c,b])=>{
       if(!RATE_EXPECTATIONS[c]) throw new Error('rates : banque centrale inconnue pour '+c+'.');
       if(b.meetings!=null&&(!Array.isArray(b.meetings)||b.meetings.some(x=>!ISO_DAY.test(x)))) throw new Error('rates.'+c+'.meetings : dates au format AAAA-MM-JJ attendues.');
+      if(b.curve!=null&&(!Array.isArray(b.curve)||b.curve.some(p=>!p||!ISO_DAY.test(p.date)||!isFinite(Number(p.bps))))) throw new Error('rates.'+c+'.curve : liste de {date AAAA-MM-JJ, bps} attendue.');
     });
     (R.history||[]).forEach((e,i)=>{ if(!e||!e.at||isNaN(Date.parse(e.at))||!e.banks) throw new Error('rates.history['+i+'] : « at » (date) et « banks » obligatoires.'); });
   }
@@ -1504,14 +1523,16 @@ function openCompassImport(){
       // Taux : calendrier des réunions (+ taux directeur) et points d'historique datés
       const R=mcPending.rates;
       if(R){
-        const meetings={}, banks={};
+        const meetings={}, banks={}, curves={};
         Object.entries(R.banks||{}).forEach(([c,b])=>{
           if(Array.isArray(b.meetings)&&b.meetings.length) meetings[c]=b.meetings.slice().sort();
           if(b.rate) banks[c]={rate:String(b.rate)};
+          if(Array.isArray(b.curve)&&b.curve.length){ curves[c]={asOf:R.asOf||new Date().toISOString().slice(0,10),points:b.curve.filter(p=>p&&ISO_DAY.test(p.date)&&isFinite(Number(p.bps))).map(p=>({date:p.date,bps:Number(p.bps)}))}; }
         });
         const upd={};
         if(Object.keys(meetings).length) upd.meetings=meetings;
         if(Object.keys(banks).length) upd.banks=banks;
+        if(Object.keys(curves).length) upd.curves=curves;
         if(Object.keys(upd).length) batch.set(fxDb.collection('config').doc('rateExpectations'),upd,{merge:true});
         const FV=firebase.firestore&&firebase.firestore.FieldValue;
         const hist=(R.history||[]).map(e=>{ const x=rateHistEntry(e.src||'import',e.banks); x.at=new Date(e.at).toISOString(); x.by='skill'; if(e.source) x.src=String(e.source).slice(0,60); return x; }).filter(e=>Object.keys(e.banks).length);
@@ -1585,7 +1606,48 @@ function rateHistoryPoints(code){
 }
 function closeRateDetail(){
   rdCharts.forEach(c=>{try{c.destroy();}catch(e){}}); rdCharts=[]; rdOpenCode=null;
+  rdCurveCharts.forEach(c=>{try{c.destroy();}catch(e){}}); rdCurveCharts=[];
   const m=document.getElementById('rd-modal'); if(m) m.remove();
+}
+// ── Taux implicites : parsing du taux affiché, courbe par réunion ──
+let RATE_CURVES={};   // config/rateExpectations.curves : {code:{asOf, points:[{date,bps}]}} (bps cumulés vs taux actuel)
+function parseRate(txt){
+  const t=String(txt||''); const nums=t.replace(/(\d),(\d)/g,'$1.$2').match(/-?\d+(?:\.\d+)?/g); if(!nums) return null;
+  const v=nums.slice(0,2).map(Number);
+  return {lo:v[0],hi:v.length>1?v[1]:v[0],range:v.length>1,comma:/\d,\d/.test(t)};
+}
+function fmtRate(p,dBps){
+  if(!p) return '—';
+  const f=x=>x.toFixed(2).replace('.',p.comma?',':'.'), d=(dBps||0)/100;
+  return p.range?f(p.lo+d)+'–'+f(p.hi+d)+' %':f(p.lo+d)+' %';
+}
+function fmtBps(x,dec){ const v=Math.abs(x)<0.005?0:x; return (v>0?'+':'')+v.toFixed(dec==null?2:dec).replace('.',',')+' bps'; }
+function midRate(p){ return p?(p.lo+p.hi)/2:null; }
+// Variation attendue à la prochaine réunion (pas de 25 bps) à partir des probabilités
+function expMove(b){ return ((+b.hike||0)-(+b.cut||0))*0.25; }
+// Courbe estimée quand aucune courbe complète n'est publiée : prochaine réunion = probabilités,
+// dernière réunion de l'année = bps attendus d'ici fin d'année, interpolation entre les deux.
+function derivedCurve(code,b){
+  const up=upcomingMeetings(code); if(!up.length||!b) return null;
+  const e=expMove(b), y=up[0].slice(0,4), yr=up.filter(d=>d.slice(0,4)===y);
+  const ye=(b.bpsYE!=null&&isFinite(b.bpsYE))?+b.bpsYE:null;
+  if(ye==null||yr.length<1) return {pts:[{date:up[0],bps:e}],est:true};
+  if(yr.length===1) return {pts:[{date:up[0],bps:ye}],est:true};
+  return {pts:yr.map((d,i)=>({date:d,bps:i===0?e:e+(ye-e)*i/(yr.length-1)})),est:true};
+}
+function rateCurve(code){
+  const c=RATE_CURVES[code], t=todayKey();
+  if(c&&Array.isArray(c.points)){ const pts=c.points.filter(p=>p&&ISO_DAY.test(p.date)&&p.date>=t&&isFinite(p.bps)).sort((a,b)=>a.date.localeCompare(b.date)); if(pts.length) return {pts,est:false,asOf:c.asOf||''}; }
+  return derivedCurve(code,RATE_EXPECTATIONS[code]);
+}
+// Courbe d'il y a environ une semaine (point d'historique le plus proche de J-7, entre J-4 et J-12)
+function weekAgoCurve(code){
+  const target=Date.now()-7*864e5; let best=null;
+  RATE_HISTORY.forEach(e=>{ if(!e||!e.banks||!e.banks[code]) return; const t=Date.parse(e.at); if(!isFinite(t)) return;
+    const age=(Date.now()-t)/864e5; if(age<4||age>12) return; if(!best||Math.abs(t-target)<Math.abs(best.t-target)) best={t,b:e.banks[code]}; });
+  if(!best) return null;
+  if(Array.isArray(best.b.curve)&&best.b.curve.length) return {pts:best.b.curve,t:best.t};
+  const d=derivedCurve(code,best.b); return d?{pts:d.pts,t:best.t}:null;
 }
 function openRateDetail(code){
   const r=RATE_EXPECTATIONS[code]; if(!r) return;
@@ -1594,17 +1656,32 @@ function openRateDetail(code){
   const monScore=(NOTION_DIMS[code]||{}).monetaire;
   const stance=monScore==null?'':(monScore>=65?'Hawkish':monScore>=42?'Neutre':'Dovish');
   const note=(PILLAR_NOTES[code]||{}).monetaire||'';
-  const mi=meetingInfo(code,r), up=upcomingMeetings(code);
-  const seg=(cls,v,lbl)=>v>0?`<div class="rate-seg ${cls}" style="width:${v}%" title="${lbl} ${v}%">${v>=12?lbl+' '+v+'%':''}</div>`:'';
+  const mi=meetingInfo(code,r);
+  const pr=parseRate(r.rate), e=expMove(r);
+  const outs=[['hike','Hausse','▲',25],['hold','Statu quo','●',0],['cut','Baisse','▼',-25]].map(([k,l,ic,d])=>({k,l,ic,d,p:+r[k]||0})).sort((a,b)=>b.p-a.p);
+  const ml=outs[0], alt=outs[1];
+  const col={hike:'var(--rx-hike)',hold:'var(--rx-hold)',cut:'var(--rx-cut)'};
+  const stat=(lbl,val,sub)=>`<div class="rd-stat"><div class="rd-stat-l">${lbl}</div><div class="rd-stat-v">${val}</div>${sub?`<div class="rd-stat-s">${sub}</div>`:''}</div>`;
+  const prob=o=>`<div class="rd-prob"><span>${fmtRate(pr,o.d)}</span><i><b style="width:${Math.max(2,o.p)}%;background:${col[o.k]}"></b></i><em>${o.p} %</em></div>`;
   const ov=document.createElement('div'); ov.className='rx-modal'; ov.id='rd-modal';
   ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true'); ov.setAttribute('aria-labelledby','rd-title');
   ov.innerHTML=`<div class="rx-box rd-box">
     <button class="rd-close" id="rd-close" aria-label="Fermer">✕</button>
     <h3 id="rd-title">${r.flag} ${r.bank} · ${code}${code==='USD'&&fedLive&&!configManual?' <span style="font-size:10px;color:var(--accent)">· LIVE Polymarket</span>':''}</h3>
-    <div class="rd-meta"><span>Taux directeur : <b>${escH(r.rate||'—')}</b></span><span>Prochaine réunion : <b>${escH(mi.txt)}</b>${mi.cd?' · '+mi.cd:''}</span>${(r.bpsYE!=null)?`<span>Fin d'année : <b>${r.bpsYE>=0?'+':''}${r.bpsYE} bps</b></span>`:''}</div>
-    ${up.length>1?`<div class="rd-next">${up.slice(0,5).map((d,i)=>`<span class="rd-chip${i===0?' first':''}">${fmtMeetDate(d)}</span>`).join('')}</div>`:''}
-    <div class="rd-bar" role="img" aria-label="Aujourd'hui : hausse ${r.hike} %, statu quo ${r.hold} %, baisse ${r.cut} %">${seg('seg-hike',r.hike,'Hausse')}${seg('seg-hold',r.hold,'Statu quo')}${seg('seg-cut',r.cut,'Baisse')}</div>
-    <div id="rd-hist"></div>
+    <div class="rd-stats">
+      ${stat('Taux actuel',escH(r.rate||'—'))}
+      ${stat('Attendu',fmtRate(pr,e),'après la réunion')}
+      ${stat('Prochaine réunion',escH(mi.txt),mi.cd)}
+      ${stat('Mouvement attendu',`<span style="color:${col[ml.k]}">${ml.ic}</span> ${ml.l}`)}
+      ${stat('Variation',fmtBps(e),'pondérée par les probabilités')}
+      ${stat('Le plus probable',prob(ml))}
+      ${stat('Alternative',prob(alt))}
+    </div>
+    <div class="rd-grid">
+      <div class="rd-panel"><div class="rd-ph">Courbe des taux implicites</div><div class="rd-sub" id="rd-curve-sub"></div><div class="rd-legend" id="rd-curve-leg"></div><div class="rd-chart md"><canvas id="rd-c3" role="img" aria-label="Taux implicite à chaque réunion à venir"></canvas></div></div>
+      <div class="rd-panel"><div class="rd-ph">Points implicites</div><div class="rd-sub">bps cumulés pricés à chaque réunion, par rapport au taux actuel</div><div class="rd-chart md"><canvas id="rd-c4" role="img" aria-label="bps cumulés attendus à chaque réunion"></canvas></div></div>
+      <div class="rd-panel rd-wide"><div id="rd-hist"></div></div>
+    </div>
     ${stance?`<div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin:16px 0 4px">Biais — ${stance}</div>`:''}
     ${note?`<div class="rd-note">${mdToHtmlFx(note)}</div>`:''}
   </div>`;
@@ -1612,7 +1689,42 @@ function openRateDetail(code){
   ov.addEventListener('click',e=>{if(e.target===ov)closeRateDetail();});
   ov.querySelector('#rd-close').onclick=closeRateDetail;
   ov.querySelector('#rd-close').focus({preventScroll:true});
+  renderRateCurveCharts();
   renderRateDetailCharts();
+}
+let rdCurveCharts=[];
+function renderRateCurveCharts(){
+  const code=rdOpenCode; if(!code||!document.getElementById('rd-c3')) return;
+  rdCurveCharts.forEach(c=>{try{c.destroy();}catch(e){}}); rdCurveCharts=[];
+  const r=RATE_EXPECTATIONS[code], pr=parseRate(r.rate), base=midRate(pr);
+  const cur=rateCurve(code), wk=weekAgoCurve(code);
+  const sub=document.getElementById('rd-curve-sub'), leg=document.getElementById('rd-curve-leg');
+  if(!cur||!cur.pts.length||base==null){ const c3=document.getElementById('rd-c3'); c3.parentNode.innerHTML='<div class="rd-empty">Courbe indisponible : taux directeur ou calendrier des réunions manquant.</div>'; const c4=document.getElementById('rd-c4'); if(c4) c4.parentNode.innerHTML=''; return; }
+  sub.textContent=cur.est?'Estimée : prochaine réunion d\'après les probabilités, fin d\'année d\'après les bps pricés'+(cur.pts.length<3?' (la skill publie la courbe complète sur 12 mois)':''):'Taux implicite après chaque réunion'+(cur.asOf?' · au '+fmtMeetDate(cur.asOf.slice(0,10)):'');
+  const dates=cur.pts.map(p=>p.date);
+  const lab=['Auj.'].concat(dates.map(d=>isoToDate(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}).replace('.','')));
+  const curY=[base].concat(cur.pts.map(p=>+(base+p.bps/100).toFixed(3)));
+  let wkY=null;
+  if(wk){ const m={}; wk.pts.forEach(p=>{ if(p&&p.date) m[p.date]=p.bps; }); wkY=[base].concat(dates.map(d=>m[d]!=null?+(base+m[d]/100).toFixed(3):null)); if(wkY.slice(1).every(v=>v==null)) wkY=null; }
+  leg.innerHTML='<span><i style="background:var(--t1)"></i>Actuelle</span>'+(wkY?'<span><i style="background:var(--t3)"></i>Il y a une semaine</span>':'');
+  loadChartJs().then(Chart=>{
+    if(rdOpenCode!==code) return;
+    const cs=getComputedStyle(document.body), v=n=>cs.getPropertyValue(n).trim();
+    const ink=v('--t1'), muted=v('--t3'), surf=v('--panel'), grid=document.body.classList.contains('light')?'#e1e0d9':'#2c2c2a';
+    const tip={backgroundColor:v('--panel2'),titleColor:ink,bodyColor:v('--t2'),borderColor:v('--bd2'),borderWidth:1,padding:10,boxPadding:4,animation:false,caretPadding:8};
+    const fr=x=>x.toFixed(2).replace('.',pr.comma?',':'.')+' %';
+    const ds=[{label:'Actuelle',data:curY,borderColor:ink,backgroundColor:ink,borderWidth:2,pointRadius:4,pointBackgroundColor:ink,pointBorderColor:surf,pointBorderWidth:2,pointHoverRadius:6,tension:0}];
+    if(wkY) ds.push({label:'Il y a une semaine',data:wkY,borderColor:muted,backgroundColor:muted,borderWidth:2,borderDash:[5,4],pointRadius:3,pointBackgroundColor:muted,pointBorderColor:surf,pointBorderWidth:2,pointHoverRadius:5,tension:0,spanGaps:true});
+    rdCurveCharts.push(new Chart(document.getElementById('rd-c3'),{type:'line',data:{labels:lab,datasets:ds},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false},events:['mousemove','mouseout','touchstart','touchmove','touchend'],
+        scales:{x:{ticks:{color:muted,font:{size:10},maxRotation:0,autoSkip:true},grid:{display:false},border:{color:grid}},y:{grace:'8%',ticks:{color:muted,font:{size:10},maxTicksLimit:5,callback:fr},grid:{color:grid},border:{display:false}}},
+        plugins:{legend:{display:false},tooltip:Object.assign({},tip,{callbacks:{label:it=>' '+it.dataset.label+' : '+(it.parsed.y==null?'—':fr(it.parsed.y))}})}}}));
+    const bps=cur.pts.map(p=>+(+p.bps).toFixed(2));
+    rdCurveCharts.push(new Chart(document.getElementById('rd-c4'),{type:'bar',data:{labels:lab.slice(1),datasets:[{label:'bps cumulés',data:bps,backgroundColor:bps.map(x=>x>=0?v('--rx-hike'):v('--rx-cut')),borderRadius:4,borderSkipped:false,maxBarThickness:28}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,events:['mousemove','mouseout','touchstart','touchmove','touchend'],
+        scales:{x:{ticks:{color:muted,font:{size:10},maxRotation:0,autoSkip:true},grid:{display:false},border:{color:grid}},y:{grace:'10%',ticks:{color:muted,font:{size:10},maxTicksLimit:5,callback:t=>fmtBps(t,0)},grid:{color:c=>c.tick&&c.tick.value===0?muted:grid},border:{display:false}}},
+        plugins:{legend:{display:false},tooltip:Object.assign({},tip,{callbacks:{label:it=>' '+fmtBps(it.parsed.y)+' → '+fr(base+it.parsed.y/100)}})}}}));
+  }).catch(()=>{});
 }
 function renderRateDetailCharts(){
   const code=rdOpenCode, box=document.getElementById('rd-hist'); if(!code||!box) return;

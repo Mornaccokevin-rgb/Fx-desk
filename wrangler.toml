@@ -1,7 +1,11 @@
-# Déploiement du site statique Sphinx Alliance via Cloudflare Workers (Static Assets).
-# Sert simplement les fichiers du repo (index.html) — aucun code serveur.
+# Déploiement du site Sphinx Alliance via Cloudflare Workers (Static Assets).
+# Sert les fichiers du repo ; le Worker (worker.js) ne répond qu'à /api/* (relais Fear & Greed CNN),
+# tout le reste est servi directement par les assets, sans passer par le code.
 name = "sphinx-alliance"
+main = "worker.js"
 compatibility_date = "2025-01-01"
 
 [assets]
 directory = "."
+binding = "ASSETS"
+run_worker_first = ["/api/*"]

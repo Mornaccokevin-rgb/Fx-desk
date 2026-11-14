@@ -2370,18 +2370,26 @@ function fgLabelOf(v,rating){
 }
 async function loadFearGreed(){
   const badge=document.getElementById('fgBadge');
-  let j=null;
+  let j=null, lastErr='';
   try{ const c=JSON.parse(localStorage.getItem('fxmt_fg')); if(c&&Date.now()-c.t<30*60e3) j=c.v; }catch(e){}
   if(!j){
-    try{ const r=await fetch(NOTION_API+'/?source=feargreed',{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); j=await r.json(); try{ localStorage.setItem('fxmt_fg',JSON.stringify({t:Date.now(),v:j})); }catch(e){} }
-    catch(e){ j=null; }
+    // 1) route du site lui-même (worker.js, même origine)  2) ancien relais Notion si le site est ouvert ailleurs
+    for(const url of ['/api/feargreed', NOTION_API+'/?source=feargreed']){
+      try{
+        const r=await fetch(url,{cache:'no-store'});
+        const t=await r.json();
+        if(!r.ok||!t||t.error){ lastErr=lastErr||(t&&t.error)||('HTTP '+r.status); continue; }
+        const g=t.fear_and_greed||t; if((g.score!=null?g.score:g.value)==null){ lastErr=lastErr||'réponse vide'; continue; }
+        j=t; try{ localStorage.setItem('fxmt_fg',JSON.stringify({t:Date.now(),v:j})); }catch(e){} break;
+      }catch(e){ lastErr=lastErr||'injoignable'; }
+    }
   }
   const fg=j&&(j.fear_and_greed||j);
   const val=fg?(fg.score!=null?fg.score:fg.value):null;
   if(val==null||isNaN(+val)){
     FG.value=null; FG.label='Indisponible'; FG.prior=null; FG.week=null;
-    FG.asof='Relais Cloudflare : route « feargreed » à ajouter';
-    if(badge){ badge.textContent='hors ligne'; }
+    FG.asof='CNN ne répond pas pour le moment'+(lastErr?' ('+lastErr+')':'')+' — nouvel essai dans 30 min.';
+    if(badge) badge.textContent='hors ligne';
     renderFG(); return;
   }
   FG.value=Math.round(+val); FG.label=fgLabelOf(FG.value,fg.rating||fg.label);

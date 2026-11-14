@@ -15,15 +15,15 @@ du HTML/CSS/JS pur, hébergeable n'importe où.
 ## Modules
 
 ### 🌍 FX Macro Compass
-Terminal macro temps réel sur **9 devises** (USD, EUR, GBP, JPY, CHF, AUD, NZD, CAD, CNH).
+Salle de marché en trois colonnes, inspirée du « Terminal Macro FX » : **rail des devises** (classées par force relative, note /100), **globe terrestre** (canvas d3 + topojson, `world.json` embarqué dans le dépôt : on choisit une devise, le globe pivote sur sa zone, s'arrête et pulse ; 177 pays survolables, zoom, pays hors couverture gérés), et **lecture macro** à droite. **Thème clair ou sombre** : bouton ☾/☀ dans le Compass, synchronisé dans les deux sens avec le mode du hub.
 
-- Note globale **/100** par devise (> 50 = biais acheteur).
-- 4 piliers : **croissance · inflation · politique monétaire · géopolitique**.
-- **News Feed** live (Finnhub) avec auto-refresh toutes les 15 min + rafraîchissement manuel.
-- Rang de force relative, biais et driver dominant : lus **en direct** depuis la page Notion « Biais & Force Relative » via le Cloudflare Worker `cloudflare-worker/notion-worker.js` — zéro donnée en dur, zéro API payante.
-- Les 4 piliers /100 par devise sont un **jugement** porté par Claude sur les pages Notion (Biais & Force Relative + Track Record Fondamental), écrit dans Firestore (collection `macroCompass`) à la demande de Kevin (« mets à jour le macro compass »), puis lu en direct par le site. Claude prépare un fichier `macro-compass-AAAA-MM-JJ.json`, qu'un rédacteur publie avec le bouton **📥 Importer une mise à jour** du Macro Compass. Affichage **N/A** si une devise n'est pas encore couverte — jamais de donnée périmée déguisée en live.
-- Fiche devise : driver dominant + **récap du mois** (résumé + frise des faits datés). Clic sur un pilier → **vue dédiée** : verdict, tableau de toutes les données (réel / consensus / précédent / lecture), analyse, à surveiller, synthèses Daily FX liées. Le contenu vient de la skill `macro-compass-fx` (format d'import v2 : Notion + recherches web, dont le CNH).
-- **Attentes de taux** : date de la prochaine réunion calculée depuis le calendrier des banques centrales (`config/rateExpectations.meetings`, avec un calendrier par défaut dans `fx-terminal.html`). Clic sur une banque → **historique des attentes** (graphique cumulatif hausse / statu quo / baisse + bps fin d'année), alimenté à chaque collage, modification ou import (`config/rateHistory`).
+- 9 devises (USD, EUR, GBP, JPY, CHF, AUD, NZD, CAD, CNH), 4 piliers : **croissance · inflation · politique monétaire · géopolitique**.
+- Les notes /100 par devise sont un **jugement** porté par Claude sur les pages Notion (Biais & Force Relative + Track Record Fondamental + Live Feed) complété par des recherches web, écrit dans Firestore (collection `macroCompass`) à la demande de Kevin (« mets à jour le macro compass »), puis lu en direct par le site. Claude prépare un fichier `macro-compass-AAAA-MM-JJ.json`, qu'un rédacteur publie avec le bouton **📥 Importer une mise à jour**. Badge « figé » tant qu'aucune note n'est publiée — jamais de donnée périmée déguisée en live.
+- **Vue d'ensemble** d'une devise : biais, driver dominant, note, rang, **récap du mois** (résumé + frise des faits datés), « À venir ». Clic sur un **pilier** : verdict, tableau de toutes les données (réel, consensus, précédent, lecture pour la devise), analyse, à surveiller, synthèses Daily FX liées ; clic sur une ligne → fiche.
+- **Prochaines publications** : calendrier à 14 jours construit depuis les « à surveiller » des piliers et les décisions des banques centrales.
+- **Sessions de trading** (Sydney, Tokyo, Londres, New York sur une frise 24 h UTC, heure d'été gérée par `Intl`) et **Fear & Greed** CNN (via la route `?source=feargreed` du Worker Cloudflare `notion-compass` ; la carte affiche « indisponible » tant que la route n'existe pas).
+- **Attentes de taux** : prochaine réunion calculée depuis le calendrier des banques centrales (`config/rateExpectations.meetings`, calendrier par défaut dans `fx-terminal.html`). Clic sur une banque → tableau de bord : taux actuel / attendu, mouvement attendu, courbe des taux implicites (actuelle vs il y a une semaine), points implicites par réunion, historique des attentes (`config/rateHistory`, alimenté à chaque collage, modification ou import).
+- Marchés de prédiction (Polymarket), COT (CFTC), tendances 30 j (Polygon), news feed (Finnhub) et brief IA : conservés, restylés.
 
 ### 🧠 Daily FX
 - Synthèses macro post-annonces (rédacteurs), avec tags gérables et historique par semaine.

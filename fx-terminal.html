@@ -1,710 +1,652 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>FX Macro Terminal — Sphinx Alliance</title>
-<meta name="description" content="Terminal macro forex : 9 devises notées sur 100 (croissance, inflation, politique monétaire, géopolitique), news live et attentes de taux.">
-<meta name="theme-color" content="#06070a">
-<meta property="og:type" content="website">
-<meta property="og:title" content="FX Macro Terminal — Sphinx Alliance">
-<meta property="og:description" content="Terminal macro forex façon Bloomberg : 9 devises notées /100, news live et attentes de politique monétaire.">
-<meta name="twitter:card" content="summary">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2306070a'/%3E%3Ctext x='50' y='73' font-size='62' text-anchor='middle' fill='%23a78bfa'%3E%E2%9A%9C%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>FX Macro Compass — Sphinx Alliance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#06070a;--bg2:#0b0d12;--panel:#0e1117;--panel2:#141821;--panel3:#1a1f2b;
-  --bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.13);
-  --t:#e6e9f0;--t2:#8b93a7;--t3:#5a6076;--t4:#3a4054;
-  --buy:#16d39a;--buy-dim:rgba(22,211,154,.12);--buy-glow:rgba(22,211,154,.3);
-  --sell:#ff4d5e;--sell-dim:rgba(255,77,94,.12);--sell-glow:rgba(255,77,94,.3);
-  --amber:#f5a623;--amber-dim:rgba(245,166,35,.12);
-  --accent:#5b8cff;--accent-dim:rgba(91,140,255,.12);
-  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
-  --r:6px;--r2:10px;--r3:14px;
-  --t1:#e6e9f0;
-  /* Attentes de taux : hausse / statu quo / baisse (palette divergente validée CVD sur --panel) */
-  --rx-hike:#3987e5;--rx-hold:#b4b2a9;--rx-cut:#e66767;--rx-bps:#d95926;
-}
-body.light{
-  --bg:#eef1f6;--bg2:#e4e8f0;--panel:#ffffff;--panel2:#f4f6fa;--panel3:#e9edf4;
-  --bd:rgba(0,0,0,.09);--bd2:rgba(0,0,0,.15);
-  --t:#10131a;--t2:#4a5163;--t3:#6b7185;--t4:#9aa0b2;
-  --t1:#10131a;
-  --rx-hike:#2a78d6;--rx-hold:#898781;--rx-cut:#e34948;--rx-bps:#eb6834;
-}
-html,body{min-height:100vh}
-body{background:var(--bg);color:var(--t);font-family:var(--sans);transition:background .25s,color .25s}
-::-webkit-scrollbar{width:7px;height:7px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:#262c3a;border-radius:4px}
-a{color:inherit;text-decoration:none}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-@keyframes tickMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-
-/* ─── TOP COMMAND BAR ─── */
-.cmdbar{display:flex;align-items:center;gap:16px;height:50px;padding:0 18px;background:var(--bg2);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:200}
-.logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.logo-mark{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--buy),var(--accent));display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;font-weight:700}
-.logo-txt{font-weight:700;font-size:14px;letter-spacing:.3px}
-.logo-txt span{color:var(--accent)}
-.logo-sub{font-size:9.5px;color:var(--t3);font-family:var(--mono);letter-spacing:.5px;margin-top:1px}
-.cmd-nav{display:flex;gap:4px;margin-left:8px}
-.cmd-tab{background:none;border:1px solid transparent;color:var(--t2);font-family:var(--sans);font-size:12.5px;font-weight:500;padding:7px 14px;border-radius:var(--r);cursor:pointer;transition:all .15s}
-.cmd-tab:hover{color:var(--t);background:var(--panel2)}
-.cmd-tab.active{background:var(--panel2);color:var(--accent);border-color:var(--bd);font-weight:600}
-.cmd-right{margin-left:auto;display:flex;align-items:center;gap:14px}
-.live-badge{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--buy);letter-spacing:.5px}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--buy);animation:pulse 1.8s infinite;box-shadow:0 0 8px var(--buy-glow)}
-.clock{font-family:var(--mono);font-size:12px;color:var(--t2);letter-spacing:.5px}
-.icon-btn{width:32px;height:32px;border-radius:var(--r);background:var(--panel2);border:1px solid var(--bd);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .15s}
-.icon-btn:hover{color:var(--accent);border-color:var(--accent)}
-
-/* ─── DASHBOARD : 2 colonnes (contenu + sessions) ─── */
-.dash-grid{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
-.dash-main{min-width:0}
-.dash-side{position:sticky;top:14px}
-@media (max-width:1000px){
-  .dash-grid{grid-template-columns:1fr}
-  .dash-side{position:static;order:-1}
-}
-
-/* ─── PANNEAU SESSIONS (vertical) ─── */
-.sess-panel{background:var(--panel);border:1px solid var(--bd);border-radius:14px;padding:22px}
-.sess-panel-hdr{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.7px;color:var(--t3);font-weight:700;margin-bottom:18px}
-.sess-active-name{font-size:26px;font-weight:700;color:var(--t);letter-spacing:.3px}
-.sess-active-state{font-size:12.5px;color:var(--buy);font-weight:600;margin-top:4px;margin-bottom:20px}
-.sess-active-state.closed{color:var(--t3)}
-
-/* Courbe verticale */
-.sess-track{display:grid;grid-template-columns:1fr;gap:0;margin:6px 0 18px}
-.sess-track-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
-.sess-end-time{font-family:var(--mono);font-size:13px;color:var(--t2);font-weight:700}
-.sess-next-name{font-size:12px;color:var(--accent);font-weight:600;text-align:right}
-.sess-rail{position:relative;height:200px;width:14px;margin:0 auto;background:var(--panel3);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
-.sess-rail-fill{position:absolute;left:0;right:0;bottom:0;height:0%;background:linear-gradient(180deg,var(--buy),var(--accent));transition:height .8s linear}
-.sess-track-bot{font-size:11px;color:var(--t3);text-align:center;margin-top:7px;font-family:var(--mono)}
-
-/* Chronomètre */
-.sess-timer{font-family:var(--mono);font-size:40px;font-weight:700;color:var(--t);text-align:center;letter-spacing:1.5px;margin-top:8px}
-.sess-timer-lbl{font-size:11px;color:var(--t3);text-align:center;text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px}
-
-/* Liste des 4 sessions */
-.sess-list{display:flex;flex-direction:column;gap:11px;border-top:1px solid var(--bd);padding-top:16px}
-.sess-row{display:flex;align-items:center;gap:9px;font-size:13px}
-.sess-row .dot{width:9px;height:9px;border-radius:50%;background:var(--t4);flex-shrink:0;transition:all .2s}
-.sess-row.open .dot{background:var(--buy);box-shadow:0 0 7px var(--buy-glow)}
-.sess-row .nm{font-weight:600;color:var(--t2)}
-.sess-row.open .nm{color:var(--buy)}
-.sess-row.active .nm{color:var(--t)}
-.sess-row .tm{margin-left:auto;font-family:var(--mono);color:var(--t3);font-size:12.5px}
-.sess-row.closed{opacity:.55}
-
-/* ─── ONGLET SESSIONS : timeline + cartes ─── */
-.sess-tab-grid{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
-@media(max-width:900px){.sess-tab-grid{grid-template-columns:1fr}}
-.sess-tl{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:18px}
-.sess-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
-@media(max-width:560px){.sess-cards{grid-template-columns:1fr}}
-.sess-c{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:16px}
-.sess-c.open{border-color:var(--buy-glow)}
-.sess-c-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.sess-c-top .dot{width:9px;height:9px;border-radius:50%;background:var(--t4);flex-shrink:0}
-.sess-c.open .dot{background:var(--buy);box-shadow:0 0 7px var(--buy-glow)}
-.sess-c-name{font-weight:700;font-size:14px;color:var(--t)}
-.sess-c-badge{margin-left:auto;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:20px}
-.sess-c.open .sess-c-badge{color:var(--buy);background:var(--buy-dim)}
-.sess-c.closed .sess-c-badge{color:var(--t3);background:var(--panel3)}
-.sess-c-row{display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin-top:6px}
-.sess-c-row b{color:var(--t);font-family:var(--mono)}
-
-/* ─── MARCHÉS DE PRÉDICTION ─── */
-.pm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.pm-card{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:14px 16px}
-.pm-q{font-size:12.5px;color:var(--t);line-height:1.4;margin-bottom:10px;min-height:34px;font-weight:600}
-.pm-out{margin-bottom:8px}
-.pm-out-top{display:flex;align-items:center;gap:8px}
-.pm-lbl{font-size:11px;color:var(--t2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pm-pct{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--t)}
-.pm-bar{height:5px;border-radius:3px;background:var(--panel3);overflow:hidden;margin-top:4px}
-.pm-bar>span{display:block;height:100%;background:var(--accent)}
-.pm-foot{display:flex;justify-content:space-between;font-size:9.5px;color:var(--t3);font-family:var(--mono);margin-top:8px;border-top:1px solid var(--bd);padding-top:7px}
-.rate-card{cursor:pointer;transition:border-color .15s}
-.rate-card:hover{border-color:var(--bd2)}
-.rx-bars-detail{display:flex;flex-direction:column;gap:12px;margin:6px 0 16px}
-.rx-bd-row{}
-.rx-bd-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;color:var(--t2)}
-.rx-bd-top b{color:var(--t);font-family:var(--mono)}
-.rx-bd-bar{height:12px;border-radius:6px;background:var(--panel3);overflow:hidden}
-.rx-bd-bar>span{display:block;height:100%}
-
-/* ─── COT / POSITIONNEMENT ─── */
-.cot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
-.cot-card{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:14px 16px}
-.cot-top{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--t)}
-.cot-top b{font-family:var(--mono)}
-.cot-bias{margin-left:auto;font-size:10px;font-family:var(--mono);font-weight:700}
-.cot-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:11px 0 6px;background:var(--panel3)}
-.cot-l{background:var(--buy);display:flex;align-items:center;justify-content:center;color:#04120b;font-size:10px;font-weight:700;font-family:var(--mono);min-width:0;transition:width .5s ease}
-.cot-s{background:var(--sell);display:flex;align-items:center;justify-content:center;color:#1a0508;font-size:10px;font-weight:700;font-family:var(--mono);min-width:0;transition:width .5s ease}
-.cot-legend{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono)}
-.cot-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-top:9px;border-top:1px solid var(--bd);padding-top:8px}
-.cot-meta b{font-family:var(--mono)}
-
-/* ─── TICKER ─── */
-.ticker{display:flex;align-items:stretch;background:var(--bg2);border-bottom:1px solid var(--bd);overflow:hidden;height:32px}
-.ticker-lbl{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:0 14px;background:var(--accent-dim);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.7px;border-right:1px solid var(--bd)}
-.ticker-scroll{flex:1;overflow:hidden;position:relative}
-.ticker-inner{display:flex;align-items:center;height:100%;white-space:nowrap;animation:tickMove 80s linear infinite;will-change:transform}
-.ticker-inner:hover{animation-play-state:paused}
-.ticker-item{display:flex;align-items:center;gap:7px;padding:0 22px;font-size:11.5px;color:var(--t2);font-family:var(--mono)}
-.ticker-item b{font-weight:700}
-.up{color:var(--buy)}.down{color:var(--sell)}.flat{color:var(--amber)}
-
-/* ─── LAYOUT ─── */
-.wrap{max-width:1700px;margin:0 auto;padding:20px 26px 80px}
-.tab-pane{display:none;animation:fadeIn .3s ease}
-.tab-pane.active{display:block}
-
-.sec-hdr{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:26px 0 14px}
-.sec-hdr:first-child{margin-top:6px}
-.sec-hdr h2{font-size:12px;font-weight:600;color:var(--t2);letter-spacing:.1em;text-transform:uppercase;min-width:0;overflow-wrap:anywhere}
-.sec-hdr .ti{color:var(--accent);font-size:15px}
-.sec-hdr-line{flex:1 1 40px;height:1px;background:var(--bd)}
-.sec-hdr .badge-est{font-size:9px;font-weight:600;letter-spacing:.06em;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,166,35,.3);padding:2px 8px;border-radius:20px;text-transform:uppercase}
-
-/* ─── CURRENCY GRID ─── */
-.ccy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-@media(max-width:880px){.ccy-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.ccy-grid{grid-template-columns:1fr}}
-.ccy-card{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r2);padding:14px 16px;cursor:pointer;transition:border-color .18s,transform .1s,background .18s;position:relative;overflow:hidden}
-.ccy-card:hover{border-color:var(--bd2);background:var(--panel2)}
-.ccy-card:active{transform:scale(.99)}
-.ccy-card.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.ccy-card.buy-side::before,.ccy-card.sell-side::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
-.ccy-card.buy-side::before{background:var(--buy)}
-.ccy-card.sell-side::before{background:var(--sell)}
-.ccy-top{display:flex;align-items:center;gap:11px}
-.ccy-flag{font-size:24px;line-height:1}
-.ccy-id{flex:1;min-width:0}
-.ccy-code{font-size:15px;font-weight:700;letter-spacing:.2px}
-.ccy-name{font-size:10.5px;color:var(--t3)}
-.ccy-score-wrap{text-align:right}
-.ccy-score{font-family:var(--mono);font-size:24px;font-weight:700;line-height:1}
-.ccy-signal{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
-.s-buy{color:var(--buy)}.s-sell{color:var(--sell)}.s-neu{color:var(--amber)}
-.ccy-bar-bg{height:4px;border-radius:3px;background:var(--panel3);margin-top:12px;overflow:hidden;position:relative}
-.ccy-bar-mid{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--t4);z-index:1}
-.ccy-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
-.ccy-dims{display:flex;gap:5px;margin-top:11px}
-.dim-chip{flex:1;text-align:center;font-size:8.5px;color:var(--t3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.03em}
-.dim-chip .dv{display:block;font-size:11px;font-weight:700;margin-top:2px}
-
-/* ─── DETAIL PANEL ─── */
-.detail{background:var(--panel);border:1px solid var(--bd2);border-radius:var(--r3);margin-top:14px;animation:fadeIn .2s ease;overflow:hidden}
-.detail-hd{display:flex;align-items:flex-start;gap:16px;padding:20px 22px;border-bottom:1px solid var(--bd);background:var(--bg2)}
-.detail-flag{font-size:38px;line-height:1}
-.detail-id{flex:1}
-.detail-code{font-size:24px;font-weight:700;letter-spacing:.3px}
-.detail-name{font-size:13px;color:var(--t2);margin-top:1px}
-.detail-meta{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
-.detail-sig{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px}
-.detail-sig.buy-side{color:var(--buy);background:var(--buy-dim);border:1px solid var(--buy-glow)}
-.detail-sig.sell-side{color:var(--sell);background:var(--sell-dim);border:1px solid var(--sell-glow)}
-.detail-sig.neu-side{color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,166,35,.3)}
-.detail-scorebox{text-align:center;flex-shrink:0}
-.detail-scorebox .num{font-family:var(--mono);font-size:42px;font-weight:700;line-height:1}
-.detail-scorebox .lbl{font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase}
-.detail-close{width:32px;height:32px;border-radius:var(--r);background:var(--panel2);border:1px solid var(--bd);color:var(--t2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
-.detail-close:hover{background:var(--panel3);color:var(--t)}
-.detail-body{padding:18px 22px 24px}
-
-/* score breakdown */
-.score-break{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
-@media(max-width:620px){.score-break{grid-template-columns:repeat(2,1fr)}}
-.sb-cell{background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2);padding:11px 12px}
-.sb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.sb-name{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:5px}
-.sb-val{font-family:var(--mono);font-size:14px;font-weight:700}
-.sb-bar-bg{height:3px;border-radius:2px;background:var(--panel3);overflow:hidden}
-.sb-bar{height:100%;border-radius:2px}
-
-/* section nav */
-.dsec-nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:18px}
-.dsec-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--r2);border:1px solid var(--bd);background:transparent;color:var(--t2);font-family:var(--sans);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s}
-.dsec-btn:hover{border-color:var(--bd2);color:var(--t)}
-.dsec-btn.active{background:var(--panel2);border-color:var(--bd2);color:var(--t);font-weight:600}
-.dsec-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-
-/* section content */
-.dsec-overview{background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2);padding:15px 17px;margin-bottom:16px}
-.dsec-ovh{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t2);margin-bottom:9px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.dsec-sig-tag{font-weight:700}
-.dsec-ovtxt{font-size:13px;line-height:1.65;color:var(--t)}
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:16px}
-.kpi{background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2);padding:11px 13px;position:relative}
-.kpi-lbl{font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:6px}
-.kpi-val{font-family:var(--mono);font-size:18px;font-weight:700;line-height:1}
-.kpi-sub{font-size:9.5px;color:var(--t3);margin-top:4px}
-.src-tag{font-size:7.5px;font-weight:700;letter-spacing:.04em;padding:1px 5px;border-radius:4px;text-transform:uppercase}
-.src-live{color:var(--buy);background:var(--buy-dim)}
-.src-est{color:var(--amber);background:var(--amber-dim)}
-.src-na{color:var(--t3);background:var(--panel3)}
-.kv-pos{color:var(--buy)}.kv-neg{color:var(--sell)}.kv-neu{color:var(--t)}
-.analysis{border-left:2px solid var(--accent);background:var(--accent-dim);border-radius:0 var(--r2) var(--r2) 0;padding:13px 16px;margin-bottom:14px}
-.analysis-lbl{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.analysis-txt{font-size:13px;line-height:1.7;color:var(--t)}
-.analysis-txt b{color:var(--t)}
-.watch{margin-top:6px}
-.watch-lbl{font-size:10px;font-weight:600;color:var(--t2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
-.watch-list{display:flex;flex-wrap:wrap;gap:6px}
-.watch-item{font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid var(--bd);color:var(--t2);display:flex;align-items:center;gap:5px}
-
-/* ─── NEWS FEED / SQUAWK ─── */
-.news-updated{font-family:var(--mono);font-size:10.5px;color:var(--t3);white-space:nowrap}
-.news-refresh-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:var(--panel2);border:1px solid var(--bd);color:var(--t2);border-radius:var(--r);cursor:pointer;transition:all .15s;flex-shrink:0}
-.news-refresh-btn:hover{color:var(--accent);border-color:var(--accent)}
-.news-refresh-btn.spinning i{animation:spin .8s linear infinite}
-.news-refresh-btn:disabled{opacity:.5;cursor:default}
-.news-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.news-filter{background:var(--panel2);border:1px solid var(--bd);color:var(--t2);font-family:var(--sans);font-size:11.5px;padding:6px 12px;border-radius:var(--r);cursor:pointer;transition:all .15s}
-.news-filter:hover{color:var(--t);border-color:var(--bd2)}
-.news-filter.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
-.news-feed{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r2);max-height:560px;overflow-y:auto}
-.news-item{display:flex;gap:14px;padding:13px 16px;border-bottom:1px solid var(--bd);transition:background .12s;cursor:pointer}
-.news-item:last-child{border-bottom:none}
-.news-item:hover{background:var(--panel2)}
-.news-time{flex-shrink:0;width:64px;font-family:var(--mono);font-size:10.5px;color:var(--t3);padding-top:2px}
-.news-time b{display:block;color:var(--t2);font-size:11px}
-.news-main{flex:1;min-width:0}
-.news-head{font-size:13px;font-weight:500;line-height:1.45;color:var(--t)}
-.news-sum{font-size:11.5px;color:var(--t2);line-height:1.5;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.news-foot{display:flex;align-items:center;gap:8px;margin-top:7px}
-.news-src{font-size:10px;color:var(--t3);font-family:var(--mono)}
-.news-ccy{font-size:9.5px;font-weight:700;padding:1px 7px;border-radius:4px;background:var(--accent-dim);color:var(--accent);font-family:var(--mono)}
-.news-thumb{flex-shrink:0;width:74px;height:54px;border-radius:var(--r);object-fit:cover;background:var(--panel3)}
-.news-loading{padding:40px;text-align:center;color:var(--t3);font-size:13px}
-
-/* ─── RATE EXPECTATIONS ─── */
-.rate-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-@media(max-width:760px){.rate-grid{grid-template-columns:1fr}}
-.rate-card{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r2);padding:15px 17px}
-.rate-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.rate-cb{display:flex;align-items:center;gap:9px}
-.rate-flag{font-size:20px}
-.rate-bank{font-size:13px;font-weight:700}
-.rate-now{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent)}
-.rate-meet{font-size:10.5px;color:var(--t3);margin-bottom:12px}
-.rate-meet b{color:var(--t2)}
-.rate-bars{display:flex;height:30px;border-radius:var(--r);overflow:hidden;background:var(--panel3)}
-.rate-seg{display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;font-family:var(--mono);color:#06070a;transition:width .5s ease;min-width:0;overflow:hidden;white-space:nowrap}
-.seg-hike{background:var(--rx-hike)}
-.seg-hold{background:var(--rx-hold)}
-.seg-cut{background:var(--rx-cut)}
-.rate-seg+.rate-seg{border-left:2px solid var(--panel)}
-.rate-card{cursor:pointer;transition:border-color .15s}
-.rate-card:hover{border-color:var(--bd2)}
-.rate-cd{color:var(--t3);font-weight:400}
-.rate-legend{display:flex;gap:14px;margin-top:9px;font-size:10px;color:var(--t3)}
-.rate-legend span{display:flex;align-items:center;gap:5px}
-.rate-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
-
-/* ─── MAINTENANCE ─── */
-
-/* ─── MISC ─── */
-.spinner{width:30px;height:30px;border:3px solid var(--accent-dim);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
-.toast{position:fixed;bottom:22px;right:22px;max-width:calc(100vw - 44px);background:var(--panel);border:1px solid var(--bd2);border-radius:var(--r2);padding:11px 18px;font-size:12.5px;z-index:999;opacity:0;transform:translateY(8px);transition:all .3s}
-.toast.show{opacity:1;transform:translateY(0)}
-.note-banner{background:var(--amber-dim);border:1px solid rgba(245,166,35,.25);border-radius:var(--r2);padding:11px 15px;font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start}
-.note-banner .ti{color:var(--amber);font-size:16px;flex-shrink:0;margin-top:1px}
-.note-banner b{color:var(--t)}
-.empty-mini{padding:30px;text-align:center;color:var(--t3);font-size:12.5px}
-.rate-edit{background:none;border:1px solid var(--bd2);border-radius:6px;color:var(--t2);cursor:pointer;font-size:12px;line-height:1;padding:3px 6px;margin-left:8px}
-.rate-edit:hover{border-color:var(--accent);color:var(--accent)}
-.rx-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
-.rx-box{background:var(--panel);border:1px solid var(--bd2);border-radius:14px;padding:24px;width:100%;max-width:420px;font-family:'Space Grotesk',sans-serif;margin:auto;position:relative}
-html.rx-lock,html.rx-lock body{overflow:hidden;overscroll-behavior:none}
-/* Taille d'affichage choisie dans le hub : appliquée au contenu (pas aux fenêtres, qui restent calées sur l'écran) */
-body.hz-lg .cmdbar,body.hz-lg .ticker,body.hz-lg .wrap{zoom:1.12}
-body.hz-xl .cmdbar,body.hz-xl .ticker,body.hz-xl .wrap{zoom:1.25}
-.rx-box h3{margin:0 0 16px;font-size:15px;color:var(--t)}
-.rx-fld{margin-bottom:12px}
-.rx-fld label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:5px}
-.rx-fld input{width:100%;background:var(--panel2);border:1px solid var(--bd);border-radius:8px;color:var(--t);padding:9px 11px;font-size:13px;font-family:inherit}
-.rx-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.rx-sum{font-size:11px;color:var(--t3);margin:2px 0 12px}
-.rx-btns{display:flex;gap:10px;margin-top:8px}
-.rx-btns button{flex:1;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
-.mc-box{max-width:620px}
-.mc-box textarea{width:100%;min-height:120px;background:var(--panel2);border:1px solid var(--bd);border-radius:8px;color:var(--t);font-family:var(--mono);font-size:11px;padding:10px;resize:vertical;box-sizing:border-box}
-.mc-hint{font-size:11.5px;color:var(--t3);line-height:1.5;margin-bottom:10px}
-.mc-prev{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;font-family:var(--mono)}
-.mc-prev th,.mc-prev td{padding:5px 6px;border-bottom:1px solid var(--bd);text-align:center}
-.mc-prev th:first-child,.mc-prev td:first-child{text-align:left}
-.mc-prev th{color:var(--t3);font-weight:600;font-size:10px;text-transform:uppercase}
-.mc-msg{font-size:12px;margin-top:10px;min-height:16px}
-.rx-save{background:var(--accent);color:#fff}
-.rx-cancel{background:var(--panel3);color:var(--t2)}
-
-/* ═══ VERSION MOBILE — s'applique uniquement sous 768px, aucun impact desktop ═══ */
-@media (max-width:768px){
-  .sec-hdr-line{display:none}
-  .wrap{padding:14px 12px 60px}
-  /* Barre de commande : logo + actions sur une ligne, onglets défilables en dessous */
-  .cmdbar{flex-wrap:wrap;height:auto;gap:8px;padding:8px 12px}
-  .logo-sub{display:none}
-  .cmd-right{margin-left:auto;gap:10px}
-  .cmd-nav{order:3;width:100%;margin-left:0;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
-  .cmd-nav::-webkit-scrollbar{height:0}
-  .cmd-tab{white-space:nowrap;flex:0 0 auto}
-  /* Grilles → 1 colonne */
-  .dash-grid,.sess-tab-grid{grid-template-columns:1fr}
-  .dash-side{position:static}
-  .ccy-grid{grid-template-columns:1fr 1fr}
-  .sess-cards{grid-template-columns:1fr}
-  .rate-grid,.cot-grid,.pm-grid{grid-template-columns:1fr}
-  /* Sessions : rail un peu plus court, chrono plus petit */
-  .sess-timer{font-size:32px}
-  .sec-hdr h2{font-size:11px}
-  /* Contenus larges : défilement interne */
-  .rate-bars,.sess-tl{overflow-x:auto}
-}
-@media (max-width:430px){
-  .ccy-grid{grid-template-columns:1fr}
-  .logo-txt{font-size:13px}
-  .cmd-tab{font-size:12px;padding:7px 10px}
-  .sess-timer{font-size:28px}
-}
-
-/* ─── ATTENTES DE TAUX : coller-pour-MAJ ─── */
-.rate-paste{background:var(--panel);border:1px dashed var(--bd2);border-radius:12px;padding:14px;margin-bottom:16px}
-.rate-paste textarea{width:100%;min-height:120px;background:var(--panel2);border:1px solid var(--bd);border-radius:8px;color:var(--t);padding:10px 12px;font-family:var(--mono);font-size:12px;line-height:1.5;resize:vertical}
-.rate-bps{font-size:11px;color:var(--t3);margin-top:9px;font-family:var(--mono)}
-.rate-bps b{color:var(--t2)}
-
-/* ─── ANALYSE IA (Gemini) ─── */
-.ai-brief-btn{background:var(--accent);border:none;color:#fff;border-radius:20px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--sans);white-space:nowrap}
-.ai-brief-btn:hover{filter:brightness(1.1)}
-.ai-brief-btn:disabled{opacity:.6;cursor:default}
-.ai-brief{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;font-size:13px;line-height:1.65;color:var(--t2)}
-.ai-brief strong{color:var(--t);font-weight:700}
-.ai-brief h2,.ai-brief h3{color:var(--t);font-size:14px;margin:10px 0 4px}
-.ai-brief em{color:var(--t2)}
-
-/* ─── TENDANCES FX (sparklines Polygon) ─── */
-.tr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
-.tr-card{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:12px 14px}
-.tr-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
-.tr-top b{font-family:var(--mono);font-size:12.5px;color:var(--t);font-weight:700}
-.tr-val{font-family:var(--mono);font-size:12px;color:var(--t2)}
-.tr-spark{width:100%;height:36px;display:block}
-.tr-foot{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:5px}
-/* Notion : rang + thèse */
-.ccy-rank{position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--t3);background:var(--panel3);border:1px solid var(--bd);border-radius:5px;padding:1px 5px;z-index:2}
-.ccy-top{position:relative}
-.detail-rank{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--t2);background:var(--panel3);border:1px solid var(--bd);border-radius:5px;padding:1px 7px;margin-left:6px;vertical-align:middle}
-.these-wrap{margin-top:18px}
-.these-driver{font-size:12.5px;color:var(--t2);background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2);padding:10px 13px;margin-bottom:14px;line-height:1.5}
-.these-driver b{color:var(--t1)}
-.these-h{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 5px}
-.these-p{font-size:13px;line-height:1.65;color:var(--t2)}
-.these-p strong{color:var(--t1)}
-.these-callout{margin-top:16px;padding:11px 14px;background:var(--panel2);border:1px solid var(--bd);border-left:3px solid var(--accent);border-radius:var(--r2);font-size:12.5px;line-height:1.6;color:var(--t2)}
-.these-callout strong{color:var(--t1)}
-/* Dimensions cliquables + détail rapport hebdo */
-.sb-click{cursor:pointer;border-radius:8px;padding:4px 6px;margin:-4px -6px;transition:background .15s}
-.sb-click:hover{background:var(--panel2)}
-.sb-active{background:var(--panel2);box-shadow:inset 0 0 0 1px var(--accent)}
-.dim-detail{margin:4px 0 18px;background:var(--panel2);border:1px solid var(--bd);border-left:3px solid var(--accent);border-radius:var(--r2);padding:12px 14px}
-.dim-detail-h{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
-.dim-detail-body{font-size:12.5px;line-height:1.65;color:var(--t2)}
-.dim-detail-body strong{color:var(--t1)}
-.dim-detail-body h3{font-size:12.5px;color:var(--t1);margin:8px 0 3px}
-/* Garde-fous anti-débordement */
-.detail-id{min-width:0}
-.detail-body{overflow-wrap:anywhere}
-.these-p,.these-driver,.these-callout,.dim-detail-body{overflow-wrap:anywhere;word-break:break-word}
-.dash-main,.dash-side{min-width:0}
-.detail-body img,.dim-detail-body img,.these-p img{max-width:100%;height:auto}
-/* Drill-down données (synthèses Daily FX) */
-.emploi-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 14px}
-.emploi-btn{background:var(--panel2);border:1px solid var(--bd);color:var(--t2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s}
-.emploi-btn:hover{border-color:var(--accent);color:var(--accent)}
-.emploi-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.sub-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
-.sub-chip{background:var(--panel3);border:1px solid var(--bd);color:var(--t1);border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s}
-.sub-chip:hover{border-color:var(--accent)}
-.sub-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.sub-chip-date{opacity:.6;font-weight:400;font-size:10px}
-.sub-recap{background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-top:6px}
-.sub-recap-h{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:6px}
-.sub-date{font-family:var(--mono);font-size:10.5px;color:var(--t3);font-weight:400;margin-left:6px}
-.sub-figs{font-family:var(--mono);font-size:12px;color:var(--t2);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
-.sub-analysis{font-size:12.5px;line-height:1.6;color:var(--t2);overflow-wrap:anywhere}
-.sub-analysis strong{color:var(--t1)} .sub-analysis h1,.sub-analysis h2,.sub-analysis h3{font-size:13px;color:var(--t1);margin:8px 0 3px}
-.sub-analysis img{max-width:100%;height:auto;border-radius:6px}
-.sub-context{margin-top:14px;padding-top:12px;border-top:1px dashed var(--bd)}
-.sub-context-h{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
-/* Vue d'ensemble : récap du mois */
-.ov-wrap{margin-top:4px}
-.recap{margin-top:14px}
-.recap-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
-.recap-per{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--t3);text-transform:none;letter-spacing:0}
-.recap-p{font-size:13px;line-height:1.65;color:var(--t2);overflow-wrap:anywhere}
-.recap-p strong{color:var(--t1)}
-.recap-list{list-style:none;margin:12px 0 0;padding:0;border-left:2px solid var(--bd2)}
-.recap-list li{position:relative;display:grid;grid-template-columns:62px 1fr;gap:10px;padding:6px 0 6px 14px;font-size:12.5px;line-height:1.55;color:var(--t2);overflow-wrap:anywhere}
-.recap-list li::before{content:'';position:absolute;left:-5px;top:12px;width:8px;height:8px;border-radius:50%;background:var(--panel);border:2px solid var(--accent)}
-.recap-list strong{color:var(--t1)}
-.recap-d{font-family:var(--mono);font-size:11px;color:var(--t3);padding-top:1px}
-.recap-next{margin-top:14px;font-size:12px;color:var(--t2);line-height:1.55;padding:9px 12px;background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2)}
-.recap-next b{color:var(--t1)}
-/* Vue pilier */
-.pv-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-.pv-back{background:var(--panel2);border:1px solid var(--bd);color:var(--t2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans)}
-.pv-back:hover{border-color:var(--accent);color:var(--accent)}
-.pv-title{font-size:15px;font-weight:700;color:var(--t1)}
-.pv-score{font-family:var(--mono);font-size:15px;font-weight:700;margin-left:auto}
-.pv-sec{margin-top:18px}
-.pv-h{font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
-.pv-verdict{padding:11px 14px;background:var(--panel2);border:1px solid var(--bd);border-left:3px solid var(--accent);border-radius:var(--r2);font-size:13px;line-height:1.6;color:var(--t2);overflow-wrap:anywhere}
-.pv-verdict strong{color:var(--t1)}
-.pv-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
-.pv-tbl th{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;text-align:right;padding:6px 8px;border-bottom:1px solid var(--bd2);white-space:nowrap}
-.pv-tbl th:first-child,.pv-tbl td:first-child{text-align:left}
-.pv-tbl td{padding:8px;border-bottom:1px solid var(--bd);text-align:right;font-family:var(--mono);color:var(--t2);vertical-align:top}
-.pv-tbl td.pv-ind{font-family:var(--sans);color:var(--t1);font-weight:600}
-.pv-tbl td.pv-act{color:var(--t1);font-weight:700}
-.pv-per{display:block;font-family:var(--mono);font-size:10.5px;font-weight:400;color:var(--t3);margin-top:2px}
-.pv-com td{font-family:var(--sans);font-size:12px;color:var(--t2);text-align:left;padding-top:0;line-height:1.5}
-.pv-imp{display:inline-flex;align-items:center;gap:4px;font-family:var(--sans);font-size:11px;font-weight:600;white-space:nowrap}
-.pv-src{font-size:10px;color:var(--t3);font-family:var(--mono);margin-left:6px;font-weight:400}
-.pv-txt{font-size:13px;line-height:1.65;color:var(--t2);overflow-wrap:anywhere}
-.pv-txt strong{color:var(--t1)}
-.pv-watch{list-style:none;padding:0;margin:0}
-.pv-watch li{display:grid;grid-template-columns:62px 1fr;gap:10px;padding:5px 0;font-size:12.5px;color:var(--t2);border-bottom:1px dashed var(--bd)}
-.pv-empty{font-size:12.5px;color:var(--t3);line-height:1.6}
-.pv-foot{margin-top:16px;font-size:10.5px;color:var(--t3);font-family:var(--mono)}
-@media(max-width:620px){
-  .pv-tbl thead{display:none}
-  .pv-tbl,.pv-tbl tbody,.pv-tbl tr,.pv-tbl td{display:block;width:100%}
-  .pv-tbl tr.pv-row{display:grid;grid-template-columns:repeat(3,1fr);gap:2px 8px;padding:8px 0 4px;border-top:1px solid var(--bd)}
-  .pv-tbl tr.pv-row td{border:0;padding:2px 0;text-align:left}
-  .pv-tbl tr.pv-row td.pv-ind{grid-column:1/-1}
-  .pv-tbl tr.pv-row td[data-l]::before{content:attr(data-l);display:block;font-family:var(--sans);font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
-  .pv-tbl tr.pv-com td{border:0;padding:0 0 8px}
-  .recap-list li,.pv-watch li{grid-template-columns:52px 1fr}
-}
-/* Détail d'une banque centrale : historique des attentes */
-.rd-box{max-width:1180px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain}
-.rd-stats{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px 14px;padding:12px 0 16px;border-bottom:1px solid var(--bd);margin-bottom:14px}
-.rd-stat-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
-.rd-stat-v{font-size:15px;font-weight:700;color:var(--t1);font-family:var(--mono);white-space:nowrap}
-.rd-stat-s{font-size:10.5px;color:var(--t3);margin-top:3px}
-.rd-prob{display:flex;align-items:center;gap:7px;font-size:13px}
-.rd-prob i{flex:1;min-width:30px;height:6px;border-radius:3px;background:var(--panel3);overflow:hidden;display:block}
-.rd-prob i b{display:block;height:100%;border-radius:3px}
-.rd-prob em{font-style:normal;font-size:11px;color:var(--t2)}
-.rd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.rd-panel{background:var(--panel2);border:1px solid var(--bd);border-radius:var(--r2);padding:12px 14px;min-width:0}
-.rd-panel.rd-wide{grid-column:1/-1}
-.rd-panel .rd-h:first-child{margin-top:0}
-.rd-ph{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:3px}
-.rd-chart.md{height:200px}
-@media(max-width:1000px){.rd-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:620px){.rd-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rd-grid{grid-template-columns:1fr}.rd-stat-v{font-size:13.5px;white-space:normal}}
-.rd-bar{display:flex;height:26px;border-radius:var(--r);overflow:hidden;background:var(--panel3)}
-.rd-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:8px;background:var(--panel2);border:1px solid var(--bd);color:var(--t2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
-.rd-close:hover{color:var(--t)}
-.rd-meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:var(--t2);margin:-6px 0 16px}
-.rd-meta b{color:var(--t1)}
-.rd-next{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 16px}
-.rd-chip{font-family:var(--mono);font-size:10.5px;color:var(--t2);background:var(--panel2);border:1px solid var(--bd);border-radius:20px;padding:3px 9px}
-.rd-chip.first{color:var(--t1);border-color:var(--accent)}
-.rd-h{font-size:11.5px;font-weight:700;color:var(--t1);margin:18px 0 4px}
-.rd-sub{font-size:11px;color:var(--t3);margin-bottom:8px}
-.rd-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--t2);margin-bottom:6px}
-.rd-legend span{display:flex;align-items:center;gap:6px}
-.rd-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.rd-chart{position:relative;height:220px}
-.rd-chart.sm{height:150px}
-.rd-empty{font-size:12px;color:var(--t3);line-height:1.6;padding:14px;background:var(--panel2);border:1px dashed var(--bd2);border-radius:var(--r2)}
-.rd-tbl{width:100%;border-collapse:collapse;font-size:11.5px;font-family:var(--mono);margin-top:8px}
-.rd-tbl th{font-size:9.5px;color:var(--t3);font-weight:600;text-transform:uppercase;padding:5px 6px;border-bottom:1px solid var(--bd2);text-align:right}
-.rd-tbl td{padding:5px 6px;border-bottom:1px solid var(--bd);text-align:right;color:var(--t2)}
-.rd-tbl th:first-child,.rd-tbl td:first-child{text-align:left}
-.rd-box details summary{cursor:pointer;font-size:11.5px;color:var(--t2);margin-top:14px}
-.rd-note{font-size:12.5px;color:var(--t2);line-height:1.6;margin-top:6px}
-@media(max-width:620px){.rd-box{padding:18px 16px}.rd-chart{height:200px}}
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   FX MACRO COMPASS — salle de marché en trois colonnes : rail des
+   devises, globe, lecture macro. Deux thèmes (clair / sombre) pilotés
+   par l'attribut data-theme, synchronisés avec le hub Sphinx Alliance.
+═══════════════════════════════════════════════════════════════ */
+:root{
+  --paper:#f4f5f6;        /* fond général */
+  --card:#ffffff;         /* surfaces */
+  --hover:#eef0f1;        /* survol, rails */
+  --ink:#0b0b0c;          /* texte principal */
+  --ink-soft:#5c6166;     /* texte secondaire */
+  --line:#d8dbde;         /* filets */
+  --line-strong:#b6bbc0;
+  --ocean:#e9ebed;        /* sphère */
+  --land:#c9ced3;         /* terres inactives */
+  --land-hover:#9aa1a7;
+  --land-live:#1d1f21;    /* zone sélectionnée */
+  --land-border:rgba(255,255,255,.75);
+  --orbit-a:rgba(11,11,12,.10);
+  --orbit-b:rgba(11,11,12,.26);
+  --pulse-halo:255,255,255;
+  --pulse-line:11,11,12;
+  --bar-dim:rgba(11,11,12,.22);
+  --up:#1f6f4a;           /* amélioration */
+  --down:#9b2c2c;         /* dégradation */
+  --flat:#6b6f73;
+  --warn:#8a6d1f;
+  --up-dim:rgba(31,111,74,.10);--down-dim:rgba(155,44,44,.10);--warn-dim:rgba(138,109,31,.12);--ink-dim:rgba(11,11,12,.06);
+  /* attentes de taux : palette divergente validée (daltonisme) */
+  --rx-hike:#2a78d6;--rx-hold:#898781;--rx-cut:#e34948;--rx-bps:#eb6834;
+  --fg1:#2a2d30;--fg2:#6b7075;--fg3:#a9aeb3;
+  --font-ui:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --font-num:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --shadow:0 18px 50px rgba(0,0,0,.18);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --paper:#141516;--card:#1b1d1e;--hover:#232527;
+  --ink:#eceeef;--ink-soft:#9aa0a5;
+  --line:#2d3032;--line-strong:#454a4d;
+  --ocean:#202325;--land:#3b4145;--land-hover:#5a6166;--land-live:#eceeef;
+  --land-border:rgba(20,21,22,.6);
+  --orbit-a:rgba(236,238,239,.10);--orbit-b:rgba(236,238,239,.28);
+  --pulse-halo:20,21,22;--pulse-line:236,238,239;
+  --bar-dim:rgba(236,238,239,.26);
+  --up:#63b98b;--down:#e0817c;--flat:#9aa0a5;--warn:#d6b65e;
+  --up-dim:rgba(99,185,139,.12);--down-dim:rgba(224,129,124,.12);--warn-dim:rgba(214,182,94,.12);--ink-dim:rgba(236,238,239,.07);
+  --rx-hike:#3987e5;--rx-hold:#b4b2a9;--rx-cut:#e66767;--rx-bps:#d95926;
+  --fg1:#d9dcdf;--fg2:#9aa0a5;--fg3:#5a6066;
+  --shadow:0 18px 50px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+/* Alias : le code des sections portées (taux, import, news, COT…) lit ces noms. */
+:root{
+  --buy:var(--up);--sell:var(--down);--amber:var(--warn);--accent:var(--ink);
+  --buy-dim:var(--up-dim);--sell-dim:var(--down-dim);--amber-dim:var(--warn-dim);--accent-dim:var(--ink-dim);
+  --buy-glow:var(--up-dim);--sell-glow:var(--down-dim);
+  --t:var(--ink);--t1:var(--ink);--t2:var(--ink-soft);--t3:var(--ink-soft);--t4:var(--line-strong);
+  --panel:var(--card);--panel2:var(--paper);--panel3:var(--line);--bg:var(--paper);--bg2:var(--paper);
+  --bd:var(--line);--bd2:var(--line-strong);
+  --mono:var(--font-num);--sans:var(--font-ui);
+  --r:3px;--r2:3px;--r3:4px;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--font-ui);font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;transition:background .2s,color .2s;
+}
+a{color:inherit}
+button{font-family:inherit}
+.wrap{
+  min-height:100%;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:16px 36px;
+  max-width:1380px;margin:0 auto;
+  display:flex;flex-direction:column;gap:16px;
+}
+body.hz-lg .wrap{zoom:1.12} body.hz-xl .wrap{zoom:1.25}
+
+/* ---------- en-tête ---------- */
+header.top{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:12px;
+}
+.brand{display:flex;align-items:baseline;gap:12px;min-width:0;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(18px,2.4vw,24px);font-weight:700;letter-spacing:-0.02em;text-wrap:balance}
+.tag{
+  font-family:var(--font-num);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-soft);
+  border:1px solid var(--line);border-radius:2px;padding:2px 6px;white-space:nowrap;
+}
+.topright{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.clock{font-family:var(--font-num);font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px}
+.livebadge{
+  font-family:var(--font-num);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;border-radius:2px;
+  border:1px solid var(--line-strong);color:var(--ink-soft);cursor:default;
+}
+.livebadge.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.livebadge.wait{border-style:dashed}
+.tbtn{
+  display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:3px;
+  color:var(--ink);padding:6px 10px;font-size:12px;font-weight:500;cursor:pointer;line-height:1;white-space:nowrap;
+  transition:border-color .15s,background .15s;
+}
+.tbtn:hover{border-color:var(--line-strong)}
+.tbtn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tbtn:disabled{opacity:.55;cursor:default}
+.tbtn.icon{width:30px;height:30px;padding:0;justify-content:center;font-size:14px}
+
+/* ---------- bandeaux défilants ---------- */
+.band{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:3px;background:var(--card);overflow:hidden;height:30px}
+.band-lbl{flex:none;display:flex;align-items:center;padding:0 10px;font-family:var(--font-num);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper);background:var(--ink)}
+.band-scroll{flex:1;min-width:0;overflow:hidden;position:relative;display:flex;align-items:center}
+.band-inner{display:inline-flex;white-space:nowrap;font-family:var(--font-num);font-size:11.5px;color:var(--ink-soft);animation:bandMove 90s linear infinite;will-change:transform}
+.band-inner b{color:var(--ink);font-weight:700}
+.band-scroll:hover .band-inner{animation-play-state:paused}
+.ticker-item{display:inline-flex;align-items:center;gap:8px;padding:0 20px;border-right:1px solid var(--line)}
+.ticker-item b.flat{color:var(--ink);font-size:10px;letter-spacing:.08em;border:1px solid var(--line-strong);border-radius:2px;padding:1px 5px}
+@keyframes bandMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.bands{display:flex;flex-direction:column;gap:6px;margin-top:-6px}
+
+/* ---------- cartes ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:13px 14px;min-width:0}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:600}
+.card-sub{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.pill{font-family:var(--font-num);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px;border:1px solid var(--line-strong);color:var(--ink-soft)}
+.pill.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.badge-est{font-family:var(--font-num);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);border:1px solid var(--line);border-radius:2px;padding:2px 6px}
+.sess-note{font-size:11.5px;color:var(--ink-soft)}
+.srclink{font-family:var(--font-num);font-size:10px;letter-spacing:.06em;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-strong);align-self:flex-start;margin-top:5px}
+.srclink:hover{border-color:var(--ink)}
+.empty-mini{padding:22px 10px;text-align:center;color:var(--ink-soft);font-size:12.5px;line-height:1.55}
+.note-banner{background:var(--warn-dim);border:1px solid var(--line);border-radius:3px;padding:10px 13px;font-size:11.5px;color:var(--ink-soft);line-height:1.55;margin-bottom:12px}
+.note-banner b{color:var(--ink)}
+.deck{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:860px){.deck{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- strip : sessions + fear & greed ---------- */
+.strip{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+@media (max-width:860px){.strip{grid-template-columns:minmax(0,1fr)}}
+.tl{position:relative}
+.track{display:grid;grid-template-columns:62px minmax(0,1fr) 74px;gap:8px;align-items:center;padding:2.5px 0}
+.tname{font-size:11.5px;color:var(--ink-soft)}
+.tname.on{color:var(--ink);font-weight:600}
+.rail-bg{position:relative;height:11px;background:var(--hover);border-radius:2px;overflow:hidden}
+.bandseg{position:absolute;top:0;height:100%;background:var(--line-strong);border-radius:2px}
+.bandseg.on{background:var(--ink)}
+.thours{font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft);text-align:right;font-variant-numeric:tabular-nums}
+.nowbar{position:absolute;top:0;bottom:0;width:0;pointer-events:none;border-left:1.5px dashed var(--ink);left:calc(70px + (100% - 152px) * var(--p, 0))}
+.ticks{display:flex;justify-content:space-between;font-family:var(--font-num);font-size:9px;color:var(--ink-soft);margin:4px 82px 0 70px}
+.fg-body{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fg-read{display:flex;flex-direction:column;gap:1px;min-width:0}
+.fg-val{font-family:var(--font-num);font-size:30px;font-weight:700;line-height:1}
+.fg-label{font-size:12.5px;font-weight:600}
+.fg-meta{font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft);line-height:1.6;margin-top:3px}
+.delta{font-family:var(--font-num);font-size:11px;font-variant-numeric:tabular-nums;width:42px;text-align:right}
+.delta.up{color:var(--up)}.delta.down{color:var(--down)}.delta.flat{color:var(--flat)}
+
+/* ---------- calendrier à venir ---------- */
+.calrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.calitem{flex:0 0 auto;min-width:170px;max-width:230px;border:1px solid var(--line);border-radius:3px;padding:8px 9px;display:flex;flex-direction:column;gap:3px}
+.calitem.cb{border-color:var(--line-strong)}
+.calwhen{font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+.calccy{background:var(--ink);color:var(--paper);border-radius:2px;padding:1px 4px;font-weight:700;letter-spacing:.04em}
+.calwhat{font-size:12px;font-weight:500;line-height:1.3}
+.calexp{font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft)}
+
+/* ---------- grille principale ---------- */
+.board{display:grid;gap:16px;grid-template-columns:176px minmax(0,1fr) minmax(0,440px);align-items:start}
+@media (max-width:1100px){.board{grid-template-columns:160px minmax(0,1fr)}.read{grid-column:1 / -1}}
+@media (max-width:720px){
+  .board{grid-template-columns:minmax(0,1fr)}
+  .board .rail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .board .rail .rail-label{grid-column:1 / -1}
+  .board .rail .ccy-rank{display:none}
+  .board .rail button{padding:8px 8px;gap:6px}
+}
+
+/* ---------- rail devises ---------- */
+.rail{display:flex;flex-direction:column;gap:6px}
+.rail .rail-label{font-family:var(--font-num);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);padding:0 2px 2px;display:flex;justify-content:space-between}
+.rail button{
+  display:flex;align-items:center;gap:8px;min-width:0;
+  background:var(--card);border:1px solid var(--line);border-radius:3px;
+  padding:8px 9px;cursor:pointer;text-align:left;color:var(--ink);font-size:13px;
+  transition:border-color .15s,background .15s,transform .1s;
+}
+.rail button:hover{border-color:var(--line-strong)}
+.rail button:active{transform:translateY(1px)}
+.rail button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.rail button[aria-pressed="true"] .ccy-name,.rail button[aria-pressed="true"] .ccy-rank{color:var(--line-strong)}
+.rail button[aria-pressed="true"] .ccy-score{color:var(--paper)}
+.ccy{font-family:var(--font-num);font-weight:700;font-size:13px;letter-spacing:.04em}
+.ccy-col{display:flex;flex-direction:column;min-width:0;flex:1}
+.ccy-name{font-size:10.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ccy-rank{font-family:var(--font-num);font-size:9px;color:var(--ink-soft);letter-spacing:.06em}
+.ccy-score{font-family:var(--font-num);font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.ccy-score.up{color:var(--up)}.ccy-score.down{color:var(--down)}.ccy-score.flat{color:var(--ink-soft)}
+
+/* ---------- globe ---------- */
+.stage{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.stage-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.stage-title{font-size:15px;font-weight:600;letter-spacing:-0.01em}
+.stage-sub{font-family:var(--font-num);font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.globe-box{position:relative;width:100%;aspect-ratio:1/1;max-width:100%;max-height:52vh;margin:0 auto;cursor:grab}
+.globe-box.hit{cursor:pointer}
+.globe-box.drag{cursor:grabbing}
+canvas#globe{display:block;width:100%;height:100%;touch-action:none}
+.tip{position:absolute;pointer-events:none;z-index:3;background:var(--ink);color:var(--paper);border-radius:3px;padding:4px 8px;font-size:12px;font-weight:500;white-space:nowrap;transform:translate(-50%,-150%)}
+.tip .tip-ccy{font-family:var(--font-num);font-size:9.5px;letter-spacing:.1em;color:var(--line-strong);margin-left:6px}
+.zoomer{position:absolute;right:6px;bottom:6px;z-index:2;display:flex;flex-direction:column;gap:4px}
+.zoomer button{width:26px;height:26px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-size:14px;line-height:1;font-family:var(--font-num);display:flex;align-items:center;justify-content:center}
+.zoomer button:hover{border-color:var(--line-strong)}
+.globe-hint{font-family:var(--font-num);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);text-align:center}
+.globe-score{position:absolute;left:8px;top:6px;z-index:2;display:flex;flex-direction:column;line-height:1;pointer-events:none}
+.globe-score b{font-family:var(--font-num);font-size:34px;font-weight:700;letter-spacing:-.02em}
+.globe-score span{font-family:var(--font-num);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
+
+/* ---------- piliers ---------- */
+.pillars{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+@media (max-width:560px){.pillars{grid-template-columns:repeat(3,minmax(0,1fr))}.pillars button:first-child{grid-column:1 / -1}}
+.pillars button{
+  background:var(--card);border:1px solid var(--line);border-radius:3px;
+  padding:8px 5px;cursor:pointer;color:var(--ink);font-size:12px;font-weight:500;
+  display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;
+  transition:border-color .15s,background .15s;
+}
+.pillars button span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pillars button:hover{border-color:var(--line-strong)}
+.pillars button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pillars .score{font-family:var(--font-num);font-size:10px;letter-spacing:.06em;opacity:.8;text-align:center}
+.pillars .score.up{color:var(--up)}.pillars .score.down{color:var(--down)}
+.pillars button[aria-pressed="true"] .score{color:var(--paper);opacity:.85}
+
+/* ---------- lecture ---------- */
+.read{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0;overflow-wrap:anywhere}
+.read-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.read-title{font-size:15px;font-weight:600}
+.verdict{font-family:var(--font-num);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:2px;border:1px solid currentColor;white-space:nowrap}
+.verdict.up{color:var(--up)}.verdict.down{color:var(--down)}.verdict.flat{color:var(--flat)}
+.synthese{font-size:13px;color:var(--ink-soft);margin:0;max-width:62ch;line-height:1.55}
+.synthese strong{color:var(--ink)}
+.rows{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+.row{
+  display:grid;grid-template-columns:minmax(0,1fr) 78px 96px;gap:10px;align-items:center;
+  padding:10px 2px;border-bottom:1px solid var(--line);width:100%;background:none;
+  border-left:0;border-right:0;border-top:0;color:inherit;text-align:left;
+}
+button.row{cursor:pointer;transition:background .12s}
+button.row:hover{background:var(--hover)}
+button.row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.row .label{min-width:0}
+.row .nm{font-size:13px;font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .meta{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);letter-spacing:.02em}
+.row .val{font-family:var(--font-num);font-size:15px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:var(--font-num);font-size:10px;color:var(--ink-soft);white-space:nowrap}
+.row .right .imp{font-family:var(--font-ui);font-size:11px;font-weight:600}
+.imp.up{color:var(--up)}.imp.down{color:var(--down)}.imp.flat{color:var(--flat)}
+.one{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);width:100%;text-align:right}
+.foot{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);letter-spacing:.02em;line-height:1.7}
+@media (max-width:420px){.row{grid-template-columns:minmax(0,1fr) 70px}.row .right{grid-column:1 / -1;flex-direction:row;justify-content:flex-start;gap:10px}}
+.backbtn{background:none;border:0;padding:0 0 2px;color:var(--ink-soft);cursor:pointer;font-family:var(--font-num);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.backbtn:hover{color:var(--ink)}
+.dhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:12px 0 6px}
+.dval{font-family:var(--font-num);font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.dper{font-family:var(--font-num);font-size:10px;color:var(--ink-soft)}
+.dstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.dstats span{display:flex;flex-direction:column;font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft)}
+.dstats b{font-size:13px;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.dtext{font-size:13px;color:var(--ink-soft);line-height:1.6;padding:10px 0 4px}
+.dtext strong{color:var(--ink)}
+.sec-h{font-family:var(--font-num);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 6px}
+.recap-resume{font-size:13px;line-height:1.6;color:var(--ink)}
+.recap-resume strong{color:var(--ink)}
+.recap-list{list-style:none;margin:6px 0 0;padding:0;border-left:2px solid var(--line-strong)}
+.recap-list li{position:relative;display:grid;grid-template-columns:58px 1fr;gap:10px;padding:6px 0 6px 12px;font-size:12.5px;line-height:1.5;color:var(--ink-soft)}
+.recap-list li::before{content:'';position:absolute;left:-5px;top:11px;width:8px;height:8px;border-radius:50%;background:var(--card);border:2px solid var(--ink)}
+.recap-list strong{color:var(--ink)}
+.recap-d{font-family:var(--font-num);font-size:10.5px;color:var(--ink-soft);padding-top:1px}
+.recap-next{margin-top:12px;font-size:12px;color:var(--ink-soft);line-height:1.55;padding:9px 12px;border:1px solid var(--line);border-radius:3px}
+.recap-next b{color:var(--ink)}
+.watch{list-style:none;padding:0;margin:0}
+.watch li{display:grid;grid-template-columns:58px 1fr;gap:10px;padding:5px 0;font-size:12.5px;color:var(--ink-soft);border-bottom:1px dashed var(--line)}
+.ovmeta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.ovmeta span{display:flex;flex-direction:column;font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft);min-width:0}
+.ovmeta b{font-size:13px;color:var(--ink);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* synthèses Daily FX liées (chips + recap) */
+.sub-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sub-chip{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:2px;padding:4px 9px;font-size:11.5px;font-weight:500;cursor:pointer;transition:border-color .15s}
+.sub-chip:hover{border-color:var(--line-strong)}
+.sub-chip.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.sub-chip-date{opacity:.6;font-weight:400;font-size:10px;font-family:var(--font-num)}
+.sub-recap{border:1px solid var(--line);border-radius:3px;padding:10px 12px;margin-top:4px}
+.sub-recap-h{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:5px}
+.sub-date{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);font-weight:400;margin-left:6px}
+.sub-figs{font-family:var(--font-num);font-size:11.5px;color:var(--ink-soft);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.sub-analysis{font-size:12.5px;line-height:1.6;color:var(--ink-soft);overflow-wrap:anywhere}
+.sub-analysis strong{color:var(--ink)} .sub-analysis h1,.sub-analysis h2,.sub-analysis h3{font-size:13px;color:var(--ink);margin:8px 0 3px}
+.sub-analysis img{max-width:100%;height:auto;border-radius:3px}
+.pv-sec{margin-top:4px}
+.pv-h{font-family:var(--font-num);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 6px}
+
+/* ---------- attentes de taux ---------- */
+.rate-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.rate-card{background:var(--card);border:1px solid var(--line);border-radius:3px;padding:12px 13px;cursor:pointer;transition:border-color .15s;min-width:0}
+.rate-card:hover{border-color:var(--line-strong)}
+.rate-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
+.rate-cb{display:flex;align-items:center;gap:8px;min-width:0}
+.rate-flag{font-size:17px}
+.rate-bank{font-size:13px;font-weight:600;white-space:nowrap}
+.rate-now{font-family:var(--font-num);font-size:12.5px;font-weight:700;margin-left:auto}
+.rate-meet{font-size:10.5px;color:var(--ink-soft);margin-bottom:10px;font-family:var(--font-num)}
+.rate-meet b{color:var(--ink);font-weight:600}
+.rate-cd{color:var(--ink-soft);font-weight:400}
+.rate-bars{display:flex;height:22px;border-radius:2px;overflow:hidden;background:var(--hover)}
+.rate-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--font-num);color:#fff;transition:width .5s ease;min-width:0;overflow:hidden;white-space:nowrap}
+.seg-hike{background:var(--rx-hike)}.seg-hold{background:var(--rx-hold);color:#1a1a19}.seg-cut{background:var(--rx-cut)}
+.rate-seg+.rate-seg{border-left:2px solid var(--card)}
+.rate-legend{display:flex;gap:12px;margin-top:8px;font-size:10px;color:var(--ink-soft);font-family:var(--font-num);flex-wrap:wrap}
+.rate-legend span{display:flex;align-items:center;gap:5px}
+.rate-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.rate-bps{margin-top:8px;font-size:11px;color:var(--ink-soft)}
+.rate-bps b{color:var(--ink)}
+.rate-edit{background:none;border:1px solid var(--line);border-radius:2px;color:var(--ink-soft);cursor:pointer;font-size:12px;line-height:1;padding:3px 6px}
+.rate-edit:hover{border-color:var(--ink);color:var(--ink)}
+.rate-paste{border:1px dashed var(--line-strong);border-radius:3px;padding:12px;margin-bottom:12px}
+.rate-paste textarea{width:100%;min-height:110px;background:var(--paper);border:1px solid var(--line);border-radius:3px;color:var(--ink);padding:9px 11px;font-family:var(--font-num);font-size:12px;line-height:1.5;resize:vertical}
+.rate-paste-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+
+/* ---------- marchés de prédiction / COT / tendances ---------- */
+.pm-grid,.cot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.pm-card,.cot-card{border:1px solid var(--line);border-radius:3px;padding:11px 12px;min-width:0}
+.pm-q{font-size:12.5px;font-weight:500;line-height:1.4;margin-bottom:8px}
+.pm-out{margin-bottom:6px}
+.pm-out-top{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);margin-bottom:3px}
+.pm-pct{font-family:var(--font-num);font-weight:700;color:var(--ink)}
+.pm-bar{height:6px;border-radius:2px;background:var(--hover);overflow:hidden}
+.pm-bar span{display:block;height:100%}
+.pm-foot{display:flex;justify-content:space-between;font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft);margin-top:6px}
+.cot-top{display:flex;align-items:center;gap:7px;font-size:12.5px;margin-bottom:8px}
+.cot-bias{margin-left:auto;font-family:var(--font-num);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase}
+.cot-bar{display:flex;height:18px;border-radius:2px;overflow:hidden;background:var(--hover)}
+.cot-l{background:var(--up);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--font-num);min-width:0;transition:width .5s ease}
+.cot-s{background:var(--down);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--font-num);min-width:0;transition:width .5s ease}
+.cot-legend,.cot-meta{display:flex;justify-content:space-between;font-family:var(--font-num);font-size:10px;color:var(--ink-soft);margin-top:6px}
+.cot-meta b{color:var(--ink)}
+.tr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tr-card{border:1px solid var(--line);border-radius:3px;padding:10px 11px;min-width:0}
+.tr-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-bottom:4px}
+.tr-val{font-family:var(--font-num);font-weight:700;font-size:12.5px}
+.tr-spark{width:100%;height:36px;display:block}
+.tr-foot{display:flex;justify-content:space-between;font-family:var(--font-num);font-size:10px;color:var(--ink-soft);margin-top:4px}
+.mfb-wrap{background:#fff;border:1px solid var(--line);border-radius:3px;padding:10px;overflow:auto}
+
+/* ---------- news ---------- */
+.news-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.news-filter{background:var(--card);border:1px solid var(--line);color:var(--ink-soft);border-radius:2px;padding:4px 9px;font-size:11.5px;cursor:pointer;font-family:var(--font-num)}
+.news-filter:hover{border-color:var(--line-strong)}
+.news-filter.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.news-feed{display:flex;flex-direction:column;border-top:1px solid var(--line);max-height:560px;overflow-y:auto}
+.news-item{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:12px;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s}
+.news-item:hover{background:var(--hover)}
+.news-time{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);display:flex;flex-direction:column;gap:2px}
+.news-time b{color:var(--ink);font-weight:600}
+.news-main{min-width:0}
+.news-head{font-size:13px;font-weight:500;line-height:1.4;color:var(--ink)}
+.news-sum{font-size:11.5px;color:var(--ink-soft);line-height:1.5;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-foot{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.news-src{font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft);letter-spacing:.06em}
+.news-ccy{font-family:var(--font-num);font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;border:1px solid var(--line-strong);color:var(--ink-soft)}
+.news-thumb{flex-shrink:0;width:72px;height:52px;border-radius:2px;object-fit:cover;background:var(--hover)}
+@media (max-width:560px){.news-item{grid-template-columns:46px minmax(0,1fr)}.news-thumb{display:none}}
+.news-loading{padding:30px 10px;text-align:center;color:var(--ink-soft);font-size:12.5px;line-height:1.55}
+.news-updated{font-family:var(--font-num);font-size:10px;color:var(--ink-soft)}
+.news-refresh-btn{width:28px;height:28px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center}
+.news-refresh-btn.spinning{animation:spin .8s linear infinite}
+.spinner{width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- brief IA ---------- */
+.ai-brief{font-size:13px;line-height:1.65;color:var(--ink-soft)}
+.ai-brief strong{color:var(--ink)} .ai-brief h3{font-size:13px;color:var(--ink);margin:10px 0 4px}
+
+/* ---------- fenêtres (détail banque centrale, édition, import) ---------- */
+.rx-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.rx-box{background:var(--card);border:1px solid var(--line-strong);border-radius:4px;padding:22px;width:100%;max-width:420px;margin:auto;position:relative;box-shadow:var(--shadow);color:var(--ink)}
+.rx-box h3{margin:0 0 14px;font-size:15px;font-weight:600;color:var(--ink)}
+html.rx-lock,html.rx-lock body{overflow:hidden;overscroll-behavior:none}
+.rx-fld{margin-bottom:12px}
+.rx-fld label{display:block;font-family:var(--font-num);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:5px}
+.rx-fld input{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:3px;color:var(--ink);padding:8px 10px;font-size:13px;font-family:var(--font-num)}
+.rx-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.rx-sum{font-family:var(--font-num);font-size:11px;color:var(--ink-soft);margin:2px 0 12px}
+.rx-btns{display:flex;gap:10px;margin-top:8px}
+.rx-btns button{flex:1;border:1px solid var(--line);border-radius:3px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card);color:var(--ink)}
+.rx-save{background:var(--ink)!important;color:var(--paper)!important;border-color:var(--ink)!important}
+.rx-cancel{color:var(--ink-soft)!important}
+.rx-btns button:disabled{opacity:.5;cursor:default}
+.mc-box{max-width:640px}
+.mc-box textarea{width:100%;min-height:120px;background:var(--paper);border:1px solid var(--line);border-radius:3px;color:var(--ink);font-family:var(--font-num);font-size:11px;padding:10px;resize:vertical}
+.mc-hint{font-size:11.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px}
+.mc-hint b{color:var(--ink)}
+.mc-prev{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;font-family:var(--font-num)}
+.mc-prev th,.mc-prev td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:center}
+.mc-prev th:first-child,.mc-prev td:first-child{text-align:left}
+.mc-prev th{color:var(--ink-soft);font-weight:500;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em}
+.mc-msg{font-size:12px;margin-top:10px;min-height:16px}
+.rd-box{max-width:1180px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain}
+.rd-close{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:3px;background:var(--card);border:1px solid var(--line);color:var(--ink-soft);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.rd-close:hover{color:var(--ink);border-color:var(--line-strong)}
+.rd-stats{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px 14px;padding:12px 0 16px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.rd-stat-l{font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.rd-stat-v{font-size:15px;font-weight:700;color:var(--ink);font-family:var(--font-num);white-space:nowrap}
+.rd-stat-s{font-size:10.5px;color:var(--ink-soft);margin-top:3px}
+.rd-prob{display:flex;align-items:center;gap:7px;font-size:13px}
+.rd-prob i{flex:1;min-width:30px;height:6px;border-radius:3px;background:var(--hover);overflow:hidden;display:block}
+.rd-prob i b{display:block;height:100%;border-radius:3px}
+.rd-prob em{font-style:normal;font-size:11px;color:var(--ink-soft);font-family:var(--font-num)}
+.rd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rd-panel{border:1px solid var(--line);border-radius:3px;padding:12px 14px;min-width:0}
+.rd-panel.rd-wide{grid-column:1/-1}
+.rd-ph{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.rd-h{font-size:12.5px;font-weight:600;color:var(--ink);margin:0 0 3px}
+.rd-sub{font-size:11px;color:var(--ink-soft);margin-bottom:8px}
+.rd-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--ink-soft);margin-bottom:6px}
+.rd-legend span{display:flex;align-items:center;gap:6px}
+.rd-legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.rd-chart{position:relative;height:220px}
+.rd-chart.md{height:200px}.rd-chart.sm{height:150px}
+.rd-empty{font-size:12px;color:var(--ink-soft);line-height:1.6;padding:14px;border:1px dashed var(--line-strong);border-radius:3px}
+.rd-tbl{width:100%;border-collapse:collapse;font-size:11.5px;font-family:var(--font-num);margin-top:8px}
+.rd-tbl th{font-size:9.5px;color:var(--ink-soft);font-weight:500;text-transform:uppercase;padding:5px 6px;border-bottom:1px solid var(--line-strong);text-align:right}
+.rd-tbl td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:right;color:var(--ink-soft)}
+.rd-tbl th:first-child,.rd-tbl td:first-child{text-align:left}
+.rd-box details summary{cursor:pointer;font-size:11.5px;color:var(--ink-soft);margin-top:14px}
+.rd-note{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-top:6px}
+.rd-meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:var(--ink-soft);margin:-6px 0 16px}
+.rd-meta b{color:var(--ink)}
+.rd-next{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 16px}
+.rd-chip{font-family:var(--font-num);font-size:10.5px;color:var(--ink-soft);border:1px solid var(--line);border-radius:2px;padding:3px 9px}
+.rd-chip.first{color:var(--ink);border-color:var(--ink)}
+.rd-bar{display:flex;height:26px;border-radius:2px;overflow:hidden;background:var(--hover)}
+.rx-bd-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;color:var(--ink-soft)}
+.rx-bd-bar{height:12px;border-radius:3px;background:var(--hover);overflow:hidden}
+.rx-bd-bar>span{display:block;height:100%}
+@media(max-width:1000px){.rd-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:620px){.rd-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rd-grid{grid-template-columns:1fr}.rd-stat-v{font-size:13.5px;white-space:normal}.rd-box{padding:18px 16px}.rd-chart{height:200px}}
+
+/* ---------- divers ---------- */
+.toast{position:fixed;bottom:22px;right:22px;max-width:calc(100vw - 44px);background:var(--ink);color:var(--paper);border-radius:3px;padding:10px 16px;font-size:12.5px;z-index:999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line-height:1.7;border-top:1px solid var(--line);padding-top:12px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-
-<!-- COMMAND BAR -->
-<div class="cmdbar">
-  <div class="logo">
-    <div class="logo-mark">◈</div>
-    <div>
-      <div class="logo-txt">FX <span>MACRO</span> TERMINAL</div>
-      <div class="logo-sub">FOREX INTELLIGENCE DESK</div>
-    </div>
-  </div>
-  <div class="cmd-right">
-    <div class="live-badge"><span class="live-dot"></span>LIVE</div>
-    <div class="clock" id="clock">--:--:--</div>
-    <button class="icon-btn" onclick="toggleTheme()" title="Thème"><i class="ti ti-sun" id="theme-icon"></i></button>
-  </div>
-</div>
-
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-lbl"><i class="ti ti-bolt"></i> FX SQUAWK</div>
-  <div class="ticker-scroll"><div class="ticker-inner" id="ticker-inner"></div></div>
-</div>
-
-<!-- FX RATES TICKER (Frankfurter) -->
-<div class="ticker">
-  <div class="ticker-lbl" style="background:var(--buy-dim);color:var(--buy)"><i class="ti ti-currency-dollar"></i> FX</div>
-  <div class="ticker-scroll"><div class="ticker-inner" id="fx-ticker-inner" style="animation-duration:60s">Chargement des cours…</div></div>
-</div>
-
 <div class="wrap">
-
-  <!-- ═══════ DASHBOARD TAB ═══════ -->
-  <div id="tab-dash" class="tab-pane active">
-
-    <div class="sec-hdr">
-      <i class="ti ti-world"></i><h2>Force des devises &mdash; Note macro /100</h2>
-      <div class="sec-hdr-line"></div>
-      <span id="dash-updated" style="font-size:10px;color:var(--t3);font-family:var(--mono)"></span>
-      <button class="ai-brief-btn" id="mc-import-btn" style="display:none" onclick="openCompassImport()" title="Importer les notes préparées par Claude">📥 Importer une mise à jour</button>
+  <header class="top">
+    <div class="brand">
+      <h1>FX Macro Compass</h1>
+      <span class="tag">Sphinx Alliance · 9 devises · 4 piliers</span>
     </div>
-    <div class="ccy-grid" id="ccy-grid"></div>
-    <div id="detail-mount"></div>
-
-    <div class="sec-hdr">
-      <i class="ti ti-building-bank"></i><h2>Attentes de politique monétaire</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" id="rate-updated">EST · à actualiser</span>
+    <div class="topright">
+      <button type="button" class="tbtn" id="mc-import-btn" style="display:none" onclick="openCompassImport()" title="Importer les notes préparées par Claude">📥 Importer une mise à jour</button>
+      <span class="livebadge off" id="liveBadge" title="Notes du Macro Compass en attente">figé</span>
+      <span class="clock" id="clock">—</span>
+      <button type="button" class="tbtn icon" id="themeBtn" onclick="toggleTheme()" title="Thème clair / sombre" aria-label="Changer de thème">☾</button>
     </div>
-    <div class="note-banner" id="rate-help" style="display:none"><i class="ti ti-info-circle"></i><div>Colle ton bloc quotidien ci-dessous pour tout mettre à jour d'un coup. Tu peux aussi cliquer une carte pour le détail, ou le crayon ✏️ pour l'éditer à la main.</div></div>
-    <!-- Coller-pour-mettre-à-jour (rédacteurs) -->
+  </header>
+
+  <div class="bands">
+    <div class="band"><div class="band-lbl">Squawk</div><div class="band-scroll"><div class="band-inner" id="ticker-inner"><div class="ticker-item">En attente du flux…</div></div></div></div>
+    <div class="band"><div class="band-lbl">FX</div><div class="band-scroll"><div class="band-inner" id="fx-ticker-inner">Chargement des cours…</div></div></div>
+  </div>
+
+  <div class="strip">
+    <section class="card sessions">
+      <div class="card-head">
+        <span class="card-title">Sessions de trading</span>
+        <span class="card-sub" id="sessNow"></span>
+      </div>
+      <div class="tl">
+        <div id="sessBands"></div>
+        <span class="nowbar" id="nowBar"></span>
+      </div>
+      <div class="ticks"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+    </section>
+
+    <section class="card fg">
+      <div class="card-head"><span class="card-title">Fear &amp; Greed</span><span class="badge-est" id="fgBadge">CNN</span></div>
+      <div class="fg-body">
+        <div id="fgGauge"></div>
+        <div class="fg-read">
+          <div class="fg-val" id="fgVal">—</div>
+          <div class="fg-label" id="fgLabel">Chargement…</div>
+          <div class="fg-meta" id="fgMeta"></div>
+          <a class="srclink" id="fgLink" href="https://www.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener">CNN ↗</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card cal" id="calCard" hidden>
+    <div class="card-head">
+      <span class="card-title">Prochaines publications</span>
+      <span class="card-sub" id="calSub"></span>
+    </div>
+    <div class="calrow" id="calRow"></div>
+  </section>
+
+  <div class="board">
+    <nav class="rail" id="rail" aria-label="Devises">
+      <div class="rail-label"><span>Devises</span><span>par rang</span></div><span id="dash-updated" hidden></span>
+    </nav>
+
+    <section class="stage">
+      <div class="stage-head">
+        <div class="stage-title" id="stageTitle">—</div>
+        <div class="stage-sub" id="stageSub">—</div>
+      </div>
+      <div class="globe-box" id="globeBox">
+        <div class="globe-score" id="globeScore" hidden><b>—</b><span>/ 100</span></div>
+        <canvas id="globe"></canvas>
+        <div class="tip" id="tip" hidden></div>
+        <div class="zoomer">
+          <button type="button" id="zin" aria-label="Zoomer">+</button>
+          <button type="button" id="zout" aria-label="Dézoomer">−</button>
+        </div>
+      </div>
+      <div class="globe-hint" id="hint">—</div>
+      <div class="pillars" id="pillars"></div>
+    </section>
+
+    <section class="read">
+      <div id="backWrap" hidden><button type="button" class="backbtn" id="back">← Retour</button></div>
+      <div class="read-head">
+        <div class="read-title" id="readTitle">—</div>
+        <span class="verdict flat" id="verdict">—</span>
+      </div>
+      <p class="synthese" id="synthese"></p>
+      <div class="rows" id="rows"></div>
+      <div class="foot" id="foot"></div>
+    </section>
+  </div>
+
+  <section class="card" id="ratesCard">
+    <div class="card-head">
+      <span class="card-title">Attentes de politique monétaire</span>
+      <span class="card-sub"><span class="badge-est" id="rate-updated">EST · à actualiser</span></span>
+    </div>
+    <div class="note-banner" id="rate-help" style="display:none">Colle ton bloc quotidien ci-dessous pour tout mettre à jour d'un coup. Clique une carte pour le détail (courbe des taux implicites, historique des attentes), ou le crayon ✏️ pour l'éditer à la main.</div>
     <div class="rate-paste" id="rate-paste" style="display:none">
-      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">📋 Colle ton bloc « bps + probabilité next meeting » (RBNZ, ECB, BoE, Fed, BoJ, BoC, RBA, SNB) :</div>
       <textarea id="rate-paste-input" placeholder="RBNZ: 52 bps (67% probability of rate hike at the next meeting)
-ECB: 42 bps (86% probability of no change at the next meeting)
-Fed: 26 bps (90% probability of no change at the next meeting)
-…"></textarea>
-      <div style="display:flex;gap:10px;margin-top:8px;align-items:center;flex-wrap:wrap">
-        <button class="ai-brief-btn" onclick="applyRatesPaste()">↻ Mettre à jour depuis le texte</button>
-        <span id="rate-paste-status" style="font-size:11px;color:var(--t3)"></span>
+ECB: -9 bps (91% probability of no change at the next meeting)
+Fed: 36 bps (79% probability of no change at the next meeting)"></textarea>
+      <div class="rate-paste-actions">
+        <button type="button" class="tbtn primary" onclick="applyRatesPaste()">↻ Mettre à jour depuis le texte</button>
+        <span id="rate-paste-status" style="font-size:11px;color:var(--ink-soft)"></span>
       </div>
     </div>
     <div class="rate-grid" id="rate-grid"></div>
+  </section>
 
-    <div class="sec-hdr">
-      <i class="ti ti-building-bank"></i><h2>Institutionnels &mdash; COT (CFTC)</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" id="cot-date"></span>
-    </div>
-    <div class="cot-grid" id="cot-grid"><div class="empty-mini">Chargement des données COT…</div></div>
+  <div class="deck">
+    <section class="card">
+      <div class="card-head"><span class="card-title">Marchés de prédiction</span><span class="badge-est">Polymarket</span></div>
+      <div class="pm-grid" id="pm-grid"><div class="empty-mini">Chargement des marchés…</div></div>
+    </section>
+    <section class="card">
+      <div class="card-head"><span class="card-title">Institutionnels — COT</span><span class="badge-est" id="cot-date">CFTC</span></div>
+      <div class="cot-grid" id="cot-grid"><div class="empty-mini">Chargement des données COT…</div></div>
+    </section>
+  </div>
 
-    <div class="sec-hdr" style="margin-top:30px">
-      <i class="ti ti-users"></i><h2>Retail &mdash; Sentiment communautaire (Myfxbook)</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" style="color:var(--amber)">Contrarian</span>
-    </div>
-    <div class="mfb-wrap" style="background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;overflow:auto">
-      <div style="width:100%;text-align:center">
-        <!-- Widget dans sa propre iframe : s'il est lent ou bloqué, il ne fige plus le reste du Macro Compass ni la connexion au site. -->
-        <iframe title="Sentiment Myfxbook" loading="lazy" style="width:100%;height:520px;border:0;display:block;background:#fff"
-          srcdoc="<!doctype html><html><head><meta charset='utf-8'></head><body style='margin:0;text-align:center;background:#fff'><script src='https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1'></script></body></html>"></iframe>
-      </div>
-    </div>
+  <section class="card">
+    <div class="card-head"><span class="card-title">Tendances — 30 jours</span><span class="badge-est">Polygon · différé</span></div>
+    <div class="tr-grid" id="tr-grid"></div>
+  </section>
 
-    <div class="sec-hdr" style="margin-top:34px"><i class="ti ti-clock-hour-4"></i><h2>Sessions de trading</h2><div class="sec-hdr-line"></div></div>
-    <div class="sess-tab-grid">
-      <aside>
-        <div class="sess-panel">
-          <div class="sess-panel-hdr"><i class="ti ti-clock-hour-4"></i> SESSION EN COURS</div>
-          <div class="sess-active-name" id="sess-active-name">—</div>
-          <div class="sess-active-state" id="sess-active-state">—</div>
-          <div class="sess-track">
-            <div class="sess-track-top">
-              <span class="sess-end-time" id="sess-end-time">--:--</span>
-              <span class="sess-next-name" id="sess-next-name">—</span>
-            </div>
-            <div class="sess-rail"><div class="sess-rail-fill" id="sess-rail-fill"></div></div>
-            <div class="sess-track-bot" id="sess-track-bot">début</div>
-          </div>
-          <div class="sess-timer" id="sess-timer">--:--:--</div>
-          <div class="sess-timer-lbl" id="sess-timer-lbl">avant la fin</div>
-          <div class="sess-list" id="sess-list"></div>
-        </div>
-      </aside>
-      <div>
-        <div class="sec-hdr"><i class="ti ti-timeline"></i><h2>Journée de trading &mdash; 24h (heure locale)</h2><div class="sec-hdr-line"></div></div>
-        <div class="sess-tl" id="sess-tl"></div>
-        <div class="sess-cards" id="sess-cards"></div>
-      </div>
-    </div>
-
-    <!-- NEWS FEED -->
-    <div class="sec-hdr">
-      <i class="ti ti-news"></i><h2>News Feed &mdash; Squawk temps réel</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="news-updated" id="news-updated"></span>
-      <button class="news-refresh-btn" id="news-refresh-btn" onclick="refreshNews()" title="Rafraîchir les news"><i class="ti ti-refresh"></i></button>
-      <span class="badge-est" style="color:var(--buy);background:var(--buy-dim);border-color:var(--buy-glow)">LIVE · Finnhub</span>
+  <section class="card">
+    <div class="card-head">
+      <span class="card-title">News feed — squawk</span>
+      <span class="card-sub"><span class="news-updated" id="news-updated"></span><button type="button" class="news-refresh-btn" id="news-refresh-btn" onclick="refreshNews()" title="Rafraîchir les news" aria-label="Rafraîchir">↻</button></span>
     </div>
     <div class="news-toolbar" id="news-toolbar"></div>
     <div class="news-feed" id="news-feed"><div class="news-loading"><div class="spinner"></div><div style="margin-top:12px">Chargement du flux…</div></div></div>
+  </section>
 
-    <!-- ANALYSE IA DU MARCHÉ (Gemini) -->
-    <div class="sec-hdr">
-      <i class="ti ti-sparkles"></i><h2>Analyse IA du marché</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" id="ai-brief-meta" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)"></span>
-      <button class="ai-brief-btn" id="ai-brief-btn" onclick="generateAiBrief(true)">✨ Générer</button>
+  <section class="card">
+    <div class="card-head"><span class="card-title">Retail — sentiment communautaire</span><span class="badge-est" style="color:var(--warn)">Contrarian · Myfxbook</span></div>
+    <div class="mfb-wrap">
+      <!-- Widget dans sa propre iframe : s'il est lent ou bloqué, il ne fige pas le reste du Compass. -->
+      <iframe title="Sentiment Myfxbook" loading="lazy" style="width:100%;height:520px;border:0;display:block;background:#fff"
+        srcdoc="<!doctype html><html><head><meta charset='utf-8'></head><body style='margin:0;text-align:center;background:#fff'><script src='https://widgets.myfxbook.com/scripts/fxOutlook.js?type=1'></script></body></html>"></iframe>
     </div>
-    <div class="ai-brief" id="ai-brief-out"><div class="empty-mini">Clique sur « ✨ Générer » : l'IA lit les scores de force des devises et l'actualité macro, puis rédige un brief FX du jour.</div></div>
+  </section>
 
-    <!-- TENDANCES FX (sparklines Polygon) -->
-    <div class="sec-hdr">
-      <i class="ti ti-chart-line"></i><h2>Tendances FX &mdash; 30 jours</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)">Polygon.io</span>
+  <section class="card">
+    <div class="card-head">
+      <span class="card-title">Analyse IA du marché</span>
+      <span class="card-sub"><span class="badge-est" id="ai-brief-meta"></span><button type="button" class="tbtn primary" id="ai-brief-btn" onclick="generateAiBrief(true)">✨ Générer</button></span>
     </div>
-    <div class="tr-grid" id="tr-grid"></div>
+    <div class="ai-brief" id="ai-brief-out"><div class="empty-mini">Clique sur « ✨ Générer » : l'IA lit les notes de force des devises et les attentes de taux, puis rédige un brief FX du jour. Ta clé API se règle dans ⚙️ Paramètres → IA du Sphinx Alliance.</div></div>
+  </section>
 
-    <!-- MARCHÉS DE PRÉDICTION (Polymarket) -->
-    <div class="sec-hdr">
-      <i class="ti ti-chart-arrows-vertical"></i><h2>Marchés de prédiction</h2>
-      <div class="sec-hdr-line"></div>
-      <span class="badge-est" style="color:var(--accent);background:var(--accent-dim);border-color:rgba(91,140,255,.3)">LIVE · Polymarket</span>
-    </div>
-    <div class="pm-grid" id="pm-grid"><div class="empty-mini">Chargement des marchés…</div></div>
-  </div>
-
+  <footer class="doc" id="footNote">Notes /100 et contenus : jugement de Claude sur les pages Notion de Kevin (Biais &amp; Force Relative, Track Record Fondamental, Live Feed) complété par des recherches web, publié par un rédacteur via « Importer une mise à jour ». Taux et probabilités : collages des rédacteurs, Polymarket pour la Fed. Rien n'est un conseil d'investissement.</footer>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
 /* ══════════════════════════════════════════════════════════════
-   CONFIG — clés & réglages.  ⚠️ Côté navigateur, ces clés sont
-   visibles dans le code source. OK pour des clés gratuites/perso ;
-   pour de la prod, passer par un backend proxy.
+   DEVISES — métadonnées, zones du globe (ids world-atlas 110m) et
+   centre de caméra (lon, lat)
 ═══════════════════════════════════════════════════════════════ */
+const CURRENCIES=[
+  {code:'USD',flag:'🇺🇸',name:'Dollar US',           country:'États-Unis',       ids:['840'],view:[-98,39]},
+  {code:'EUR',flag:'🇪🇺',name:'Euro',                country:'Zone euro',        ids:['276','250','380','724','528','056','040','620','372','246','300','703','705','233','440','428','196','470','191','100'],view:[9,50]},
+  {code:'GBP',flag:'🇬🇧',name:'Livre sterling',      country:'Royaume-Uni',      ids:['826'],view:[-2,54]},
+  {code:'JPY',flag:'🇯🇵',name:'Yen',                 country:'Japon',            ids:['392'],view:[138,36]},
+  {code:'CHF',flag:'🇨🇭',name:'Franc suisse',        country:'Suisse',           ids:['756'],view:[8,47]},
+  {code:'AUD',flag:'🇦🇺',name:'Dollar australien',   country:'Australie',        ids:['036'],view:[134,-25]},
+  {code:'NZD',flag:'🇳🇿',name:'Dollar néo-zélandais',country:'Nouvelle-Zélande', ids:['554'],view:[172,-41]},
+  {code:'CAD',flag:'🇨🇦',name:'Dollar canadien',     country:'Canada',           ids:['124'],view:[-100,58]},
+  {code:'CNH',flag:'🇨🇳',name:'Yuan (offshore)',     country:'Chine',            ids:['156'],view:[104,35]},
+];
+let activeDim=null;   /* pilier affiché : null = vue d'ensemble */
+
+/* ══════════════════════════════════════════════════════════════
+   CONFIG (clés chargées depuis Firestore, jamais en dur)
+══════════════════════════════════════════════════════════════ */
 const CONFIG = {
   // ─── DÉPLOIEMENT PUBLIC ───────────────────────────────────────
   // Mets ici l'URL de ton proxy Cloudflare Worker (voir fx-proxy-worker.js).
@@ -722,23 +664,8 @@ const CONFIG = {
 };
 
 /* ══════════════════════════════════════════════════════════════
-   DEVISES — métadonnées
-═══════════════════════════════════════════════════════════════ */
-const CURRENCIES = [
-  { code:'USD', flag:'🇺🇸', name:'Dollar US',          country:'États-Unis' },
-  { code:'EUR', flag:'🇪🇺', name:'Euro',               country:'Zone Euro' },
-  { code:'GBP', flag:'🇬🇧', name:'Livre Sterling',     country:'Royaume-Uni' },
-  { code:'JPY', flag:'🇯🇵', name:'Yen Japonais',       country:'Japon' },
-  { code:'CHF', flag:'🇨🇭', name:'Franc Suisse',       country:'Suisse' },
-  { code:'AUD', flag:'🇦🇺', name:'Dollar Australien',  country:'Australie' },
-  { code:'NZD', flag:'🇳🇿', name:'Dollar Néo-Zélandais',country:'Nouvelle-Zélande' },
-  { code:'CAD', flag:'🇨🇦', name:'Dollar Canadien',    country:'Canada' },
-  { code:'CNH', flag:'🇨🇳', name:'Yuan (offshore)',    country:'Chine' },
-];
-
-// Politique monétaire / géopolitique ne sont plus maintenues à la main ici :
-// elles arrivent en direct via Firestore (collection macroCompass), alimentée
-// depuis Notion. Voir loadMacroCompassScores() et NOTION_DIMS plus bas.
+   ATTENTES DE TAUX — calendrier des réunions
+══════════════════════════════════════════════════════════════ */
 const LAST_MANUAL_UPDATE = "2026-06-16"; // fallback d'affichage pour les attentes de taux tant que Firestore n'a pas encore répondu
 
 // Attentes de taux pour la PROCHAINE réunion (probabilités %, somme=100)
@@ -783,10 +710,8 @@ function meetingInfo(code,r){
 }
 
 /* ══════════════════════════════════════════════════════════════
-   NOTION = API — force des devises en LIVE depuis le Worker Cloudflare
-   (biais/rang/driver/thèses). Les 4 dimensions sont calculées à la
-   demande depuis les rapports hebdo Notion (voir NOTION_DIMS).
-═══════════════════════════════════════════════════════════════ */
+   NOTES DU MACRO COMPASS (Firestore) + BIAIS NOTION
+══════════════════════════════════════════════════════════════ */
 const NOTION_API = 'https://notion-compass.fx-desk.workers.dev';
 let NOTION_UPDATED = '';
 // Dimensions 0-100 par devise + notes de verdict par pilier : chargées EN LIVE
@@ -827,47 +752,11 @@ function loadMacroCompassScores(){
   }, e=>{ macroCompassLoaded=false; console.warn('macroCompass',e.message); });
 }
 
-/* ══════════════════════════════════════════════════════════════
-   ÉTAT
-═══════════════════════════════════════════════════════════════ */
 let CCY_DATA = {};        // code -> { score, dims, notion }
-let activeCcy = null;
+let activeCcy = 'USD';
 let allNews = [], newsFilter = 'ALL';
 let lastNewsTs = 0, newsTimer = null;
 const NEWS_REFRESH_MS = 15 * 60 * 1000; // auto-refresh toutes les 15 min
-
-/* ══════════════════════════════════════════════════════════════
-   UTILITAIRES
-═══════════════════════════════════════════════════════════════ */
-function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
-function num(v){const n=parseFloat(v);return isNaN(n)?null:n;}
-function round2(n){return n==null?null:Math.round(n*100)/100;}  // 2 décimales max
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
-
-function cacheGet(key){
-  try{const r=JSON.parse(localStorage.getItem('fxmt_'+key));if(r&&Date.now()-r.t<CONFIG.CACHE_TTL_MS)return r.v;}catch(e){}
-  return null;
-}
-function cacheSet(key,v){try{localStorage.setItem('fxmt_'+key,JSON.stringify({t:Date.now(),v}));}catch(e){}}
-
-async function fetchJSON(url,opts){
-  const r=await fetch(url,opts);
-  if(!r.ok)throw new Error('HTTP '+r.status);
-  return r.json();
-}
-
-async function finnhubNews(category){
-  if(CONFIG.API_BASE) return fetchJSON(CONFIG.API_BASE+'/finnhub?category='+category);
-  if(!CONFIG.FINNHUB_KEY) throw new Error('clé Finnhub non configurée (Paramètres → IA, rédacteurs)');
-  return fetchJSON(`https://finnhub.io/api/v1/news?category=${category}&token=${CONFIG.FINNHUB_KEY}`);
-}
-
-function scoreColor(s){return s>=50?'var(--buy)':'var(--sell)';}
-
-/* ══════════════════════════════════════════════════════════════
-   SOURCE PRINCIPALE : NOTION (remplace les API pour la force des devises)
-═══════════════════════════════════════════════════════════════ */
-// Récupère le scoreboard en LIVE depuis le Worker Notion (avec cache de secours)
 // Devise absente de la page Notion (ex. CNH, couvert par recherche web) : on reprend
 // biais, rang et driver de la fiche importée par la skill.
 function mcNotionFallback(code){
@@ -917,37 +806,10 @@ async function buildFromNotion(){
   if(activeCcy) renderDetail();
   if(up) up.textContent=notionOk?('Notion · MAJ '+(NOTION_UPDATED||'')):'Notion indisponible · notes du Compass';
 }
-// ── Rapport hebdo Notion : détail par dimension (live, depuis le Worker) ──
-let REPORT_BY_CCY={}, REPORT_GLOBAL='', REPORT_TITLE='', activeDim=null;
-const DIM_KW={
-  croissance:/PMI|PIB|GDP|croissance|emploi|jobless|claims|retail|ventes|production|activit|ch[oô]mage|NFP|labour|labor/i,
-  inflation:/inflation|CPI|PPI|\bprix\b|core|d[ée]flation|IPC|d[ée]sinflation|deflator/i,
-  monetaire:/\bFed\b|BCE|\bBoE\b|\bBoJ\b|\bRBA\b|RBNZ|\bBNS\b|\bBoC\b|banque centrale|\btaux\b|hike|hausse|dot plot|hawkish|dovish|resserr|assoupl|gouverneur|Bullock|Bailey|Lagarde|Ueda|Warsh|Macklem|Schlegel|Fedspeak|SNB/i
-};
-async function loadReport(){
-  let d=null;
-  try{ const r=await fetch(NOTION_API+'/?source=hebdo',{cache:'no-store'}); d=await r.json(); if(d&&d.content) localStorage.setItem('fxmt_notion_hebdo',JSON.stringify(d)); }
-  catch(e){}
-  if(!d||!d.content){ try{ d=JSON.parse(localStorage.getItem('fxmt_notion_hebdo')); }catch(e){} }
-  if(!d||!d.content) return;
-  REPORT_TITLE=d.title||'';
-  const parts=d.content.split(/\n(?=\*\*(?:USD|EUR|GBP|JPY|CHF|AUD|NZD|CAD|CNH)\s*(?:→|->))/);
-  REPORT_BY_CCY={}; REPORT_GLOBAL='';
-  parts.forEach((seg,i)=>{
-    const m=seg.match(/^\*\*(USD|EUR|GBP|JPY|CHF|AUD|NZD|CAD|CNH)\s*(?:→|->)/);
-    if(m) REPORT_BY_CCY[m[1]]=seg.trim();
-    else if(i===0) REPORT_GLOBAL=seg.trim();
-  });
-  if(activeCcy) renderDetail();
-}
-function dimExcerpt(code,dim){
-  if(dim==='geo') return REPORT_GLOBAL||'';
-  const seg=REPORT_BY_CCY[code]; if(!seg) return '';
-  const kw=DIM_KW[dim]; if(!kw) return seg;
-  const paras=seg.split(/\n\n+/).filter(p=>kw.test(p));
-  return paras.length?paras.join('\n\n'):seg;
-}
-// ── Synthèses Daily FX (Firestore) : sous-composantes datées par dimension ──
+
+/* ══════════════════════════════════════════════════════════════
+   SYNTHÈSES DAILY FX LIÉES AUX PILIERS
+══════════════════════════════════════════════════════════════ */
 let MACRO_NOTES=[], macroNotesLoaded=false, activeSub=null;
 const NOTE_MAX_AGE=50; // jours : au-delà, on n'affiche pas (pas de vieux chiffre)
 const DIM_NOTE_KW={
@@ -997,71 +859,6 @@ function noteRecapHTML(n){
 function openDimDetail(dim){ activeDim=(!dim||activeDim===dim)?null:dim; activeSub=null; renderDetail(); }
 function openSub(id){ activeSub=(activeSub===id?null:id); renderDetail(); }
 
-function signalOfBias(bias){
-  if(bias==='haussier') return {cls:'buy-side',sCls:'s-buy',txt:'Acheter',short:'ACHAT'};
-  if(bias==='baissier') return {cls:'sell-side',sCls:'s-sell',txt:'Vendre',short:'VENTE'};
-  return {cls:'',sCls:'s-neu',txt:'Neutre',short:'NEUTRE'};
-}
-function biasColorOf(bias){
-  if(bias==='haussier') return 'var(--buy)';
-  if(bias==='baissier') return 'var(--sell)';
-  return 'var(--t2)';
-}
-
-/* ══════════════════════════════════════════════════════════════
-   RENDU — GRILLE DEVISES
-═══════════════════════════════════════════════════════════════ */
-function renderGrid(){
-  const grid=document.getElementById('ccy-grid');
-  const rankOf=c=>{const d=CCY_DATA[c.code];return (d&&d.notion&&d.notion.rank!=null)?d.notion.rank:99;};
-  const sorted=[...CURRENCIES].sort((a,b)=>rankOf(a)-rankOf(b));
-  grid.innerHTML=sorted.map(c=>{
-    const d=CCY_DATA[c.code];
-    if(!d)return `<div class="ccy-card"><div class="ccy-top"><div class="ccy-flag">${c.flag}</div><div class="ccy-id"><div class="ccy-code">${c.code}</div><div class="ccy-name">${c.name}</div></div><div class="ccy-score-wrap"><div class="ccy-score" style="color:var(--t4)">··</div></div></div><div class="empty-mini" style="padding:8px 0 0;text-align:left;font-size:10px">Chargement…</div></div>`;
-    const n=d.notion||{bias:'neutre',rank:null};
-    const sig=signalOfBias(n.bias);
-    const col=biasColorOf(n.bias);
-    const rankTag=n.rank!=null?`<span class="ccy-rank">#${n.rank}</span>`:'';
-    const dimChip=(lbl,o)=>{
-      const v=o&&o.score!=null?o.score:'—';
-      const dc=o&&o.score!=null?scoreColor(o.score):'var(--t4)';
-      return `<div class="dim-chip">${lbl}<span class="dv" style="color:${dc}">${v}</span></div>`;
-    };
-    return `<div class="ccy-card ${sig.cls} ${activeCcy===c.code?'sel':''}" onclick="openDetail('${c.code}')">
-      <div class="ccy-top">
-        ${rankTag}
-        <div class="ccy-flag">${c.flag}</div>
-        <div class="ccy-id"><div class="ccy-code">${c.code}</div><div class="ccy-name">${c.name}</div></div>
-        <div class="ccy-score-wrap">
-          <div class="ccy-score" style="color:${col}">${d.score!=null?d.score:'—'}</div>
-          <div class="ccy-signal ${sig.sCls}">${d.score!=null?sig.short:'N/A'}</div>
-        </div>
-      </div>
-      <div class="ccy-bar-bg"><div class="ccy-bar-mid"></div><div class="ccy-bar-fill" style="width:${d.score||0}%;background:${col}"></div></div>
-      <div class="ccy-dims">
-        ${dimChip('Crois.',d.dims.croissance)}
-        ${dimChip('Infl.',d.dims.inflation)}
-        ${dimChip('Mon.',d.dims.monetaire)}
-        ${dimChip('Géo.',d.dims.geo)}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ══════════════════════════════════════════════════════════════
-   RENDU — PANNEAU DÉTAIL
-═══════════════════════════════════════════════════════════════ */
-function openDetail(code){
-  activeCcy=code;activeDim=null;
-  renderGrid();renderDetail();
-  // Défilement limité au Compass : scrollIntoView ferait aussi défiler la page du hub (iframe)
-  const dm=document.getElementById('detail-mount');
-  window.scrollTo({top:Math.max(0,dm.getBoundingClientRect().top+window.scrollY-70),behavior:'smooth'});
-}
-function closeDetail(){activeCcy=null;document.getElementById('detail-mount').innerHTML='';renderGrid();}
-
-function dimDot(s){const c=s==null?'var(--t4)':scoreColor(s);return c;}
-
 const PILLAR_META={
   croissance:{key:'croissance',  lbl:'Croissance',          ico:'📈', notes:['croissance','emploi']},
   inflation: {key:'inflation',   lbl:'Inflation',           ico:'🔥', notes:['inflation']},
@@ -1092,104 +889,10 @@ function pillarNotesHTML(code,dim){
   if(activeSub){ const n=notes.find(x=>x.id===activeSub); if(n) h+=noteRecapHTML(n); }
   return h+'</div>';
 }
-function pillarViewHTML(code,dim,d){
-  const meta=PILLAR_META[dim]; const doc=MC_DOCS[code]||{};
-  const p=(doc.pillars||{})[meta.key]||{};
-  const sc=d.dims[dim]&&d.dims[dim].score;
-  const scCol=sc==null?'var(--t4)':scoreColor(sc);
-  const md=t=>mdToHtmlFx(String(t||''));
-  let h=`<div class="pv-top"><button class="pv-back" onclick="openDimDetail(null)">← Vue d'ensemble</button><span class="pv-title">${meta.ico} ${meta.lbl} · ${code}</span><span class="pv-score" style="color:${scCol}">${sc!=null?sc:'—'}<span style="font-size:10px;color:var(--t3)"> /100</span></span></div>`;
-  if(p.note) h+=`<div class="pv-verdict">🧭 <b>Verdict :</b> ${md(p.note)}</div>`;
-  const rows=Array.isArray(p.data)?p.data:[];
-  if(rows.length){
-    h+='<div class="pv-sec"><div class="pv-h">📊 Données</div><table class="pv-tbl"><thead><tr><th>Indicateur</th><th>Réel</th><th>Consensus</th><th>Précédent</th><th>Lecture</th></tr></thead><tbody>';
-    rows.forEach(r=>{
-      const per=[r.periode,r.date?fmtDay(r.date):''].filter(Boolean).join(' · ');
-      const src=r.source&&/web/i.test(r.source)?'<span class="pv-src">web</span>':'';
-      h+=`<tr class="pv-row"><td class="pv-ind">${escH(r.indicateur||r.nom||'')}${src}${per?`<span class="pv-per">${per}</span>`:''}</td><td class="pv-act" data-l="Réel">${escH(r.actuel!=null?r.actuel:'—')}</td><td data-l="Consensus">${escH(r.consensus!=null&&r.consensus!==''?r.consensus:'—')}</td><td data-l="Précédent">${escH(r.precedent!=null&&r.precedent!==''?r.precedent:'—')}</td><td data-l="Lecture">${impactHTML(r.impact)}</td></tr>`;
-      if(r.commentaire) h+=`<tr class="pv-com"><td colspan="5">${md(r.commentaire)}</td></tr>`;
-    });
-    h+='</tbody></table></div>';
-  }
-  if(p.analyse) h+=`<div class="pv-sec"><div class="pv-h">🔎 Analyse</div><div class="pv-txt">${md(p.analyse)}</div></div>`;
-  const watch=Array.isArray(p.aSurveiller)?p.aSurveiller:[];
-  if(watch.length) h+='<div class="pv-sec"><div class="pv-h">⏭️ À surveiller</div><ul class="pv-watch">'+watch.map(w=>`<li><span class="recap-d">${fmtDay(w.date)}</span><span>${md(w.evenement||w.texte||'')}</span></li>`).join('')+'</ul></div>';
-  h+=pillarNotesHTML(code,dim);
-  if(!p.note&&!rows.length&&!p.analyse) h+='<div class="pv-empty">Pas encore de données détaillées pour ce pilier : elles arrivent avec la prochaine mise à jour du Macro Compass.</div>';
-  else if(!rows.length&&!p.analyse) h+='<div class="pv-empty" style="margin-top:14px">Le tableau détaillé des données arrive avec la prochaine mise à jour du Macro Compass (nouvelle version de la skill).</div>';
-  if(Array.isArray(p.sources)&&p.sources.length) h+=`<div class="pv-foot">Sources : ${p.sources.map(escH).join(' · ')}</div>`;
-  return h;
-}
-function overviewHTML(code,n){
-  const doc=MC_DOCS[code]||{};
-  const md=t=>mdToHtmlFx(String(t||''));
-  const driver=n.driver||doc.driver;
-  let h='<div class="ov-wrap">';
-  if(driver) h+=`<div class="these-driver"><i class="ti ti-target"></i> <b>Driver dominant :</b> ${md(driver)}</div>`;
-  const rc=doc.recap||null;
-  const faits=rc&&Array.isArray(rc.faits)?rc.faits:[];
-  if(rc&&(rc.resume||faits.length)){
-    h+=`<div class="recap"><div class="recap-h">🗓️ Récap du mois${rc.periode?`<span class="recap-per">${escH(rc.periode)}</span>`:''}</div>`;
-    if(rc.resume) h+=`<div class="recap-p">${md(rc.resume)}</div>`;
-    if(faits.length) h+='<ul class="recap-list">'+faits.map(f=>`<li><span class="recap-d">${fmtDay(f.date)}</span><span>${md(f.texte||'')}</span></li>`).join('')+'</ul>';
-    h+='</div>';
-  } else if(n.mois){
-    // Pas encore de récap importé : repli sur « Le mois » de la page Biais & Force Relative
-    h+=`<div class="recap"><div class="recap-h">🗓️ Récap du mois</div><div class="recap-p">${md(n.mois)}</div></div>`;
-  }
-  if(doc.catalyseur) h+=`<div class="recap-next">⏭️ <b>À venir :</b> ${md(doc.catalyseur)}</div>`;
-  return h+'</div>';
-}
-
-function renderDetail(){
-  const c=CURRENCIES.find(x=>x.code===activeCcy);
-  const d=CCY_DATA[activeCcy];if(!c||!d)return;
-  const n=d.notion||{bias:'neutre'};
-  const sig=signalOfBias(n.bias);
-  const col=biasColorOf(n.bias);
-
-  const sbCell=(lbl,o,key)=>{
-    const v=o&&o.score!=null?o.score:'—';
-    const cc=o&&o.score!=null?scoreColor(o.score):'var(--t4)';
-    const w=o&&o.score!=null?o.score:0;
-    const act=activeDim===key?' sb-active':'';
-    return `<div class="sb-cell sb-click${act}" role="button" tabindex="0" aria-pressed="${activeDim===key}" onclick="openDimDetail('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDimDetail('${key}')}"><div class="sb-top"><span class="sb-name">${lbl}</span><span class="sb-val" style="color:${cc}">${v}</span></div><div class="sb-bar-bg"><div class="sb-bar" style="width:${w}%;background:${cc}"></div></div></div>`;
-  };
-  const body=activeDim&&PILLAR_META[activeDim] ? pillarViewHTML(activeCcy,activeDim,d) : overviewHTML(activeCcy,n);
-
-  document.getElementById('detail-mount').innerHTML=`
-  <div class="detail">
-    <div class="detail-hd">
-      <div class="detail-flag">${c.flag}</div>
-      <div class="detail-id">
-        <div class="detail-code">${c.code}${n.rank!=null?` <span class="detail-rank">#${n.rank} force relative</span>`:''}</div>
-        <div class="detail-name">${c.name} · ${c.country}</div>
-        <div class="detail-meta">
-          <span class="detail-sig ${sig.cls}" style="color:${col}">${n.biasLabel||sig.txt}</span>
-          <span style="font-size:11px;color:var(--t3);font-family:var(--mono)">Source : Notion (Biais &amp; Force Relative + Track Record Fondamental) + recherches${NOTION_UPDATED?' · MAJ '+NOTION_UPDATED:''}</span>
-        </div>
-      </div>
-      <div class="detail-scorebox">
-        <div class="num" style="color:${col}">${d.score!=null?d.score:'—'}</div>
-        <div class="lbl">/ 100</div>
-      </div>
-      <button class="detail-close" onclick="closeDetail()" aria-label="Fermer"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="detail-body">
-      <div class="score-break">
-        ${sbCell('Croissance',d.dims.croissance,'croissance')}
-        ${sbCell('Inflation',d.dims.inflation,'inflation')}
-        ${sbCell('Monétaire',d.dims.monetaire,'monetaire')}
-        ${sbCell('Géopolitique',d.dims.geo,'geo')}
-      </div>
-      ${body}
-    </div>
-  </div>`;
-}
 
 /* ══════════════════════════════════════════════════════════════
    NEWS FEED (Finnhub)
-═══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════════════════════ */
 const CCY_KEYWORDS={
   USD:['dollar','fed','powell','fomc','u.s.','united states','treasury'],
   EUR:['euro','ecb','lagarde','eurozone','germany','france'],
@@ -1293,8 +996,8 @@ function buildTicker(){
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ATTENTES DE TAUX (bar chart CSS)
-═══════════════════════════════════════════════════════════════ */
+   TAUX : synchro, édition, import, détail banque centrale, Polymarket, COT
+══════════════════════════════════════════════════════════════ */
 /* ── Attentes de taux : synchro + édition partagée (Firestore) ── */
 const RATE_FB_CONFIG={apiKey:"AIzaSyA0T_I8fj5HJyIMJSm39j5PBJQ-4y8f1R0",authDomain:"journal-de-trading-c79ee.firebaseapp.com",projectId:"journal-de-trading-c79ee",storageBucket:"journal-de-trading-c79ee.firebasestorage.app",messagingSenderId:"393817220904",appId:"1:393817220904:web:8e5b747361aa2c83ddd21d"};
 const MACRO_EDITORS_FX=['mornaccokevin@gmail.com','malikaboubacarkoda@gmail.com'];
@@ -1342,7 +1045,7 @@ function subscribeRates(){
           if(code==='USD'&&fedLive&&!configManual) return; // sinon le Fed live (Polymarket) prime
           if(RATE_EXPECTATIONS[code]) Object.assign(RATE_EXPECTATIONS[code],banks[code]);
         });
-        renderRateExpectations(); updateRateBadge();
+        renderRateExpectations(); updateRateBadge(); if(typeof renderGrid==='function') renderGrid();
       }
     }, err=>{ console.warn('rateExpectations',err.message); rateUnsub=null; });
   }catch(e){ rateUnsub=null; console.warn('subscribeRates',e.message); }
@@ -1809,7 +1512,7 @@ function applyFedToRates(fed){
   if(configManual) return; // si tu as collé tes attentes, elles priment sur le Fed auto
   RATE_EXPECTATIONS.USD.hike=fed.hike; RATE_EXPECTATIONS.USD.hold=fed.hold; RATE_EXPECTATIONS.USD.cut=fed.cut;
   if(fed.meeting) RATE_EXPECTATIONS.USD.meeting=fmtPmDate(fed.meeting);
-  fedLive=true; renderRateExpectations();
+  fedLive=true; renderRateExpectations(); if(typeof renderGrid==='function') renderGrid();
 }
 async function fetchPredictions(){
   const grid=document.getElementById('pm-grid');
@@ -1979,197 +1682,10 @@ async function applyRatesPaste(){
 ═══════════════════════════════════════════════════════════════ */
 // Clair/sombre piloté par le hub Sphinx Alliance (localStorage « sphinx_theme ») ;
 // le bouton du terminal reste utilisable, jusqu'au prochain changement dans le hub.
-function setHubTheme(light){
-  document.body.classList.toggle('light',!!light);
-  const ic=document.getElementById('theme-icon'); if(ic) ic.className=light?'ti ti-moon':'ti ti-sun';
-  localStorage.setItem('fxmt_theme',light?'light':'dark');
-}
-window.addEventListener('storage',e=>{
-  if(e.key==='sphinx_theme'&&e.newValue) setHubTheme(e.newValue==='light');
-  if(e.key==='sphinx_zoom') applyHubZoom();
-});
-// Taille d'affichage du hub (Normal / Grand / Très grand), seulement quand le Compass est dans le hub
-function applyHubZoom(){
-  const z=window.parent!==window?localStorage.getItem('sphinx_zoom'):'normal';
-  document.body.classList.toggle('hz-lg',z==='lg');
-  document.body.classList.toggle('hz-xl',z==='xl');
-}
-function toggleTheme(){
-  document.body.classList.toggle('light');
-  const light=document.body.classList.contains('light');
-  document.getElementById('theme-icon').className=light?'ti ti-moon':'ti ti-sun';
-  localStorage.setItem('fxmt_theme',light?'light':'dark');
-}
-function tickClock(){
-  const d=new Date();
-  document.getElementById('clock').textContent=d.toLocaleTimeString('fr-FR',{hour12:false})+' '+Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop();
-  renderSessionsWidget(d);
-}
 
-/* ── Sessions FX : fenêtres en UTC (minutes depuis 00:00 UTC) ── */
-const FX_SESSIONS = [
-  { name:'Sydney',   tz:'Australia/Sydney', open:21*60, close:6*60  },
-  { name:'Tokyo',    tz:'Asia/Tokyo',       open:0,     close:9*60  },
-  { name:'Londres',  tz:'Europe/London',    open:7*60,  close:16*60 },
-  { name:'New York', tz:'America/New_York', open:12*60, close:21*60 }
-];
-function utcMinOfDay(d){ return d.getUTCHours()*60 + d.getUTCMinutes(); }
-function inWindow(m, open, close){ // gère le passage de minuit (open>close)
-  return open<=close ? (m>=open && m<close) : (m>=open || m<close);
-}
-function durationMin(open, close){ return ((close-open)+1440)%1440 || 1440; }
-function minsUntil(m, target){ return ((target-m)+1440)%1440; }
-// Marché FX fermé : ven 21:00 UTC → dim 21:00 UTC
-function forexClosed(d){
-  const wd=d.getUTCDay(), m=utcMinOfDay(d);
-  if(wd===6) return true;                 // samedi
-  if(wd===0 && m<21*60) return true;       // dimanche avant 21h UTC
-  if(wd===5 && m>=21*60) return true;      // vendredi après 21h UTC
-  return false;
-}
-// Prochaine occurrence UTC d'une minute-du-jour donnée
-function nextUTCOccur(minOfDay, from){
-  const d=new Date(from);
-  d.setUTCHours(Math.floor(minOfDay/60), minOfDay%60, 0, 0);
-  if(d.getTime()<=from.getTime()) d.setUTCDate(d.getUTCDate()+1);
-  return d;
-}
-function localHM(tz, now){
-  const p=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(now);
-  const g=t=>(p.find(x=>x.type===t)||{}).value||'';
-  let hh=g('hour'); if(hh==='24') hh='00';
-  return hh+':'+g('minute');
-}
-function renderSessionsWidget(now){
-  now = now || new Date();
-  const closed = forexClosed(now);
-  const m = utcMinOfDay(now);
-
-  // Statut ouvert/fermé de chaque session
-  const states = FX_SESSIONS.map(s=>({
-    ...s,
-    open_now: !closed && inWindow(m, s.open, s.close),
-    untilOpen: minsUntil(m, s.open),
-    untilClose: minsUntil(m, s.close)
-  }));
-
-  // Session active = ouverte qui ferme le plus tôt
-  const openOnes = states.filter(s=>s.open_now).sort((a,b)=>a.untilClose-b.untilClose);
-  const active = openOnes[0] || null;
-
-  const nameEl=document.getElementById('sess-active-name');
-  const stateEl=document.getElementById('sess-active-state');
-  const endEl=document.getElementById('sess-end-time');
-  const nextEl=document.getElementById('sess-next-name');
-  const fillEl=document.getElementById('sess-rail-fill');
-  const botEl=document.getElementById('sess-track-bot');
-  const timerEl=document.getElementById('sess-timer');
-  const timerLbl=document.getElementById('sess-timer-lbl');
-  if(!nameEl) return;
-
-  if(active){
-    // Prochaine session à ouvrir (parmi celles fermées)
-    const next=states.filter(s=>!s.open_now).sort((a,b)=>a.untilOpen-b.untilOpen)[0];
-    const dur=durationMin(active.open, active.close);
-    const elapsed=dur-active.untilClose;
-    const pct=Math.max(0,Math.min(100, elapsed/dur*100));
-    const endDate=nextUTCOccur(active.close, now);
-
-    nameEl.textContent=active.name;
-    stateEl.textContent='● Session en cours';
-    stateEl.classList.remove('closed');
-    endEl.textContent='fin '+localHM(Intl.DateTimeFormat().resolvedOptions().timeZone, endDate);
-    nextEl.textContent='puis '+(next?next.name:'—');
-    fillEl.style.height=pct+'%';
-    botEl.textContent='ouverture';
-    timerEl.textContent=fmtCountdown(endDate-now);
-    timerLbl.textContent='avant la fin de '+active.name;
-  } else {
-    // Aucune session active → compte à rebours vers la prochaine ouverture
-    const next=states.slice().sort((a,b)=>a.untilOpen-b.untilOpen)[0];
-    const openDate=nextUTCOccur(next.open, now);
-    nameEl.textContent=closed?'Week-end':'Hors session';
-    stateEl.textContent=closed?'Marché fermé':'Aucune session active';
-    stateEl.classList.add('closed');
-    endEl.textContent='ouv. '+localHM(Intl.DateTimeFormat().resolvedOptions().timeZone, openDate);
-    nextEl.textContent=next.name;
-    fillEl.style.height='0%';
-    botEl.textContent='prochaine';
-    timerEl.textContent=fmtCountdown(openDate-now);
-    timerLbl.textContent='avant '+next.name;
-  }
-
-  // Liste des 4 sessions
-  const list=document.getElementById('sess-list');
-  if(list){
-    list.innerHTML=states.map(s=>{
-      const cls=(s.open_now?'open':'closed')+(active&&active.name===s.name?' active':'');
-      return '<div class="sess-row '+cls+'"><span class="dot"></span><span class="nm">'+s.name+'</span><span class="tm">'+localHM(s.tz, now)+'</span></div>';
-    }).join('');
-  }
-  renderSessionsExtra(now, states, active);
-}
-
-/* ── Onglet Sessions : timeline 24h (heure locale) + cartes ── */
-const SESS_COLORS={'Sydney':'#a78bfa','Tokyo':'#f5a623','Londres':'#5b8cff','New York':'#16d39a'};
-function localOffsetMin(){ return -new Date().getTimezoneOffset(); }
-function toLocalMin(utcMin){ return ((utcMin+localOffsetMin())%1440+1440)%1440; }
-function renderSessionsExtra(now, states, active){
-  const tl=document.getElementById('sess-tl');
-  if(tl){
-    const W=1000,H=150,padT=24,rowH=20,gap=8,x=m=>m/1440*W;
-    let bands='';
-    states.forEach((s,i)=>{
-      const y=padT+i*(rowH+gap);
-      const col=SESS_COLORS[s.name]||'var(--accent)';
-      let lo=toLocalMin(s.open), lc=toLocalMin(s.close);
-      const seg=(a,b)=>`<rect x="${x(a)}" y="${y}" width="${Math.max(2,x(b)-x(a))}" height="${rowH}" rx="5" fill="${col}" opacity="${s.open_now?0.95:0.4}"/>`;
-      if(lc>lo){ bands+=seg(lo,lc); } else { bands+=seg(lo,1440)+seg(0,lc); }
-      bands+=`<text x="6" y="${y+rowH-5}" font-family="'Space Mono',monospace" font-size="11" fill="var(--t2)">${s.name}</text>`;
-    });
-    let ticks='';
-    for(let h=0;h<=24;h+=3){ ticks+=`<line x1="${x(h*60)}" y1="${padT-6}" x2="${x(h*60)}" y2="${padT+states.length*(rowH+gap)}" stroke="var(--bd)" stroke-width="1"/><text x="${x(h*60)+2}" y="${padT-10}" font-family="'Space Mono',monospace" font-size="9" fill="var(--t3)">${String(h).padStart(2,'0')}h</text>`; }
-    const nowMin=now.getHours()*60+now.getMinutes();
-    const nowLine=`<line x1="${x(nowMin)}" y1="${padT-8}" x2="${x(nowMin)}" y2="${padT+states.length*(rowH+gap)+2}" stroke="var(--sell)" stroke-width="2"/><text x="${x(nowMin)+3}" y="${padT+states.length*(rowH+gap)+14}" font-family="'Space Mono',monospace" font-size="9" fill="var(--sell)">maintenant</text>`;
-    const totalH=padT+states.length*(rowH+gap)+22;
-    tl.innerHTML=`<svg viewBox="0 0 ${W} ${totalH}" width="100%" style="display:block">${ticks}${bands}${nowLine}</svg>`;
-  }
-  const cards=document.getElementById('sess-cards');
-  if(cards){
-    cards.innerHTML=states.map(s=>{
-      const lo=toLocalMin(s.open), lc=toLocalMin(s.close);
-      const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
-      const status=s.open_now?'OUVERT':'FERMÉ';
-      const info=s.open_now?('Ferme dans '+fmtHM(s.untilClose)):('Ouvre dans '+fmtHM(s.untilOpen));
-      return `<div class="sess-c ${s.open_now?'open':'closed'}">
-        <div class="sess-c-top"><span class="dot"></span><span class="sess-c-name">${s.name}</span><span class="sess-c-badge">${status}</span></div>
-        <div class="sess-c-row"><span>Heure locale (là-bas)</span><b>${localHM(s.tz, now)}</b></div>
-        <div class="sess-c-row"><span>Plage (ton heure)</span><b>${hm(lo)}–${hm(lc)}</b></div>
-        <div class="sess-c-row"><span>${s.open_now?'Fermeture':'Ouverture'}</span><b>${info}</b></div>
-      </div>`;
-    }).join('');
-  }
-}
-function fmtHM(min){ const h=Math.floor(min/60), m=min%60; return (h>0?h+'h':'')+String(m).padStart(2,'0')+(h>0?'':'min'); }
-function fmtCountdown(ms){
-  let s=Math.max(0,Math.floor(ms/1000));
-  const h=Math.floor(s/3600); s-=h*3600;
-  const m=Math.floor(s/60); s-=m*60;
-  const p=n=>String(n).padStart(2,'0');
-  return p(h)+':'+p(m)+':'+p(s);
-}
-async function refreshAll(){
-  Object.keys(localStorage).filter(k=>k.startsWith('fxmt_')&&k!=='fxmt_theme').forEach(k=>localStorage.removeItem(k));
-  toast('Rafraîchissement des données…');
-  CCY_DATA={};renderGrid();
-  buildFromNotion();
-  loadReport();
-  await loadNews();
-  if(activeCcy)renderDetail();
-  toast('Données à jour ✅');
-}
-
-
+/* ══════════════════════════════════════════════════════════════
+   COURS FX, TENDANCES, BRIEF IA
+══════════════════════════════════════════════════════════════ */
 /* ── BANDEAU FX (Frankfurter — gratuit, sans clé) ── */
 async function fetchFxTicker(){
   const el=document.getElementById('fx-ticker-inner');
@@ -2307,21 +1823,623 @@ async function generateAiBrief(force){
   finally{ if(btn){btn.disabled=false;btn.innerHTML=old;} }
 }
 
+/* ══════════════════════════════════════════════════════════════
+   INTERFACE — rail des devises, globe, piliers, lecture, thème
+═══════════════════════════════════════════════════════════════ */
+const CCY_BY=Object.fromEntries(CURRENCIES.map(c=>[c.code,c]));
+const PILLAR_LIST=[['croissance','Croissance'],['inflation','Inflation'],['monetaire','Monétaire'],['geo','Géopolitique']];
+const PILLAR_LBL=Object.fromEntries(PILLAR_LIST);
+
+/* ---------- thème clair / sombre (synchronisé avec le hub) ---------- */
+const THEME_KEY='fxmt_theme';
+let tokensDirty=true, TK={};
+function tokens(){
+  if(tokensDirty){
+    const cs=getComputedStyle(document.documentElement);
+    ['--ink','--ink-soft','--ocean','--land','--land-hover','--land-live','--land-border','--orbit-a','--orbit-b','--pulse-halo','--pulse-line','--line-strong','--bar-dim','--card','--paper','--fg1','--fg2','--fg3'].forEach(k=>TK[k]=cs.getPropertyValue(k).trim());
+    tokensDirty=false;
+  }
+  return TK;
+}
+const C=k=>tokens()[k]||'';
+function isLight(){ return document.documentElement.getAttribute('data-theme')!=='dark'; }
+function applyTheme(light){
+  document.documentElement.setAttribute('data-theme',light?'light':'dark');
+  document.body.classList.toggle('light',!!light);   // les graphiques portés lisent cette classe
+  const b=document.getElementById('themeBtn');
+  if(b){ b.textContent=light?'☾':'☀'; b.title=light?'Passer en sombre':'Passer en clair'; }
+  try{ localStorage.setItem(THEME_KEY,light?'light':'dark'); }catch(e){}
+  tokensDirty=true;
+  renderFG();
+  if(typeof rdOpenCode!=='undefined'&&rdOpenCode){ renderRateCurveCharts(); renderRateDetailCharts(); }
+}
+// Appelé par le hub (toggleThemeGlobal → syncCompassTheme)
+function setHubTheme(light){ applyTheme(!!light); }
+function toggleTheme(){
+  const light=!isLight();
+  // Dans le hub : on bascule le hub lui-même, qui resynchronise le Compass et le reste du site
+  try{
+    const P=window.parent;
+    if(P&&P!==window&&typeof P.toggleThemeGlobal==='function'){
+      const hubLight=P.document.body.classList.contains('light-mode');
+      if(hubLight!==light){ P.toggleThemeGlobal(); return; }
+    }
+  }catch(e){}
+  applyTheme(light);
+}
+window.addEventListener('storage',e=>{
+  if(e.key==='sphinx_theme'&&e.newValue) applyTheme(e.newValue==='light');
+  if(e.key==='sphinx_zoom') applyHubZoom();
+});
+// Taille d'affichage du hub (Normal / Grand / Très grand), seulement dans le hub
+function applyHubZoom(){
+  const z=window.parent!==window?localStorage.getItem('sphinx_zoom'):'normal';
+  document.body.classList.toggle('hz-lg',z==='lg');
+  document.body.classList.toggle('hz-xl',z==='xl');
+}
+
+/* ---------- noms français des pays (survol du globe) ---------- */
+const FR={
+"Albania":"Albanie","Algeria":"Algérie","Antarctica":"Antarctique","Argentina":"Argentine","Armenia":"Arménie",
+"Australia":"Australie","Austria":"Autriche","Azerbaijan":"Azerbaïdjan","Belarus":"Biélorussie","Belgium":"Belgique",
+"Benin":"Bénin","Bhutan":"Bhoutan","Bolivia":"Bolivie","Bosnia and Herz.":"Bosnie-Herzégovine","Brazil":"Brésil",
+"Bulgaria":"Bulgarie","Cambodia":"Cambodge","Cameroon":"Cameroun","Central African Rep.":"République centrafricaine",
+"Chad":"Tchad","Chile":"Chili","China":"Chine","Colombia":"Colombie","Croatia":"Croatie","Cyprus":"Chypre",
+"Czechia":"Tchéquie","Dem. Rep. Congo":"République démocratique du Congo","Denmark":"Danemark",
+"Dominican Rep.":"République dominicaine","Ecuador":"Équateur","Egypt":"Égypte","El Salvador":"Salvador",
+"Eq. Guinea":"Guinée équatoriale","Eritrea":"Érythrée","Estonia":"Estonie","Ethiopia":"Éthiopie",
+"Falkland Is.":"Malouines","Fiji":"Fidji","Finland":"Finlande","Fr. S. Antarctic Lands":"Terres australes françaises",
+"Gambia":"Gambie","Georgia":"Géorgie","Germany":"Allemagne","Greece":"Grèce","Greenland":"Groenland",
+"Guinea":"Guinée","Guinea-Bissau":"Guinée-Bissau","Haiti":"Haïti","Hungary":"Hongrie","Iceland":"Islande",
+"India":"Inde","Indonesia":"Indonésie","Iraq":"Irak","Ireland":"Irlande","Israel":"Israël","Italy":"Italie",
+"Jamaica":"Jamaïque","Japan":"Japon","Jordan":"Jordanie","Kuwait":"Koweït","Kyrgyzstan":"Kirghizistan",
+"Latvia":"Lettonie","Lebanon":"Liban","Libya":"Libye","Lithuania":"Lituanie","Macedonia":"Macédoine du Nord",
+"Malaysia":"Malaisie","Mauritania":"Mauritanie","Mexico":"Mexique","Moldova":"Moldavie","Mongolia":"Mongolie",
+"Montenegro":"Monténégro","Morocco":"Maroc","Myanmar":"Birmanie","N. Cyprus":"Chypre du Nord","Namibia":"Namibie",
+"Nepal":"Népal","Netherlands":"Pays-Bas","New Caledonia":"Nouvelle-Calédonie","New Zealand":"Nouvelle-Zélande",
+"North Korea":"Corée du Nord","Norway":"Norvège","Papua New Guinea":"Papouasie-Nouvelle-Guinée","Peru":"Pérou",
+"Poland":"Pologne","Puerto Rico":"Porto Rico","Romania":"Roumanie","Russia":"Russie","S. Sudan":"Soudan du Sud",
+"Saudi Arabia":"Arabie saoudite","Senegal":"Sénégal","Serbia":"Serbie","Slovakia":"Slovaquie","Slovenia":"Slovénie",
+"Solomon Is.":"Îles Salomon","Somalia":"Somalie","South Africa":"Afrique du Sud","South Korea":"Corée du Sud",
+"Spain":"Espagne","Sudan":"Soudan","Sweden":"Suède","Switzerland":"Suisse","Syria":"Syrie","Taiwan":"Taïwan",
+"Tajikistan":"Tadjikistan","Tanzania":"Tanzanie","Thailand":"Thaïlande","Timor-Leste":"Timor oriental",
+"Trinidad and Tobago":"Trinité-et-Tobago","Tunisia":"Tunisie","Turkey":"Turquie","Turkmenistan":"Turkménistan",
+"Uganda":"Ouganda","United Arab Emirates":"Émirats arabes unis","United Kingdom":"Royaume-Uni",
+"United States of America":"États-Unis","Uzbekistan":"Ouzbékistan","Vietnam":"Viêt Nam",
+"W. Sahara":"Sahara occidental","Yemen":"Yémen","Zambia":"Zambie","eSwatini":"Eswatini"
+};
+const frName=f=>FR[f.properties.name]||f.properties.name;
+
+/* ---------- état de l'interface ---------- */
+let focusF=null;      /* pays hors couverture cliqué sur le globe */
+let hoverF=null;
+let detailIdx=null;   /* ligne de données ouverte en fiche, sinon null */
+let locked=true;
+
+/* ---------- globe ---------- */
+const DEG=Math.PI/180;
+const canvas=document.getElementById('globe');
+const globeBox=document.getElementById('globeBox');
+const tip=document.getElementById('tip');
+let GLOBE_OK=false, ctx=null, land={type:'FeatureCollection',features:[]}, projection=null, path=null, circleGen=null;
+const sphere={type:'Sphere'};
+const ORBITS=[
+  {alt:1.17, inc: 38, node:  20, speed: 0.0115, phase:  0},
+  {alt:1.34, inc:-57, node: 125, speed:-0.0082, phase:130},
+  {alt:1.53, inc: 74, node: 235, speed: 0.0058, phase:250},
+];
+let baseScale=150, zoomK=1, dragging=false, moved=0, anim=null, box={width:300,height:300};
+let p0=null, r0=null, rot=null, globeVisible=true;
+
+async function loadWorld(){
+  try{
+    const r=await fetch('world.json',{cache:'force-cache'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const w=await r.json();
+    land=topojson.feature(w,w.objects.countries);
+  }catch(e){ console.warn('world.json',e.message); }
+}
+function size(){
+  if(!GLOBE_OK) return;
+  const b=canvas.parentElement.getBoundingClientRect();
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.max(220,b.width), h=Math.max(220,b.height);
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  box={width:w,height:h};
+  baseScale=Math.min(w,h)/2/1.62;
+  projection.translate([w/2,h/2]).scale(baseScale*zoomK);
+  draw(performance.now());   // un redimensionnement vide le canvas : on redessine tout de suite, même hors écran
+}
+function setZoom(k){ zoomK=Math.max(1,Math.min(6,k)); if(projection) projection.scale(baseScale*zoomK); }
+const liveIds=()=>CCY_BY[activeCcy].ids;
+function isLive(f){
+  if(focusF) return String(f.id)===String(focusF.id);
+  const id=String(f.id), p=id.padStart(3,'0'), l=liveIds();
+  return l.includes(id)||l.includes(p);
+}
+function ccyOf(f){
+  const id=String(f.id), p=id.padStart(3,'0');
+  return CURRENCIES.find(c=>c.ids.includes(id)||c.ids.includes(p))||null;
+}
+function target(){ return focusF?d3.geoCentroid(focusF):CCY_BY[activeCcy].view; }
+function project3(lonlat,alt){
+  const p=rot(lonlat);
+  const l=p[0]*DEG, f=p[1]*DEG;
+  const x=Math.cos(f)*Math.sin(l), y=Math.sin(f), z=Math.cos(f)*Math.cos(l);
+  const s=projection.scale()*alt, t=projection.translate();
+  return [t[0]+s*x, t[1]-s*y, z];
+}
+function orbitLonLat(o,thDeg){
+  const i=o.inc*DEG, t=thDeg*DEG;
+  return [o.node+Math.atan2(Math.cos(i)*Math.sin(t),Math.cos(t))/DEG, Math.asin(Math.sin(i)*Math.sin(t))/DEG];
+}
+function drawOrbits(t){
+  const tr=projection.translate(), R=projection.scale(), N=160;
+  for(const o of ORBITS){
+    const pts=[];
+    for(let i=0;i<=N;i++) pts.push(project3(orbitLonLat(o,i/N*360),o.alt));
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0,0,box.width,box.height); ctx.arc(tr[0],tr[1],R,0,Math.PI*2); ctx.clip('evenodd');
+    ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+    ctx.strokeStyle=C('--orbit-a'); ctx.lineWidth=0.8; ctx.stroke();
+    ctx.restore();
+    ctx.beginPath();
+    let open=false;
+    for(const p of pts){ if(p[2]>=0){ open?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); open=true; } else open=false; }
+    ctx.strokeStyle=C('--orbit-b'); ctx.lineWidth=0.9; ctx.stroke();
+    const th=o.phase+t*o.speed;
+    const s=project3(orbitLonLat(o,th),o.alt);
+    const behind=s[2]<0;
+    if(!(behind&&Math.hypot(s[0]-tr[0],s[1]-tr[1])<R)){
+      ctx.globalAlpha=behind?0.3:1;
+      ctx.beginPath(); ctx.arc(s[0],s[1],3.1,0,Math.PI*2); ctx.fillStyle=C('--ink'); ctx.fill();
+      const nx=project3(orbitLonLat(o,th+2),o.alt);
+      const ang=Math.atan2(nx[1]-s[1],nx[0]-s[0]);
+      ctx.save(); ctx.translate(s[0],s[1]); ctx.rotate(ang); ctx.fillStyle=C('--ink');
+      ctx.fillRect(-7.6,-0.9,4.2,1.8); ctx.fillRect(3.4,-0.9,4.2,1.8); ctx.restore();
+      ctx.globalAlpha=1;
+    }
+  }
+}
+function drawPulse(t){
+  if(!locked) return;
+  const v=target(), r=projection.rotate();
+  if(d3.geoDistance(v,[-r[0],-r[1]])>=Math.PI/2) return;
+  const halo=C('--pulse-halo'), line=C('--pulse-line');
+  for(let k=0;k<3;k++){
+    const ph=(((t/2100)+k/3)%1), a=1-ph;
+    ctx.beginPath(); path(circleGen.center(v).radius(1.5+ph*16)());
+    ctx.strokeStyle=`rgba(${halo},${(a*0.85).toFixed(3)})`; ctx.lineWidth=3.2; ctx.stroke();
+    ctx.strokeStyle=`rgba(${line},${(a*0.6).toFixed(3)})`; ctx.lineWidth=1.2; ctx.stroke();
+  }
+  ctx.beginPath(); path(circleGen.center(v).radius(1.2)());
+  ctx.fillStyle=C('--card'); ctx.fill();
+  ctx.strokeStyle=C('--ink'); ctx.lineWidth=1.1; ctx.stroke();
+}
+function draw(t){
+  rot=d3.geoRotation(projection.rotate());
+  ctx.clearRect(0,0,box.width,box.height);
+  drawOrbits(t);
+  ctx.beginPath(); path(sphere); ctx.fillStyle=C('--ocean'); ctx.fill();
+  const live=[];
+  ctx.beginPath();
+  for(const f of land.features){ if(isLive(f)){ live.push(f); continue; } path(f); }
+  ctx.fillStyle=C('--land'); ctx.fill();
+  ctx.strokeStyle=C('--land-border'); ctx.lineWidth=0.5; ctx.stroke();
+  if(hoverF&&!isLive(hoverF)&&!dragging){
+    ctx.beginPath(); path(hoverF); ctx.fillStyle=C('--land-hover'); ctx.fill();
+    ctx.strokeStyle=C('--card'); ctx.lineWidth=0.7; ctx.stroke();
+  }
+  if(live.length){
+    ctx.beginPath(); for(const f of live) path(f);
+    ctx.fillStyle=C('--land-live'); ctx.fill();
+    ctx.strokeStyle=C('--land-live'); ctx.lineWidth=1.1; ctx.stroke();
+  }
+  drawPulse(t);
+  ctx.beginPath(); path(sphere); ctx.strokeStyle=C('--line-strong'); ctx.lineWidth=1; ctx.stroke();
+}
+function rotateTo(lonlat){
+  if(!GLOBE_OK) return;
+  const start=projection.rotate(), end=[-lonlat[0],-lonlat[1],0];
+  let d=end[0]-start[0];
+  while(d>180) d-=360; while(d<-180) d+=360;
+  const t0=performance.now(), dur=900;
+  if(anim) cancelAnimationFrame(anim);
+  locked=false; setHint();
+  const ease=x=>x<0.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+  (function step(now){
+    const k=Math.min(1,(now-t0)/dur), e=ease(k);
+    projection.rotate([start[0]+d*e, start[1]+(end[1]-start[1])*e, 0]);
+    if(k<1){ anim=requestAnimationFrame(step); }
+    else { anim=null; locked=true; setHint(); }
+  })(t0);
+}
+let lastT=performance.now();
+function loop(now){
+  const dt=now-lastT; lastT=now;
+  if(globeVisible&&!document.hidden){
+    if(!locked&&!dragging&&!anim){ const r=projection.rotate(); projection.rotate([r[0]+dt*0.006,r[1],0]); }
+    draw(now);
+  }
+  requestAnimationFrame(loop);
+}
+function countryAt(x,y){
+  const t=projection.translate();
+  if(Math.hypot(x-t[0],y-t[1])>projection.scale()) return null;
+  const inv=projection.invert([x,y]);
+  if(!inv||isNaN(inv[0])||isNaN(inv[1])) return null;
+  for(const f of land.features) if(d3.geoContains(f,inv)) return f;
+  return null;
+}
+function showTip(f,x,y){
+  const c=ccyOf(f);
+  tip.innerHTML=escH(frName(f))+(c?`<span class="tip-ccy">${c.code}</span>`:'');
+  tip.style.left=x+'px'; tip.style.top=y+'px'; tip.hidden=false;
+}
+function initGlobe(){
+  if(!window.d3||!window.topojson||!canvas.getContext){ document.getElementById('hint').textContent='Globe indisponible (bibliothèque non chargée)'; return; }
+  ctx=canvas.getContext('2d');
+  projection=d3.geoOrthographic().rotate([98,-39,0]).precision(0.4);
+  path=d3.geoPath(projection,ctx);
+  circleGen=d3.geoCircle();
+  GLOBE_OK=true;
+  size();
+  canvas.addEventListener('pointerdown',e=>{
+    dragging=true; moved=0; canvas.setPointerCapture(e.pointerId);
+    p0=[e.offsetX,e.offsetY]; r0=projection.rotate();
+    if(anim){ cancelAnimationFrame(anim); anim=null; }
+    tip.hidden=true; hoverF=null; globeBox.classList.add('drag');
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(dragging){
+      const dx=e.offsetX-p0[0], dy=e.offsetY-p0[1];
+      moved=Math.max(moved,Math.hypot(dx,dy));
+      if(moved>3){ locked=false; setHint(); }
+      const k=0.45/zoomK;
+      projection.rotate([r0[0]+dx*k, Math.max(-85,Math.min(85,r0[1]-dy*k)), 0]);
+      return;
+    }
+    const f=countryAt(e.offsetX,e.offsetY);
+    hoverF=f; globeBox.classList.toggle('hit',!!f);
+    if(f) showTip(f,e.offsetX,e.offsetY); else tip.hidden=true;
+  });
+  ['pointerup','pointercancel'].forEach(ev=>canvas.addEventListener(ev,e=>{
+    if(!dragging) return;
+    dragging=false; globeBox.classList.remove('drag');
+    if(moved<=3){ const f=countryAt(e.offsetX,e.offsetY); if(f) pick(f); }
+  }));
+  canvas.addEventListener('pointerleave',()=>{ dragging=false; hoverF=null; tip.hidden=true; globeBox.classList.remove('drag','hit'); });
+  canvas.addEventListener('wheel',e=>{ e.preventDefault(); setZoom(zoomK*(1-e.deltaY*0.0015)); },{passive:false});
+  document.getElementById('zin').addEventListener('click',()=>setZoom(zoomK*1.35));
+  document.getElementById('zout').addEventListener('click',()=>setZoom(zoomK/1.35));
+  // Le Compass vit dans une iframe du hub, souvent masquée : on ne dessine que s'il est visible.
+  if('ResizeObserver' in window) new ResizeObserver(()=>size()).observe(globeBox); else window.addEventListener('resize',size);
+  if('IntersectionObserver' in window) new IntersectionObserver(en=>{ globeVisible=en.some(x=>x.isIntersecting); if(globeVisible) size(); }).observe(canvas);
+  loadWorld();
+  requestAnimationFrame(loop);
+}
+function pick(f){
+  const c=ccyOf(f);
+  if(c){ select(c.code); return; }
+  focusF=f; detailIdx=null; activeSub=null;
+  rotateTo(d3.geoCentroid(f));
+  renderGrid(); renderDetail();
+}
+function setHint(){
+  const el=document.getElementById('hint');
+  if(!GLOBE_OK) return;
+  if(!locked){ el.textContent='Rotation libre · molette pour zoomer · clique un pays pour le verrouiller'; return; }
+  const name=focusF?frName(focusF):CCY_BY[activeCcy].country;
+  el.textContent='Verrouillé sur '+name+' · fais glisser pour relancer la rotation';
+}
+
+/* ---------- rail, piliers, scène ---------- */
+function rankOf(code){ const d=CCY_DATA[code]; return (d&&d.notion&&d.notion.rank!=null)?d.notion.rank:99; }
+function scoreCls(s){ return s==null?'flat':(s>=55?'up':s<=45?'down':'flat'); }
+function biasCls(b){ return b==='haussier'?'up':b==='baissier'?'down':'flat'; }
+function buildRail(){
+  const rail=document.getElementById('rail');
+  rail.querySelectorAll('button').forEach(b=>b.remove());
+  [...CURRENCIES].sort((a,b)=>rankOf(a.code)-rankOf(b.code)).forEach(c=>{
+    const d=CCY_DATA[c.code], s=d?d.score:null, rk=rankOf(c.code);
+    const b=document.createElement('button'); b.type='button'; b.dataset.code=c.code;
+    b.setAttribute('aria-pressed',String(c.code===activeCcy&&!focusF));
+    b.innerHTML=`<span class="ccy">${c.code}</span><span class="ccy-col"><span class="ccy-name">${c.name}</span>${rk<99?`<span class="ccy-rank">#${rk} · force relative</span>`:''}</span><span class="ccy-score ${scoreCls(s)}">${s!=null?s:'—'}</span>`;
+    b.addEventListener('click',()=>select(c.code));
+    rail.appendChild(b);
+  });
+}
+function buildPillars(){
+  const el=document.getElementById('pillars'); el.innerHTML='';
+  const mk=(key,label)=>{
+    const b=document.createElement('button'); b.type='button'; b.dataset.key=key||'';
+    b.innerHTML=`<span>${label}</span><span class="score"></span>`;
+    b.addEventListener('click',()=>{
+      const wasFocus=!!focusF;
+      activeDim=key; activeSub=null; detailIdx=null; focusF=null;
+      if(wasFocus) rotateTo(CCY_BY[activeCcy].view);
+      renderGrid(); renderDetail(); setHint();
+    });
+    el.appendChild(b);
+  };
+  mk(null,"Vue d'ensemble");
+  PILLAR_LIST.forEach(([k,l])=>mk(k,l));
+}
+function syncPillars(){
+  const d=CCY_DATA[activeCcy];
+  [...document.getElementById('pillars').children].forEach(b=>{
+    const k=b.dataset.key||null, sc=b.querySelector('.score');
+    b.setAttribute('aria-pressed',String(k===activeDim&&!focusF));
+    if(!k){ sc.textContent=(!focusF&&d&&d.score!=null)?d.score+' / 100':'—'; sc.className='score'; return; }
+    const v=(d&&d.dims[k])?d.dims[k].score:null;
+    sc.textContent=(focusF||v==null)?'—':v+' / 100';
+    sc.className='score '+(focusF||v==null?'':scoreCls(v));
+  });
+}
+function renderStage(){
+  const c=CCY_BY[activeCcy], d=CCY_DATA[activeCcy], gs=document.getElementById('globeScore');
+  if(focusF){
+    document.getElementById('stageTitle').textContent=frName(focusF);
+    document.getElementById('stageSub').textContent='hors couverture';
+    gs.hidden=true; return;
+  }
+  document.getElementById('stageTitle').textContent=`${c.code} · ${c.name}`;
+  const r=RATE_EXPECTATIONS[c.code];
+  let sub='';
+  if(r){ const mi=meetingInfo(c.code,r); sub=`${r.bank} ${r.rate}`+(mi.txt&&mi.txt!=='—'?` · réunion ${mi.txt}`:''); }
+  else if(c.code==='CNH') sub='PBoC · change piloté';
+  document.getElementById('stageSub').textContent=sub;
+  if(d&&d.score!=null){ gs.hidden=false; gs.querySelector('b').textContent=d.score; gs.querySelector('b').style.color=d.score>=55?'var(--up)':d.score<=45?'var(--down)':'var(--ink)'; }
+  else gs.hidden=true;
+}
+function paintLive(){
+  const el=document.getElementById('liveBadge'); if(!el) return;
+  const on=Object.keys(NOTION_DIMS).length>0;
+  el.textContent=on?'direct':'figé';
+  el.className='livebadge '+(on?'on':'off');
+  el.title=on?('Notes du Macro Compass publiées'+(NOTION_UPDATED?' · MAJ '+NOTION_UPDATED:'')):'Notes du Macro Compass en attente (connexion au Sphinx Alliance)';
+}
+function renderGrid(){ buildRail(); syncPillars(); renderStage(); renderCal(); paintLive(); }
+function select(code){
+  if(!CCY_BY[code]) return;
+  activeCcy=code; focusF=null; detailIdx=null; activeSub=null;
+  rotateTo(CCY_BY[code].view);
+  renderGrid(); renderDetail(); setHint();
+}
+
+/* ---------- calendrier : prochaines publications (données à surveiller + décisions) ---------- */
+function renderCal(){
+  const card=document.getElementById('calCard'), row=document.getElementById('calRow'); if(!card||!row) return;
+  const t=todayKey(), lim=new Date(Date.now()+14*864e5).toISOString().slice(0,10);
+  const ev=[];
+  CURRENCIES.forEach(c=>{
+    const doc=MC_DOCS[c.code];
+    if(doc&&doc.pillars) Object.values(doc.pillars).forEach(p=>(p&&Array.isArray(p.aSurveiller)?p.aSurveiller:[]).forEach(w=>{
+      if(w&&w.date&&w.date>=t&&w.date<=lim) ev.push({date:w.date,ccy:c.code,what:String(w.evenement||w.texte||''),kind:'data'});
+    }));
+    if(RATE_EXPECTATIONS[c.code]){ const up=upcomingMeetings(c.code)[0]; if(up&&up<=lim) ev.push({date:up,ccy:c.code,what:'Décision '+RATE_EXPECTATIONS[c.code].bank,kind:'cb'}); }
+  });
+  const seen=new Set();
+  const list=ev.filter(e=>{ const k=e.ccy+'|'+e.date+'|'+e.what.toLowerCase().slice(0,40); if(seen.has(k)) return false; seen.add(k); return true; })
+    .sort((a,b)=>a.date.localeCompare(b.date)||a.ccy.localeCompare(b.ccy)).slice(0,16);
+  if(!list.length){ card.hidden=true; return; }
+  row.innerHTML=list.map(e=>{ const n=daysUntil(e.date); const rel=n===0?" · aujourd'hui":n===1?' · demain':'';
+    return `<div class="calitem${e.kind==='cb'?' cb':''}"><div class="calwhen"><span class="calccy">${e.ccy}</span>${fmtDay(e.date)}${rel}</div><div class="calwhat">${escH(e.what)}</div></div>`; }).join('');
+  document.getElementById('calSub').textContent='Prochaine : '+list[0].ccy+' · '+list[0].what.slice(0,60);
+  card.hidden=false;
+}
+
+/* ---------- lecture : vue d'ensemble, pilier, fiche ---------- */
+const IMP={'+':['up','▲ Soutien'],'-':['down','▼ Pèse'],'−':['down','▼ Pèse']};
+function impOf(v){ const t=String(v||'').trim(); if(IMP[t]) return IMP[t]; if(/^(soutien|positif|haussier)/i.test(t)) return IMP['+']; if(/^(p[eè]se|n[ée]gatif|baissier)/i.test(t)) return IMP['-']; return t?['flat','● Neutre']:['flat','']; }
+function md(t){ return mdToHtmlFx(String(t||'')); }
+function setRead(title,verdict,vcls,synth){
+  document.getElementById('readTitle').textContent=title;
+  const v=document.getElementById('verdict'); v.textContent=verdict; v.className='verdict '+vcls;
+  document.getElementById('synthese').innerHTML=synth;
+}
+function pillarDoc(code,dim){ const doc=MC_DOCS[code]||{}; const key={croissance:'croissance',inflation:'inflation',monetaire:'politiqueMonetaire',geo:'geopolitique'}[dim]; return (doc.pillars||{})[key]||{}; }
+function renderUncovered(){
+  const name=frName(focusF);
+  setRead(name,'pas de données','flat',"Le Compass ne suit que les neuf devises du rail. Clique l'une d'elles, ou un pays de sa zone, pour retrouver la lecture macro.");
+  document.getElementById('rows').innerHTML=CURRENCIES.map(c=>{ const r=RATE_EXPECTATIONS[c.code]; const d=CCY_DATA[c.code];
+    return `<button type="button" class="row" data-ccy="${c.code}"><span class="label"><span class="nm">${c.flag} ${c.name}</span><span class="meta">${r?r.bank+' '+escH(r.rate):'PBoC'}</span></span><span class="val">${c.code}</span><span class="right"><span class="imp ${scoreCls(d?d.score:null)}">${d&&d.score!=null?d.score+' / 100':'—'}</span></span></button>`; }).join('');
+  document.querySelectorAll('.rows .row[data-ccy]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.ccy)));
+  document.getElementById('foot').textContent='Zones couvertes par le Compass.';
+}
+function renderOverview(c,d,n,doc){
+  const score=d.score, bias=n.bias||doc.bias||'neutre';
+  setRead(`${c.code} · Vue d'ensemble`, n.biasLabel||doc.biasLabel||(bias==='haussier'?'Haussier':bias==='baissier'?'Baissier':'Neutre'), biasCls(bias),
+    (n.driver||doc.driver)?('<strong>Driver :</strong> '+md(n.driver||doc.driver)):'Notes en attente de la première mise à jour du Macro Compass.');
+  let h=`<div class="ovmeta"><span><b>${score!=null?score:'—'}</b>note / 100</span><span><b>${n.rank!=null?'#'+n.rank:'—'}</b>force relative</span><span><b>${escH(n.vsLastWeek||doc.vsLastWeek||'—')}</b>vs semaine passée</span></div>`;
+  if(doc.callout) h+=`<div class="dtext">${md(doc.callout)}</div>`;
+  const rc=doc.recap||null, faits=rc&&Array.isArray(rc.faits)?rc.faits:[];
+  if(rc&&(rc.resume||faits.length)){
+    h+=`<div class="sec-h">Récap du mois${rc.periode?' · '+escH(rc.periode):''}</div>`;
+    if(rc.resume) h+=`<div class="recap-resume">${md(rc.resume)}</div>`;
+    if(faits.length) h+='<ul class="recap-list">'+faits.map(f=>`<li><span class="recap-d">${fmtDay(f.date)}</span><span>${md(f.texte||'')}</span></li>`).join('')+'</ul>';
+  } else if(n.mois){
+    h+=`<div class="sec-h">Le mois</div><div class="recap-resume">${md(n.mois)}</div>`;
+  }
+  if(doc.catalyseur) h+=`<div class="recap-next"><b>À venir :</b> ${md(doc.catalyseur)}</div>`;
+  document.getElementById('rows').innerHTML=h;
+  document.getElementById('foot').innerHTML='Clique un pilier pour ses données détaillées.<br>Source : Notion (Biais &amp; Force Relative + Track Record Fondamental) + recherches'+(NOTION_UPDATED?' · MAJ '+escH(NOTION_UPDATED):'')+'.';
+}
+function renderPillar(c,d,doc){
+  const p=pillarDoc(c.code,activeDim), sc=d.dims&&d.dims[activeDim]?d.dims[activeDim].score:null;
+  setRead(`${PILLAR_LBL[activeDim]} — ${c.code}`, sc!=null?sc+' / 100':'—', scoreCls(sc), p.note?md(p.note):'Verdict en attente de la prochaine mise à jour du Macro Compass.');
+  const rows=Array.isArray(p.data)?p.data:[];
+  let h='';
+  if(rows.length){
+    h+=rows.map((r,i)=>{ const [cls,lbl]=impOf(r.impact); const per=[r.periode,r.date?fmtDay(r.date):''].filter(Boolean).join(' · ');
+      const ref=[r.consensus?'att. '+escH(r.consensus):'',r.precedent?'préc. '+escH(r.precedent):''].filter(Boolean).join(' · ');
+      return `<button type="button" class="row" data-i="${i}"><span class="label"><span class="nm">${escH(r.indicateur||r.nom||'')}</span><span class="meta">${escH(per)}${r.source&&/web/i.test(r.source)?' · web':''}</span></span><span class="val">${escH(r.actuel!=null&&r.actuel!==''?r.actuel:'—')}</span><span class="right">${lbl?`<span class="imp ${cls}">${lbl}</span>`:''}${ref?`<span>${ref}</span>`:''}</span></button>`; }).join('');
+  } else {
+    h+='<div class="empty-mini">Le tableau des données de ce pilier arrive avec la prochaine mise à jour du Macro Compass.</div>';
+  }
+  if(p.analyse) h+=`<div class="sec-h">Analyse</div><div class="dtext">${md(p.analyse)}</div>`;
+  const watch=Array.isArray(p.aSurveiller)?p.aSurveiller:[];
+  if(watch.length) h+='<div class="sec-h">À surveiller</div><ul class="watch">'+watch.map(w=>`<li><span class="recap-d">${fmtDay(w.date)}</span><span>${md(w.evenement||w.texte||'')}</span></li>`).join('')+'</ul>';
+  h+=pillarNotesHTML(c.code,activeDim);
+  document.getElementById('rows').innerHTML=h;
+  document.querySelectorAll('.rows .row[data-i]').forEach(b=>b.addEventListener('click',()=>{ detailIdx=+b.dataset.i; renderDetail(); }));
+  const srcs=Array.isArray(p.sources)&&p.sources.length?p.sources.map(escH).join(' · '):'';
+  document.getElementById('foot').innerHTML=(rows.length?'Clique une ligne pour sa fiche. Réel en gras, puis consensus et précédent ; la lecture dit si la donnée soutient la devise.<br>':'')+(srcs?'Sources : '+srcs+'.':'');
+}
+function renderRowDetail(c,d,doc){
+  const p=pillarDoc(c.code,activeDim), r=(Array.isArray(p.data)?p.data:[])[detailIdx];
+  if(!r){ detailIdx=null; renderPillar(c,d,doc); return; }
+  const [cls,lbl]=impOf(r.impact);
+  setRead(r.indicateur||r.nom||'Donnée', c.code, 'flat', r.commentaire?md(r.commentaire):'');
+  const per=[r.periode,r.date?fmtDay(r.date):''].filter(Boolean).join(' · ');
+  document.getElementById('rows').innerHTML=`
+    <div class="dhead"><span class="dval">${escH(r.actuel!=null&&r.actuel!==''?r.actuel:'—')}</span>${lbl?`<span class="imp ${cls}" style="font-size:12px;font-weight:600">${lbl}</span>`:''}<span class="dper">${escH(per)}</span></div>
+    <div class="dstats"><span><b>${escH(r.consensus||'—')}</b>consensus</span><span><b>${escH(r.precedent||'—')}</b>précédent</span><span><b>${escH(r.source||'Notion')}</b>source</span></div>`;
+  document.getElementById('foot').innerHTML=`Pilier ${PILLAR_LBL[activeDim]} · ${c.code}.`;
+  document.getElementById('backWrap').hidden=false;
+  document.getElementById('back').textContent='← Retour au pilier';
+}
+function renderDetail(){
+  document.getElementById('backWrap').hidden=true;
+  if(focusF){ renderUncovered(); syncPillars(); renderStage(); return; }
+  const c=CCY_BY[activeCcy], d=CCY_DATA[activeCcy]||{score:null,dims:{},notion:{bias:'neutre',rank:null}}, n=d.notion||{}, doc=MC_DOCS[activeCcy]||{};
+  if(!activeDim) renderOverview(c,d,n,doc);
+  else if(detailIdx!=null) renderRowDetail(c,d,doc);
+  else renderPillar(c,d,doc);
+  syncPillars(); renderStage();
+}
+document.getElementById('back').addEventListener('click',()=>{ detailIdx=null; renderDetail(); });
+
+/* ---------- sessions de trading ---------- */
+const SESSIONS=[
+  {name:'Sydney',   tz:'Australia/Sydney', open:8, close:17},
+  {name:'Tokyo',    tz:'Asia/Tokyo',       open:9, close:18},
+  {name:'Londres',  tz:'Europe/London',    open:8, close:17},
+  {name:'New York', tz:'America/New_York', open:8, close:17},
+];
+function tzOffset(tz,d){
+  const f=new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  const p=Object.fromEntries(f.formatToParts(d).map(x=>[x.type,x.value]));
+  const asUTC=Date.UTC(+p.year,+p.month-1,+p.day,(+p.hour)%24,+p.minute,+p.second);
+  return (asUTC-d.getTime())/3600000;
+}
+function windowUTC(s,d){ const off=tzOffset(s.tz,d); return {open:((s.open-off)%24+24)%24, close:((s.close-off)%24+24)%24, off}; }
+function inSess(w,h){ return w.open<w.close?(h>=w.open&&h<w.close):(h>=w.open||h<w.close); }
+function segments(w){ return w.open<w.close?[[w.open,w.close]]:[[w.open,24],[0,w.close]]; }
+function isWeekend(d){
+  const h=d.getUTCHours()+d.getUTCMinutes()/60, day=d.getUTCDay();
+  if(day===6) return true; if(day===5&&h>=22) return true; if(day===0&&h<21) return true;
+  return false;
+}
+function renderSessions(){
+  const d=new Date(), h=d.getUTCHours()+d.getUTCMinutes()/60, weekend=isWeekend(d);
+  const wins=SESSIONS.map(s=>({s,w:windowUTC(s,d)}));
+  const open=wins.filter(x=>!weekend&&inSess(x.w,h));
+  document.getElementById('sessBands').innerHTML=wins.map(({s,w})=>{
+    const on=!weekend&&inSess(w,h);
+    const segs=segments(w).map(([a,b])=>`<span class="bandseg ${on?'on':''}" style="left:${(a/24*100).toFixed(2)}%;width:${((b-a)/24*100).toFixed(2)}%"></span>`).join('');
+    return `<div class="track" role="img" aria-label="${s.name}"><span class="tname ${on?'on':''}">${s.name}</span><span class="rail-bg">${segs}</span><span class="thours">${String(Math.round(w.open)).padStart(2,'0')}–${String(Math.round(w.close)).padStart(2,'0')} UTC</span></div>`;
+  }).join('');
+  document.getElementById('nowBar').style.setProperty('--p',(h/24).toFixed(4));
+  const el=document.getElementById('sessNow');
+  if(weekend){ el.innerHTML=`<span class="pill off">Marché fermé</span><span class="sess-note">Réouverture dimanche 21 h UTC</span>`; }
+  else if(open.length){
+    const names=open.map(x=>x.s.name), overlap=names.includes('Londres')&&names.includes('New York');
+    el.innerHTML=names.map(n=>`<span class="pill on">${n}</span>`).join('')+`<span class="sess-note">${overlap?'Chevauchement Londres–New York, la fenêtre la plus liquide de la journée.':(names.length>1?'Deux sessions ouvertes en même temps.':'Une seule session ouverte.')}</span>`;
+  } else {
+    let best=null;
+    for(const {s,w} of wins){ const dt=(w.open-h+24)%24; if(!best||dt<best.dt) best={dt,name:s.name}; }
+    const hh=Math.floor(best.dt), mm=Math.round((best.dt-hh)*60);
+    el.innerHTML=`<span class="pill off">Entre deux sessions</span><span class="sess-note">${best.name} ouvre dans ${hh} h ${String(mm).padStart(2,'0')}.</span>`;
+  }
+}
+function tick(){
+  const d=new Date(), f=n=>String(n).padStart(2,'0');
+  document.getElementById('clock').textContent=`${f(d.getUTCHours())}:${f(d.getUTCMinutes())}:${f(d.getUTCSeconds())} UTC`;
+  renderSessions();
+}
+
+/* ---------- Fear & Greed (CNN, via le relais Cloudflare du site) ---------- */
+const FG={value:null,label:'Chargement…',prior:null,week:null,asof:'',url:'https://www.cnn.com/markets/fear-and-greed'};
+const FG_LABEL={'extreme fear':'Peur extrême','fear':'Peur','neutral':'Neutre','greed':'Avidité','extreme greed':'Avidité extrême'};
+function fgLabelOf(v,rating){
+  const r=String(rating||'').toLowerCase(); if(FG_LABEL[r]) return FG_LABEL[r];
+  if(v==null) return '—';
+  return v<25?'Peur extrême':v<45?'Peur':v<55?'Neutre':v<75?'Avidité':'Avidité extrême';
+}
+async function loadFearGreed(){
+  const badge=document.getElementById('fgBadge');
+  let j=null;
+  try{ const c=JSON.parse(localStorage.getItem('fxmt_fg')); if(c&&Date.now()-c.t<30*60e3) j=c.v; }catch(e){}
+  if(!j){
+    try{ const r=await fetch(NOTION_API+'/?source=feargreed',{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); j=await r.json(); try{ localStorage.setItem('fxmt_fg',JSON.stringify({t:Date.now(),v:j})); }catch(e){} }
+    catch(e){ j=null; }
+  }
+  const fg=j&&(j.fear_and_greed||j);
+  const val=fg?(fg.score!=null?fg.score:fg.value):null;
+  if(val==null||isNaN(+val)){
+    FG.value=null; FG.label='Indisponible'; FG.prior=null; FG.week=null;
+    FG.asof='Relais Cloudflare : route « feargreed » à ajouter';
+    if(badge){ badge.textContent='hors ligne'; }
+    renderFG(); return;
+  }
+  FG.value=Math.round(+val); FG.label=fgLabelOf(FG.value,fg.rating||fg.label);
+  FG.prior=fg.previous_close!=null?Math.round(+fg.previous_close):(fg.prior!=null?Math.round(+fg.prior):null);
+  FG.week=fg.previous_1_week!=null?Math.round(+fg.previous_1_week):null;
+  const ts=fg.timestamp||fg.asof;
+  FG.asof=ts&&!isNaN(Date.parse(ts))?new Date(ts).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'';
+  if(badge) badge.textContent='CNN';
+  renderFG();
+}
+function renderFG(){
+  const el=document.getElementById('fgGauge'); if(!el) return;
+  const v=FG.value, R=62, cx=78, cy=76;
+  const zones=[[0,25],[25,45],[45,55],[55,75],[75,100]];
+  const fills=[C('--fg1'),C('--fg2'),C('--fg3'),C('--fg2'),C('--fg1')];
+  const arc=(a,b,color)=>{
+    const a1=(-90+a/100*180)*Math.PI/180, a2=(-90+b/100*180)*Math.PI/180;
+    const p=(r,t)=>[cx+r*Math.sin(t), cy-r*Math.cos(t)];
+    const [x1,y1]=p(R,a1),[x2,y2]=p(R,a2),[x3,y3]=p(R-13,a2),[x4,y4]=p(R-13,a1);
+    return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L${x3.toFixed(1)} ${y3.toFixed(1)} A${R-13} ${R-13} 0 0 0 ${x4.toFixed(1)} ${y4.toFixed(1)} Z" fill="${color}"></path>`;
+  };
+  let needle='';
+  if(v!=null){ const t=(-90+(v/100)*180)*Math.PI/180; const nx=cx+(R-20)*Math.sin(t), ny=cy-(R-20)*Math.cos(t);
+    needle=`<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="${C('--ink')}" stroke-width="2.4" stroke-linecap="round"></line><circle cx="${cx}" cy="${cy}" r="4.5" fill="${C('--ink')}"></circle>`; }
+  el.innerHTML=`<svg viewBox="0 0 156 92" width="156" height="92" role="img" aria-label="Fear and Greed à ${v==null?'—':v}">${zones.map((z,i)=>arc(z[0],z[1],fills[i])).join('')}${needle}<text x="8" y="90" font-size="8" fill="${C('--ink-soft')}" font-family="monospace">0</text><text x="140" y="90" font-size="8" fill="${C('--ink-soft')}" font-family="monospace">100</text></svg>`;
+  document.getElementById('fgVal').textContent=v==null?'—':v;
+  document.getElementById('fgLabel').textContent=FG.label;
+  let meta=escH(FG.asof||'');
+  if(v!=null&&FG.prior!=null){ const dd=v-FG.prior; meta+=` · veille ${FG.prior} <span class="delta ${dd>0?'up':(dd<0?'down':'flat')}">${dd>0?'+':(dd<0?'−':'')}${Math.abs(dd)}</span>`; }
+  if(v!=null&&FG.week!=null) meta+=`<br>il y a une semaine ${FG.week}`;
+  document.getElementById('fgMeta').innerHTML=meta;
+  document.getElementById('fgLink').href=FG.url;
+}
+
+/* ---------- démarrage ---------- */
 function init(){
-  { const hub=localStorage.getItem('sphinx_theme'), own=localStorage.getItem('fxmt_theme');
-    setHubTheme((window.parent!==window&&hub) ? hub==='light' : own==='light'); }
+  { // Dans le hub : on suit son thème courant (même sans préférence enregistrée). Seul : la nôtre, clair par défaut.
+    let light=localStorage.getItem(THEME_KEY)!=='dark';
+    if(window.parent!==window){
+      try{ light=window.parent.document.body.classList.contains('light-mode'); }
+      catch(e){ const hub=localStorage.getItem('sphinx_theme'); if(hub) light=hub==='light'; }
+    }
+    applyTheme(light); }
   applyHubZoom();
-  tickClock();setInterval(tickClock,1000);
-  renderGrid();
+  buildPillars();
+  initGlobe();
+  renderGrid(); renderDetail(); setHint();
+  tick(); setInterval(tick,1000);
   renderRateExpectations();
   buildFromNotion();
-  loadReport();
-  fetchFxTicker(); setInterval(fetchFxTicker, 15*60*1000);
+  fetchFxTicker(); setInterval(fetchFxTicker,15*60*1000);
   initRateSync();
-  fetchPredictions(); setInterval(fetchPredictions, 10*60*1000);
-  fetchCOT();
-  setInterval(fetchCOT, 3 * 60 * 60 * 1000); // re-vérifie le rapport COT toutes les 3h
-  generateAiBrief(false); // charge le dernier brief en cache (sans appel API)
+  fetchPredictions(); setInterval(fetchPredictions,10*60*1000);
+  fetchCOT(); setInterval(fetchCOT,3*60*60*1000);
+  generateAiBrief(false);
+  loadFearGreed(); setInterval(loadFearGreed,30*60*1000);
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 </script>
+</body>
+</html>

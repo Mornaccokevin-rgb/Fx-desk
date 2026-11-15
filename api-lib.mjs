@@ -91,12 +91,40 @@ export function outlookFromApi(j) {
   })).filter(p => p.symbol && p.longPct != null && p.shortPct != null);
 }
 
-/* Page du widget public : la structure exacte n'est pas documentée, on lit
-   donc de façon tolérante. Pour chaque symbole trouvé dans un nœud texte, on
-   cherche dans le fragment qui suit « Short … % » / « Long … % », sinon deux
-   largeurs de barre (width: N%) dont la somme fait 100. */
+/* Page du widget public (widgets.myfxbook.com/widgets/outlook.html?type=1).
+   Elle pèse ~2,6 Mo, presque uniquement des blancs, et le détail de chaque
+   paire est rangé dans une infobulle. Une fois les balises retirées, chaque
+   paire donne une phrase régulière, relevée sur la vraie page :
+     « EURUSD Short 12% 3032.99 Lots 8048 Long 87% 20435.63 Lots 37469
+       32% of traders are currently trading EURUSD. "> 1.0955 1.1319 - »
+   (vendeurs, acheteurs, popularité, puis prix moyen des ventes et des achats). */
+export function parseOutlookText(text) {
+  const re = /([A-Z0-9]{3,12})\s+Short\s+(\d{1,3}(?:\.\d+)?)\s*%\s+([\d.,]+)\s+[Ll]ots\s+([\d.,]+)\s+Long\s+(\d{1,3}(?:\.\d+)?)\s*%\s+([\d.,]+)\s+[Ll]ots\s+([\d.,]+)(?:\s+(\d{1,3}(?:\.\d+)?)\s*%\s+of traders are currently trading\s+[A-Z0-9]+\.?)?(?:\s*">\s*([\d.,]+)\s+([\d.,]+))?/g;
+  const out = [], done = new Set();
+  let m;
+  while ((m = re.exec(String(text || '')))) {
+    const symbol = m[1], shortPct = num(m[2]), longPct = num(m[5]);
+    if (done.has(symbol) || shortPct == null || longPct == null || shortPct + longPct < 90 || shortPct + longPct > 101) continue;
+    done.add(symbol);
+    const price = v => (num(v) ? String(v) : null);   // gardé tel quel (« 1.4070 ») pour ne pas perdre les décimales à l'affichage
+    out.push({
+      symbol, longPct, shortPct,
+      longVol: num(m[6]), shortVol: num(m[3]), longPos: num(m[7]), shortPos: num(m[4]),
+      avgLong: price(m[10]), avgShort: price(m[9]), pop: m[8] != null ? num(m[8]) : null,
+    });
+  }
+  return out;
+}
 export function parseOutlookHtml(html) {
-  const src = String(html || '').slice(0, 1500000);
+  const compact = String(html || '').replace(/\s{2,}/g, ' ').slice(0, 3000000);   // d'abord les blancs : le reste travaille sur un texte court
+  const pairs = parseOutlookText(cleanText(compact));
+  return pairs.length ? pairs : parseOutlookLoose(compact);
+}
+/* Repli si la page change de forme : pour chaque symbole trouvé dans un nœud
+   texte, on cherche dans le fragment qui suit « Short … % » / « Long … % »,
+   sinon deux largeurs de barre (width: N%) dont la somme fait 100. */
+export function parseOutlookLoose(html) {
+  const src = String(html || '');
   const marks = [];
   const re = />\s*([A-Z]{3}\/?[A-Z]{3})\s*</g;
   let m;

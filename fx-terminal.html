@@ -560,7 +560,7 @@ button.cot-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .dmx-div::after{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--ink-soft)}
 .dmx-div i{position:absolute;top:0;height:100%;border-radius:2px}
 .dmx-list{display:flex;flex-direction:column;border-top:1px solid var(--line)}
-.dmx-row{display:grid;grid-template-columns:84px minmax(0,1fr) 190px 230px;gap:16px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
+.dmx-row{display:grid;grid-template-columns:84px minmax(0,1fr) 290px 210px;gap:16px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
 .dmx-sym{font-family:var(--font-num);font-weight:700;font-size:13px;letter-spacing:.03em}
 .dmx-vol{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line-height:1.55}
 .dmx-sig{font-size:11.5px;font-weight:600;line-height:1.35}
@@ -3047,10 +3047,11 @@ function dmxIndex(){
   });
   return DMX_CCY.map(c=>({code:c,v:acc[c].n?acc[c].sum/acc[c].n:null,n:acc[c].n})).filter(x=>x.v!=null).sort((a,b)=>b.v-a.v);
 }
+function dmxShare(p){ const t=p.longPct+p.shortPct; return t>0?p.longPct/t*100:50; }
 function dmxSignal(p){
-  const l=p.longPct;
-  if(l>=70) return ['down','▼ Foule acheteuse à '+Math.round(l)+' % — signal contrarian vendeur'];
-  if(l<=30) return ['up','▲ Foule vendeuse à '+Math.round(100-l)+' % — signal contrarian acheteur'];
+  const l=dmxShare(p);   // part des acheteurs, ramenée sur 100 (Myfxbook tronque ses pourcentages : 12 % + 87 %)
+  if(l>=70) return ['down','▼ Foule acheteuse à '+Math.round(p.longPct)+' % — signal contrarian vendeur'];
+  if(l<=30) return ['up','▲ Foule vendeuse à '+Math.round(p.shortPct)+' % — signal contrarian acheteur'];
   if(l>=60) return ['down','Foule plutôt acheteuse — léger biais vendeur'];
   if(l<=40) return ['up','Foule plutôt vendeuse — léger biais acheteur'];
   return ['flat','Foule partagée — pas de signal'];
@@ -3069,7 +3070,7 @@ function renderDmx(){
   if(meta) meta.textContent='Myfxbook · '+(DMX.source==='api'?'API':'widget')+' · '+new Date(DMX.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   const seg=(cur,fn,list)=>list.map(([k,l])=>'<button type="button" aria-pressed="'+(cur===k)+'" onclick="'+fn+'(\''+k+'\')">'+l+'</button>').join('');
   let html='<div class="tools"><div class="seg"><span class="seg-l">Paires</span>'+seg(dmxScope,'setDmxScope',[['mine','Mes 8 devises'],['majors','Majeures'],['all','Tout']])+'</div>'
-    +'<div class="seg"><span class="seg-l">Tri</span>'+seg(dmxSort,'setDmxSort',[['extreme','Plus extrêmes'],['alpha','A → Z']])+'</div>'
+    +'<div class="seg"><span class="seg-l">Tri</span>'+seg(dmxSort,'setDmxSort',[['extreme','Plus extrêmes']].concat(DMX.pairs.some(p=>p.pop!=null)?[['pop','Plus tradées']]:[],[['alpha','A → Z']]))+'</div>'
     +'<span class="key"><i style="background:var(--up)"></i>acheteurs</span><span class="key"><i style="background:var(--down)"></i>vendeurs</span></div>';
   const idx=dmxIndex();
   if(idx.length>=4){
@@ -3080,18 +3081,20 @@ function renderDmx(){
   }
   let list=DMX.pairs.filter(dmxInScope);
   if(!list.length) list=DMX.pairs.slice();
-  list.sort(dmxSort==='alpha'?((a,b)=>a.symbol.localeCompare(b.symbol)):((a,b)=>Math.abs(b.longPct-50)-Math.abs(a.longPct-50)));
+  list.sort(dmxSort==='alpha'?((a,b)=>a.symbol.localeCompare(b.symbol)):dmxSort==='pop'?((a,b)=>(b.pop||0)-(a.pop||0)):((a,b)=>Math.abs(dmxShare(b)-50)-Math.abs(dmxShare(a)-50)));
+  const fmtPx=v=>String(v).replace('.',',');
   const vol=p=>{
     const out=[];
     if(p.longVol!=null&&p.shortVol!=null) out.push('lots : '+fmtInt(p.longVol)+' achat · '+fmtInt(p.shortVol)+' vente');
     if(p.longPos!=null&&p.shortPos!=null) out.push('positions : '+fmtInt(p.longPos)+' · '+fmtInt(p.shortPos));
-    if(p.avgLong&&p.avgShort) out.push('prix moyen : '+p.avgLong+' · '+p.avgShort);
+    if(p.avgLong&&p.avgShort) out.push('prix moyen : '+fmtPx(p.avgLong)+' achat · '+fmtPx(p.avgShort)+' vente');
+    if(p.pop!=null) out.push(Math.round(p.pop)+' % des traders sur la paire');
     return out.join('<br>');
   };
   html+='<div class="sec-h">Par paire — '+list.length+' paire'+(list.length>1?'s':'')+'</div><div class="dmx-list">'+list.map(p=>{
     const [cls,txt]=dmxSignal(p);
     return '<div class="dmx-row"><span class="dmx-sym">'+escH(p.symbol.length===6?p.symbol.slice(0,3)+'/'+p.symbol.slice(3):p.symbol)+'</span>'
-      +'<span>'+lsBarHTML(p.longPct,'Acheteurs '+Math.round(p.longPct)+' %','Vendeurs '+Math.round(p.shortPct)+' %')+'</span>'
+      +'<span>'+lsBarHTML(dmxShare(p),'Acheteurs '+Math.round(p.longPct)+' %','Vendeurs '+Math.round(p.shortPct)+' %')+'</span>'
       +'<span class="dmx-vol">'+vol(p)+'</span><span class="dmx-sig '+cls+'">'+txt+'</span></div>';
   }).join('')+'</div>';
   if(DMX.pairs.some(p=>p.approx)) html+='<div class="foot" style="margin-top:10px">Sens acheteurs / vendeurs déduit de la position des barres du widget pour certaines paires : compare avec le widget d\'origine en cas de doute.</div>';

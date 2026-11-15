@@ -23,7 +23,16 @@ Salle de marché en trois colonnes, inspirée du « Terminal Macro FX » : **rai
 - **Prochaines publications** : calendrier à 14 jours construit depuis les « à surveiller » des piliers et les décisions des banques centrales.
 - **Sessions de trading** (Sydney, Tokyo, Londres, New York sur une frise 24 h UTC, heure d'été gérée par `Intl`) et **Fear & Greed** CNN (via `/api/feargreed`, route du Worker du site (`worker.js`) ; repli sur l’ancien relais Notion).
 - **Attentes de taux** : prochaine réunion calculée depuis le calendrier des banques centrales (`config/rateExpectations.meetings`, calendrier par défaut dans `fx-terminal.html`). Clic sur une banque → tableau de bord : taux actuel / attendu, mouvement attendu, courbe des taux implicites (actuelle vs il y a une semaine), points implicites par réunion, historique des attentes (`config/rateHistory`, alimenté à chaque collage, modification ou import).
-- Marchés de prédiction (Polymarket), COT (CFTC), tendances 30 j (Polygon), news feed (Finnhub) et brief IA : conservés, restylés.
+- **Panneau de contrôle** à droite (barre horizontale sur mobile) : une vue à la fois, adressable par une ancre (`fx-terminal.html#cot`, `#dmx`, `#articles`…), la dernière vue est mémorisée. Chaque vue ne charge ses données qu'à sa première ouverture.
+  - **Macro** : le globe et la lecture par pilier (ci-dessus).
+  - **Comparer** : planisphère (d3, `world.json`) — tous les pays en gris, les 8 économies tradées en couleur selon l'indicateur choisi (**inflation, chômage, taux d'emploi**), *plus la valeur est élevée, plus la couleur est claire* ; fiche par économie (valeur, période, rang, mini-courbe) et classement. Données dans `compare-data.json` : un **relevé daté**, pas un flux — chaque chiffre porte sa période, « ancien » s'affiche au-delà de 3 mois (6 pour un trimestriel).
+  - **Taux** : cartes des banques centrales + tableau comparé.
+  - **COT** : 52 semaines par devise depuis la CFTC (appel direct, cache 6 h) — net, variation hebdo, longs/courts, position dans la fourchette, courbe ; catégories *spéculateurs* (rapport legacy `6dca-aqww`) et *hedge funds / gérants d'actifs / dealers* (rapport TFF `gpe5-46if`, facultatif : s'il ne répond pas, seule la vue spéculateurs s'affiche).
+  - **DMX** (Dumb Money indeX) : positionnement des particuliers Myfxbook via `/api/dmx` — barres acheteurs/vendeurs par paire, signal contrarian, indice agrégé par devise. Si la lecture échoue, le widget Myfxbook d'origine s'affiche à la place.
+  - **Articles** : flux RSS fusionnés par `/api/news` (FXStreet, ING Think, CNBC, MarketWatch, Fed, BCE, BoE, Google News), complétés par Finnhub quand la clé est réglée ; filtres par **devise** et par **thème** (actions, banques centrales, données macro, taux & obligations, matières premières, géopolitique, crypto), recherche, pastille « nouveau ».
+  - **Live TV** : directs YouTube (Bloomberg, Yahoo Finance, CNBC, Reuters, France 24…), ajout de ses propres chaînes (mémorisées sur l'appareil), lecture coupée en quittant la vue.
+  - **Marchés** (Polymarket, tendances 30 j Polygon) et **Brief IA**.
+- **Routes du Worker** (`worker.js` + `api-lib.mjs`, aucune clé dans le dépôt) : `/api/feargreed`, `/api/news`, `/api/dmx` (`?debug=1` montre ce que le widget renvoie). L'API officielle Myfxbook est facultative : identifiants à poser soi-même comme **secrets du Worker** dans Cloudflare (`MYFXBOOK_EMAIL`, `MYFXBOOK_PASSWORD`), jamais dans un fichier.
 
 ### 🧠 Daily FX
 - Synthèses macro post-annonces (rédacteurs), avec tags gérables et historique par semaine.

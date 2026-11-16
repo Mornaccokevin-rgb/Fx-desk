@@ -625,6 +625,36 @@ a.news-item{text-decoration:none;color:inherit}
 button.dmx-sym{background:none;border:0;padding:0;color:inherit;cursor:pointer;text-align:left}
 button.dmx-sym:hover{text-decoration:underline}
 
+/* ---------- vue Calendrier ---------- */
+.cal-next{border:1px solid var(--ink);border-radius:3px;padding:9px 12px;margin-bottom:12px;font-size:13px;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:baseline}
+.cal-next b{font-family:var(--font-num)}
+.cal-day{font-family:var(--font-num);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);padding:14px 4px 6px;border-bottom:1px solid var(--line-strong);display:flex;justify-content:space-between}
+.cal-day.today{color:var(--ink);font-weight:700}
+.cal-ev{display:grid;grid-template-columns:52px 46px 74px minmax(0,1fr) 84px 84px 84px;gap:12px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);font-size:12.5px}
+.cal-ev.rng{grid-template-columns:52px 46px 74px minmax(0,1fr) 84px 84px 84px 110px}
+.cal-ev.h{font-family:var(--font-num);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:7px 4px}
+.cal-ev.past{opacity:.55}
+.cal-ev.nxt{background:var(--hover)}
+.cal-ev .tm{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.cal-ev .cc{font-family:var(--font-num);font-weight:700;font-size:11.5px}
+.cal-ev .ti{min-width:0;font-weight:500}
+.cal-ev .n{font-family:var(--font-num);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cal-ev .n.act{font-weight:700}
+.imp-g{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-num);font-size:10px;color:var(--ink-soft)}
+.imp-g i{display:inline-flex;gap:2px;align-items:flex-end}
+.imp-g i u{width:3px;background:var(--line-strong);border-radius:1px;text-decoration:none}
+.imp-g i u:nth-child(1){height:5px}.imp-g i u:nth-child(2){height:8px}.imp-g i u:nth-child(3){height:11px}
+.imp-g.i1 u:nth-child(1),.imp-g.i2 u:nth-child(-n+2),.imp-g.i3 u{background:var(--ink)}
+.imp-g.i3{color:var(--ink);font-weight:700}
+@media (max-width:860px){
+  .cal-ev.h{display:none}
+  .cal-ev,.cal-ev.rng{grid-template-columns:46px 40px minmax(0,1fr) auto;gap:4px 10px}
+  .cal-ev .ti{grid-column:1 / -1;grid-row:2}
+  .cal-ev .n{grid-row:3;text-align:left;font-size:11px}
+  .cal-ev .n[data-l]::before{content:attr(data-l) ' ';color:var(--ink-soft);font-weight:400}
+  .cal-ev .n:empty{display:none}
+}
+
 /* ---------- vue Comparer (planisphère) ---------- */
 .cmp-grid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;align-items:start}
 @media (max-width:980px){.cmp-grid{grid-template-columns:minmax(0,1fr)}}
@@ -786,6 +816,18 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
           <div class="tools" id="ch-tools"></div>
           <div class="ch-grid" id="ch-grid" data-n="1"></div>
           <div class="foot" style="margin-top:10px">Graphiques fournis par TradingView (cours du courtier indiqué dans le symbole, parfois différés). Dans chaque graphique, clique le nom du symbole pour en chercher un autre et « Indicateurs » pour ajouter moyennes mobiles, RSI, etc. ; ces réglages ne sont pas mémorisés d'une visite à l'autre.</div>
+        </section>
+      </section>
+
+      <section class="view" data-view="calendrier" id="view-calendrier" hidden>
+        <section class="card">
+          <div class="card-head">
+            <span class="card-title">Calendrier économique</span>
+            <span class="card-sub"><span class="badge-est" id="cal-meta">ForexFactory</span><button type="button" class="news-refresh-btn" id="cal-refresh" onclick="loadCal(true)" title="Recharger le calendrier" aria-label="Recharger">↻</button></span>
+          </div>
+          <div class="tools" id="cal-tools"></div>
+          <div id="cal-body"><div class="empty-mini">Chargement du calendrier…</div></div>
+          <div class="foot" id="cal-foot" style="margin-top:10px"></div>
         </section>
       </section>
 
@@ -2936,6 +2978,7 @@ function renderFG(){
 const VIEWS=[
   ['macro','Macro','Globe · 4 piliers'],
   ['graphiques','Graphiques','TradingView'],
+  ['calendrier','Calendrier','Publications · consensus'],
   ['compare','Comparer','Planisphère'],
   ['taux','Taux','Banques centrales'],
   ['cot','COT','Institutionnels'],
@@ -2950,6 +2993,7 @@ let activeView='macro'; const viewSeen={};
 const VIEW_HOOKS={
   macro:()=>{ if(typeof size==='function') size(); },
   graphiques:()=>{ chRender(); },
+  calendrier:first=>{ if(first) loadCal(false); else renderCal2(); },
   compare:first=>{ if(first) loadCompare(); else renderCompare(); },
   taux:()=>{ renderRateExpectations(); },
   cot:first=>{ if(first) loadCot(false); else renderCot(); },
@@ -3252,6 +3296,75 @@ function chMount(i){
     allow_symbol_change:true,calendar:false,hide_side_toolbar:CH.layout>1,withdateranges:true,save_image:false,support_host:'https://www.tradingview.com'});
   sc.onerror=()=>{ chBuilt[i]=''; box.innerHTML='<div class="empty-mini">Le graphique TradingView n\'a pas pu se charger (réseau ou bloqueur de publicité). <a class="srclink" style="display:inline" href="https://www.tradingview.com/chart/?symbol='+encodeURIComponent(sym)+'" target="_blank" rel="noopener">Ouvrir sur TradingView ↗</a></div>'; };
   wrap.appendChild(sc); box.appendChild(wrap);
+}
+
+/* ---------- Calendrier économique (ForexFactory via /api/calendar) ---------- */
+const CAL_CCY=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD','CNY'];
+const CAL_IMP={high:[3,'Fort'],medium:[2,'Moyen'],low:[1,'Faible'],holiday:[0,'Férié']};
+let CAL={events:[],at:0,err:''}, calWeek='thisweek', calCcy='MINE', calImp=2, calLoading=false, calTimer=null;
+async function loadCal(force){
+  if(calLoading) return;
+  const c=!force&&lsGet('fxmt_cal',30*60*1000);
+  if(c&&c.events&&c.events.length){ CAL=c; renderCal2(); return; }
+  calLoading=true; renderCal2();
+  try{
+    let j;
+    try{ j=await apiJSON('/api/calendar'); }
+    catch(e1){   // repli : le fichier de la semaine, lu directement
+      try{ const r=await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json'); const a=await r.json();
+        j={events:(Array.isArray(a)?a:[]).map(e=>({t:Math.floor(Date.parse(e.date)/1000),week:'thisweek',ccy:String(e.country||'').toUpperCase(),title:e.title,impact:String(e.impact||'').toLowerCase(),forecast:e.forecast||'',previous:e.previous||'',actual:e.actual||''})).filter(e=>isFinite(e.t)&&e.title)}; }
+      catch(e2){ throw e1; }
+    }
+    if(!j.events||!j.events.length) throw new Error('calendrier vide');
+    CAL={events:j.events,at:j.at||Date.now(),err:''}; lsSet('fxmt_cal',CAL);
+  }catch(e){ CAL={events:[],at:0,err:e.message||'indisponible'}; }
+  calLoading=false; renderCal2();
+  if(!calTimer) calTimer=setInterval(()=>{ if(activeView==='calendrier') renderCal2(); },60000);   // compte à rebours et « passé » à jour
+}
+function setCalWeek(k){ calWeek=k; renderCal2(); }
+function setCalCcy(k){ calCcy=k; renderCal2(); }
+function setCalImp(k){ calImp=+k; renderCal2(); }
+function calCountdown(t){
+  const s=t-Date.now()/1000; if(s<=0) return 'maintenant';
+  const d=Math.floor(s/86400), hh=Math.floor(s%86400/3600), m=Math.floor(s%3600/60);
+  return 'dans '+(d?d+' j ':'')+(hh?hh+' h ':'')+(d?'':m+' min');
+}
+function renderCal2(){
+  const body=document.getElementById('cal-body'), tools=document.getElementById('cal-tools'); if(!body||!tools) return;
+  const rb=document.getElementById('cal-refresh'); if(rb){ rb.classList.toggle('spinning',calLoading); rb.disabled=calLoading; }
+  const seg=(cur,fn,list)=>list.map(([k,l])=>'<button type="button" aria-pressed="'+(String(cur)===String(k))+'" onclick="'+fn+'(\''+k+'\')">'+l+'</button>').join('');
+  const hasNext=CAL.events.some(e=>e.week==='nextweek');
+  tools.innerHTML='<div class="seg"><span class="seg-l">Semaine</span>'+seg(calWeek,'setCalWeek',[['thisweek','Cette semaine']].concat(hasNext?[['nextweek','Semaine prochaine']]:[]))+'</div>'
+    +'<div class="seg"><span class="seg-l">Impact</span>'+seg(calImp,'setCalImp',[[3,'Fort'],[2,'Moyen et fort'],[0,'Tout']])+'</div>'
+    +'<div class="seg"><span class="seg-l">Devise</span>'+seg(calCcy,'setCalCcy',[['MINE','Mes 8 devises'],['ALL','Toutes']].concat(CAL_CCY.filter(c=>CAL.events.some(e=>e.ccy===c)).map(c=>[c,c])))+'</div>';
+  const foot=document.getElementById('cal-foot'), meta=document.getElementById('cal-meta');
+  if(calLoading&&!CAL.events.length){ body.innerHTML='<div class="empty-mini">Chargement du calendrier…</div>'; return; }
+  if(!CAL.events.length){ body.innerHTML='<div class="empty-mini">'+escH(/^Calendrier/.test(CAL.err)?CAL.err:'Calendrier indisponible ('+(CAL.err||'aucune donnée')+')')+'. <button type="button" class="tbtn" onclick="loadCal(true)">Réessayer</button></div>'; if(foot) foot.textContent=''; return; }
+  if(meta) meta.textContent='ForexFactory · '+new Date(CAL.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const now=Date.now()/1000, mine=CAL_CCY.slice(0,8);
+  if(calWeek==='nextweek'&&!hasNext) calWeek='thisweek';
+  const list=CAL.events.filter(e=>e.week===calWeek&&(calCcy==='ALL'||(calCcy==='MINE'?mine.includes(e.ccy):e.ccy===calCcy))&&((CAL_IMP[e.impact]||[1])[0]>=calImp||(calImp<3&&e.impact==='holiday')));
+  const rng=list.some(e=>e.low||e.high);
+  const next=list.find(e=>e.t>now&&e.impact!=='holiday');
+  let html=next?'<div class="cal-next"><span>Prochaine publication</span><b>'+escH(next.ccy)+'</b><span>'+escH(next.title)+'</span><b>'+calCountdown(next.t)+'</b></div>':'';
+  if(!list.length) html+='<div class="empty-mini">Aucune publication pour ces filtres.</div>';
+  else{
+    html+='<div class="cal-ev h'+(rng?' rng':'')+'"><span>Heure</span><span>Devise</span><span>Impact</span><span>Publication</span><span class="n">Publié</span><span class="n">Consensus</span><span class="n">Précédent</span>'+(rng?'<span class="n">Bas – haut</span>':'')+'</div>';
+    let day='';
+    const todayK=new Date().toDateString();
+    list.forEach(e=>{
+      const d=new Date(e.t*1000), k=d.toDateString();
+      if(k!==day){ day=k; html+='<div class="cal-day'+(k===todayK?' today':'')+'"><span>'+d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</span><span>'+(k===todayK?'aujourd\'hui':'')+'</span></div>'; }
+      const im=CAL_IMP[e.impact]||[1,'Faible'], allDay=e.impact==='holiday';
+      html+='<div class="cal-ev'+(rng?' rng':'')+(e.t<now?' past':'')+(e===next?' nxt':'')+'">'
+        +'<span class="tm">'+(allDay?'—':d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}))+'</span><span class="cc">'+escH(e.ccy)+'</span>'
+        +'<span class="imp-g i'+im[0]+'"><i><u></u><u></u><u></u></i>'+im[1]+'</span><span class="ti">'+escH(e.title)+'</span>'
+        +'<span class="n act" data-l="publié">'+escH(e.actual||'')+'</span><span class="n" data-l="consensus">'+escH(e.forecast||'')+'</span><span class="n" data-l="précédent">'+escH(e.previous||'')+'</span>'
+        +(rng?'<span class="n" data-l="bas – haut">'+((e.low||e.high)?escH((e.low||'?')+' – '+(e.high||'?')):'')+'</span>':'')+'</div>';
+    });
+  }
+  body.innerHTML=html;
+  if(foot) foot.textContent='Heures affichées dans le fuseau de ton appareil. Source : ForexFactory (consensus et précédent ; le chiffre publié n\'est affiché que si la source le fournit). Fourchette basse – haute des attentes : pas encore branchée.';
 }
 
 /* ---------- Comparer : planisphère des 8 économies ---------- */

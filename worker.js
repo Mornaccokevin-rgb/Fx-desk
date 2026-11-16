@@ -6,6 +6,7 @@
      /api/news       flux RSS financiers fusionnés
      /api/dmx        sentiment des particuliers (Myfxbook)
      /api/polymarket marchés de prédiction (Fed, économie, géopolitique)
+     /api/calendar   calendrier économique (ForexFactory)
    Aucune clé dans ce fichier. Pour l'API officielle Myfxbook (facultative),
    les identifiants se règlent dans Cloudflare en tant que secrets du Worker
    (MYFXBOOK_EMAIL, MYFXBOOK_PASSWORD), jamais dans le dépôt. */
@@ -177,6 +178,43 @@ async function polymarketHistory(market) {
   } catch (e) { return json({ error: 'Polymarket (historique) : ' + errText(e) }, 502, 'no-store'); }
 }
 
+/* Calendrier économique : fichiers hebdomadaires de ForexFactory (sans clé).
+   Ils demandent de ne pas les solliciter souvent : réponse gardée une heure. */
+const FF = { thisweek: 'https://nfs.faireconomy.media/ff_calendar_thisweek.json', nextweek: 'https://nfs.faireconomy.media/ff_calendar_nextweek.json' };
+async function calendar() {
+  const trail = [], events = [];
+  await Promise.all(Object.entries(FF).map(async ([week, url]) => {
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': UA, 'Accept': 'application/json' }, signal: AbortSignal.timeout(8000), cf: { cacheTtl: 3600, cacheEverything: true } });
+      if (!r.ok) { trail.push(week + ' : HTTP ' + r.status); return; }
+      const j = await r.json(); let n = 0;
+      (Array.isArray(j) ? j : []).forEach(e => {
+        const ms = Date.parse(e.date); if (!isFinite(ms) || !e.title) return;
+        events.push({ t: Math.floor(ms / 1000), week, ccy: String(e.country || '').toUpperCase(), title: String(e.title), impact: String(e.impact || '').toLowerCase(),
+          forecast: e.forecast || '', previous: e.previous || '', actual: e.actual || '' }); n++;
+      });
+      trail.push(week + ' : ' + n);
+    } catch (e) { trail.push(week + ' : ' + errText(e)); }
+  }));
+  if (!events.length) return json({ error: 'Calendrier indisponible (' + trail.join(' · ') + ')' }, 502, 'no-store');
+  events.sort((a, b) => a.t - b.t);
+  return json({ events, sources: trail, at: Date.now() }, 200, 'public, max-age=3600');
+}
+/* Diagnostic : ce que renvoie la page Econoday d'Interactive Brokers (fourchettes des attentes).
+   Sert à voir si ces chiffres sont lisibles avant d'écrire quoi que ce soit dessus. */
+async function econodayProbe(target) {
+  const allowed = /^https:\/\/([a-z0-9-]+\.)*(interactivebrokers\.co\.uk|interactivebrokers\.com|econoday\.com)\//i;
+  const page = target && allowed.test(target) ? target : 'https://www.interactivebrokers.co.uk/fr/education/econoday-events.php';
+  try {
+    const r = await fetch(page, { headers: { 'User-Agent': UA, 'Accept': 'text/html,*/*', 'Accept-Language': 'fr,en;q=0.8' }, signal: AbortSignal.timeout(9000) });
+    const html = await r.text();
+    const frames = [...html.matchAll(/<(?:iframe|script)\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi)].map(m => m[1]).filter(u => /econoday|calendar|iframe/i.test(u)).slice(0, 20);
+    const compact = html.replace(/\s{2,}/g, ' ');
+    const at = compact.search(/consensus|econoday/i);
+    return json({ page, status: r.status, length: html.length, frames, text: cleanText(compact).slice(0, 2500), around: at >= 0 ? compact.slice(Math.max(0, at - 300), at + 2200) : '' }, 200, 'no-store');
+  } catch (e) { return json({ page, error: errText(e) }, 502, 'no-store'); }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -187,6 +225,8 @@ export default {
       if (url.pathname === '/api/dmx') return url.searchParams.has('debug') ? dmx(env, true) : cached(request, ctx, () => dmx(env, false));
       if (url.pathname === '/api/polymarket') return url.searchParams.has('debug') ? polymarket(true) : cached(request, ctx, () => polymarket(false));
       if (url.pathname === '/api/polymarket/history') return cached(request, ctx, () => polymarketHistory(url.searchParams.get('market')));
+      if (url.pathname === '/api/calendar') return cached(request, ctx, calendar);
+      if (url.pathname === '/api/econoday') return econodayProbe(url.searchParams.get('url'));
       return json({ error: 'Route inconnue' }, 404, 'no-store');
     }
     return env.ASSETS.fetch(request);

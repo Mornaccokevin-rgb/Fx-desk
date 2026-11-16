@@ -32,8 +32,8 @@ Salle de marché en trois colonnes, inspirée du « Terminal Macro FX » : **rai
   - **DMX** (Dumb Money indeX) : positionnement des particuliers Myfxbook via `/api/dmx` — barres acheteurs/vendeurs par paire, signal contrarian, indice agrégé par devise. Si la lecture échoue, le widget Myfxbook d'origine s'affiche à la place.
   - **Articles** : flux RSS fusionnés par `/api/news` (FXStreet, ING Think, CNBC, MarketWatch, Fed, BCE, BoE, Google News), complétés par Finnhub quand la clé est réglée ; filtres par **devise** et par **thème** (actions, banques centrales, données macro, taux & obligations, matières premières, géopolitique, crypto), recherche, pastille « nouveau ».
   - **Live TV** : directs YouTube (Bloomberg, Yahoo Finance, CNBC, Reuters, France 24…), ajout de ses propres chaînes (mémorisées sur l'appareil), lecture coupée en quittant la vue.
-  - **Marchés** (Polymarket, tendances 30 j Polygon) et **Brief IA**.
-- **Routes du Worker** (`worker.js` + `api-lib.mjs`, aucune clé dans le dépôt) : `/api/feargreed`, `/api/news`, `/api/dmx` (`?debug=1` montre ce que le widget renvoie). L'API officielle Myfxbook est facultative : identifiants à poser soi-même comme **secrets du Worker** dans Cloudflare (`MYFXBOOK_EMAIL`, `MYFXBOOK_PASSWORD`), jamais dans un fichier.
+  - **Marchés** : prédictions Polymarket via `/api/polymarket` (Fed, économie, géopolitique ; `?debug=1` montre quelles rubriques répondent) et **Brief IA**.
+- **Routes du Worker** (`worker.js` + `api-lib.mjs`, aucune clé dans le dépôt) : `/api/feargreed`, `/api/news`, `/api/polymarket`, `/api/dmx` (`?debug=1` montre ce que le widget renvoie). L'API officielle Myfxbook est facultative : identifiants à poser soi-même comme **secrets du Worker** dans Cloudflare (`MYFXBOOK_EMAIL`, `MYFXBOOK_PASSWORD`), jamais dans un fichier.
 
 ### 🧠 Daily FX
 - Synthèses macro post-annonces (rédacteurs), avec tags gérables et historique par semaine.

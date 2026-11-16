@@ -5,6 +5,7 @@
      /api/feargreed  indice Fear & Greed de CNN
      /api/news       flux RSS financiers fusionnés
      /api/dmx        sentiment des particuliers (Myfxbook)
+     /api/polymarket marchés de prédiction (Fed, économie, géopolitique)
    Aucune clé dans ce fichier. Pour l'API officielle Myfxbook (facultative),
    les identifiants se règlent dans Cloudflare en tant que secrets du Worker
    (MYFXBOOK_EMAIL, MYFXBOOK_PASSWORD), jamais dans le dépôt. */
@@ -138,6 +139,44 @@ async function dmx(env, wantDebug) {
   return json(Object.assign({ error: errors.join(' · ') }, debug ? { debug } : {}), 502, 'no-store');
 }
 
+/* Polymarket : son API refuse les appels venant d'une page web, on la relaie.
+   On interroge plusieurs rubriques ; celles qui ne répondent pas sont ignorées. */
+const PM = 'https://gamma-api.polymarket.com';
+const PM_TAGS = ['fed-rates', 'fed', 'economy', 'economic-policy', 'geopolitics', 'world', 'trade-war', 'politics'];
+const pmMarket = m => ({ id: m.id, question: m.question, groupItemTitle: m.groupItemTitle, outcomes: m.outcomes, outcomePrices: m.outcomePrices,
+  clobTokenIds: m.clobTokenIds, oneDayPriceChange: m.oneDayPriceChange, volume24hr: m.volume24hr, closed: m.closed, active: m.active });
+const pmEvent = (e, tag) => ({ id: e.id, slug: e.slug, title: e.title, endDate: e.endDate, volume24hr: e.volume24hr, tag,
+  markets: (Array.isArray(e.markets) ? e.markets : []).slice(0, 30).map(pmMarket) });
+async function polymarket(wantDebug) {
+  const trail = [];
+  const get = async (label, path) => {
+    try {
+      const r = await fetch(PM + path, { headers: { 'User-Agent': UA, 'Accept': 'application/json' }, signal: AbortSignal.timeout(8000), cf: { cacheTtl: 300, cacheEverything: true } });
+      if (!r.ok) { trail.push(label + ' : HTTP ' + r.status); return []; }
+      const j = await r.json(); const a = Array.isArray(j) ? j : [];
+      trail.push(label + ' : ' + a.length); return a;
+    } catch (e) { trail.push(label + ' : ' + errText(e)); return []; }
+  };
+  const lists = await Promise.all(PM_TAGS.map(t => get(t, '/events?closed=false&active=true&limit=15&order=volume24hr&ascending=false&tag_slug=' + t)
+    .then(a => a.map(e => pmEvent(e, t)))));
+  const top = await get('markets', '/markets?closed=false&active=true&limit=60&order=volume24hr&ascending=false');
+  const seen = new Set(), events = [];
+  for (const list of lists) for (const e of list) { if (!e.id || seen.has(e.id)) continue; seen.add(e.id); events.push(e); }
+  const body = { events, markets: top.map(pmMarket), at: Date.now() };
+  if (wantDebug) body.debug = trail;
+  if (!events.length && !top.length) return json(Object.assign({ error: 'Polymarket ne répond pas (' + trail.join(' · ') + ')' }, wantDebug ? { debug: trail } : {}), 502, 'no-store');
+  return json(body, 200, 'public, max-age=300');
+}
+async function polymarketHistory(market) {
+  if (!/^\d{6,90}$/.test(market || '')) return json({ error: 'Identifiant de marché invalide' }, 400, 'no-store');
+  try {
+    const r = await fetch('https://clob.polymarket.com/prices-history?market=' + market + '&interval=max&fidelity=720', { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(8000), cf: { cacheTtl: 1800, cacheEverything: true } });
+    if (!r.ok) return json({ error: 'Polymarket (historique) : HTTP ' + r.status }, 502, 'no-store');
+    const j = await r.json();
+    return json({ history: Array.isArray(j.history) ? j.history : [] }, 200, 'public, max-age=1800');
+  } catch (e) { return json({ error: 'Polymarket (historique) : ' + errText(e) }, 502, 'no-store'); }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -146,6 +185,8 @@ export default {
       if (url.pathname === '/api/feargreed') return fearGreed();
       if (url.pathname === '/api/news') return cached(request, ctx, news);
       if (url.pathname === '/api/dmx') return url.searchParams.has('debug') ? dmx(env, true) : cached(request, ctx, () => dmx(env, false));
+      if (url.pathname === '/api/polymarket') return url.searchParams.has('debug') ? polymarket(true) : cached(request, ctx, () => polymarket(false));
+      if (url.pathname === '/api/polymarket/history') return cached(request, ctx, () => polymarketHistory(url.searchParams.get('market')));
       return json({ error: 'Route inconnue' }, 404, 'no-store');
     }
     return env.ASSETS.fetch(request);

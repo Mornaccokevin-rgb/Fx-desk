@@ -352,7 +352,8 @@ button.row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 
 /* ---------- marchés de prédiction / COT / tendances ---------- */
 .pm-grid,.cot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
-.pm-card,.cot-card{border:1px solid var(--line);border-radius:3px;padding:11px 12px;min-width:0}
+.pm-card,.cot-card{border:1px solid var(--line);border-radius:3px;padding:11px 12px;min-width:0;display:block;color:inherit;text-decoration:none}
+a.pm-card:hover{border-color:var(--line-strong)}
 .pm-q{font-size:12.5px;font-weight:500;line-height:1.4;margin-bottom:8px}
 .pm-out{margin-bottom:6px}
 .pm-out-top{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);margin-bottom:3px}
@@ -910,10 +911,6 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
           <div class="card-head"><span class="card-title">Marchés de prédiction</span><span class="badge-est">Polymarket</span></div>
           <div class="pm-grid" id="pm-grid"><div class="empty-mini">Chargement des marchés…</div></div>
         </section>
-      <section class="card">
-        <div class="card-head"><span class="card-title">Tendances — 30 jours</span><span class="badge-est">Polygon · différé</span></div>
-        <div class="tr-grid" id="tr-grid"></div>
-      </section>
 
       </section>
 
@@ -1398,7 +1395,7 @@ async function loadDataKeys(){
   dataKeysLoaded=true;
   try{ const d=await fxDb.collection('config').doc('dataKeys').get(); const v=d.exists?d.data():{}; CONFIG.FINNHUB_KEY=v.finnhub||''; POLY_KEY=v.polygon||''; }
   catch(e){ console.warn('dataKeys',e.message); dataKeysLoaded=false; return; }   // nouvel essai à la prochaine connexion
-  loadNews(); startNewsAutoRefresh(); initTrends();
+  loadNews(); startNewsAutoRefresh();
 }
 function initRateSync(){
   if(typeof firebase==='undefined') return;
@@ -1668,8 +1665,9 @@ async function fetchFedHistory(ev){
     let ids=[]; try{ ids=JSON.parse(mk.clobTokenIds||'[]'); }catch(e){}
     if(!key||!ids[0]) return;
     try{
-      const r=await fetch('https://clob.polymarket.com/prices-history?market='+encodeURIComponent(ids[0])+'&interval=max&fidelity=720');
-      const j=await r.json();
+      let j;
+      try{ j=await apiJSON('/api/polymarket/history?market='+encodeURIComponent(ids[0])); }
+      catch(e){ const r=await fetch('https://clob.polymarket.com/prices-history?market='+encodeURIComponent(ids[0])+'&interval=max&fidelity=720'); j=await r.json(); }
       (j.history||[]).forEach(h=>{ const d=new Date(h.t*1000).toISOString().slice(0,10); day[d]=day[d]||{hold:0,hike:0,cut:0,n:{}}; if(!day[d].n[mk.id]){ day[d].n[mk.id]=1; } day[d]['_'+mk.id]=[key,+h.p||0]; });
     }catch(e){}
   }));
@@ -1902,42 +1900,57 @@ function applyFedToRates(fed){
   if(fed.meeting) RATE_EXPECTATIONS.USD.meeting=fmtPmDate(fed.meeting);
   fedLive=true; renderRateExpectations(); if(typeof renderGrid==='function') renderGrid();
 }
+/* Lecture : le relais du site d'abord (/api/polymarket), l'API Polymarket en direct en second. */
+async function pmLoad(){
+  try{ return await apiJSON('/api/polymarket'); }
+  catch(e1){
+    let ev,mk;
+    try{ [ev,mk]=await Promise.all([
+      fetch(PM_GAMMA+'/events?closed=false&limit=5&order=volume24hr&ascending=false&tag_slug=fed-rates').then(r=>r.json()),
+      fetch(PM_GAMMA+'/markets?closed=false&active=true&limit=40&order=volume24hr&ascending=false').then(r=>r.json())
+    ]); }catch(e2){ throw e1; }   // on garde le motif donné par le relais, plus parlant que « Failed to fetch »
+    return {events:(Array.isArray(ev)?ev:[]).map(e=>Object.assign({tag:'fed-rates'},e)),markets:Array.isArray(mk)?mk:[]};
+  }
+}
+function pmIsFed(ev){ return ev&&Array.isArray(ev.markets)&&ev.markets.some(m=>/no change/i.test(m.groupItemTitle||''))&&/fed|fomc|federal reserve/i.test(ev.title||''); }
+function pmBinary(m){
+  let outs=[],prices=[];
+  try{outs=JSON.parse(m.outcomes||'[]');}catch(e){}
+  try{prices=JSON.parse(m.outcomePrices||'[]');}catch(e){}
+  const yes=parseFloat(prices[0]);
+  if(outs.length!==2||isNaN(yes)||m.closed===true) return null;
+  return {q:m.question||'',yes,chg:parseFloat(m.oneDayPriceChange),vol:+m.volume24hr||0};
+}
+const PM_ALLOW=/\b(fed|fomc|rate cut|rate hike|interest rates?|recession|inflation|cpi|jobs report|unemployment|gdp|ecb|boe|boj|bank of (england|japan|canada)|election|war|ceasefire|geopolit|tariffs?|trade deal|oil|iran|israel|ukraine|russia|china|taiwan|nuclear|shutdown|debt|treasury|dollar|euro|yen|bitcoin|gold)\b/i;
 async function fetchPredictions(){
   const grid=document.getElementById('pm-grid');
   try{
-    const [fedR,topR]=await Promise.all([
-      fetch(PM_GAMMA+'/events?closed=false&limit=1&order=volume24hr&ascending=false&tag_slug=fed-rates'),
-      fetch(PM_GAMMA+'/markets?closed=false&active=true&limit=40&order=volume24hr&ascending=false')
-    ]);
-    const fedEv=(await fedR.json())[0];
+    const data=await pmLoad();
+    const events=Array.isArray(data.events)?data.events:[];
+    const cards=[], seen=new Set();
+    const fedEv=events.filter(pmIsFed).sort((a,b)=>String(a.endDate||'9').localeCompare(String(b.endDate||'9')))[0];
     const fed=parseFedEvent(fedEv);
-    const cards=[];
-    if(fed){
+    if(fed&&(fed.hold+fed.hike+fed.cut)>0){
       applyFedToRates(fed);
       fetchFedHistory(fedEv);
-      cards.push(`<div class="pm-card"><div class="pm-q">🏦 ${fed.title}</div>${pmOutRow('Statu quo',fed.hold,'var(--amber)')}${pmOutRow('Baisse',fed.cut,'var(--buy)')}${pmOutRow('Hausse',fed.hike,'var(--sell)')}<div class="pm-foot"><span>FOMC</span><span>${fmtPmDate(fed.meeting)}</span></div></div>`);
+      cards.push(`<a class="pm-card" href="https://polymarket.com/event/${encodeURIComponent(fedEv.slug||'')}" target="_blank" rel="noopener"><div class="pm-q">🏦 ${escH(fed.title)}</div>${pmOutRow('Statu quo',fed.hold,'var(--rx-hold)')}${pmOutRow('Baisse',fed.cut,'var(--rx-cut)')}${pmOutRow('Hausse',fed.hike,'var(--rx-hike)')}<div class="pm-foot"><span>FOMC</span><span>${fmtPmDate(fed.meeting)}</span></div></a>`);
     }
-    const mk=await topR.json();
-    const ALLOW=/\b(fed|rate cut|rate hike|recession|inflation|cpi|jobs report|gdp|ecb|election|war|ceasefire|geopolit|tariff|oil|iran|ukraine|russia|china|taiwan|nuclear|shutdown|debt)\b/i;
-    const seen=new Set();
-    for(const m of (Array.isArray(mk)?mk:[])){
-      if(cards.length>=6) break;
-      let outs=[],prices=[];
-      try{outs=JSON.parse(m.outcomes||'[]');}catch(e){}
-      try{prices=JSON.parse(m.outcomePrices||'[]');}catch(e){}
-      if(outs.length!==2) continue;
-      const q=m.question||''; if(!ALLOW.test(q)||seen.has(q)) continue;
-      const yes=parseFloat(prices[0]); if(isNaN(yes)) continue;
-      seen.add(q);
-      const pct=Math.round(yes*100);
-      const chg=parseFloat(m.oneDayPriceChange);
-      const chTxt=isNaN(chg)||chg===0?'':(chg>0?'▲ +':'▼ ')+(chg*100).toFixed(1)+' pts';
-      const chCol=chg>=0?'var(--buy)':'var(--sell)';
-      cards.push(`<div class="pm-card"><div class="pm-q">${q}</div>${pmOutRow('Probabilité "Oui"',pct,'var(--accent)')}<div class="pm-foot"><span>Polymarket</span><span style="color:${chCol}">${chTxt?'24h '+chTxt:''}</span></div></div>`);
-    }
-    if(grid) grid.innerHTML = cards.length ? cards.join('') : '<div class="empty-mini">Aucun marché à afficher</div>';
+    // candidats : marchés oui/non des rubriques économie / géopolitique, puis les plus échangés du site s'ils parlent de macro
+    const cand=[];
+    events.forEach(ev=>{ if(pmIsFed(ev)) return;   // les réunions suivantes de la Fed ont leur place dans la vue Taux
+      const ms=(ev.markets||[]).map(pmBinary).filter(Boolean).filter(x=>x.yes>0.03&&x.yes<0.97).sort((a,b)=>b.vol-a.vol).slice(0,1);
+      ms.forEach(x=>cand.push(Object.assign({slug:ev.slug,evTitle:ev.title,tag:ev.tag,macro:ev.tag!=='politics'||PM_ALLOW.test(x.q+' '+(ev.title||''))},x))); });
+    (Array.isArray(data.markets)?data.markets:[]).forEach(m=>{ const x=pmBinary(m); if(x&&PM_ALLOW.test(x.q)) cand.push(Object.assign({slug:'',macro:true},x)); });
+    cand.filter(c=>c.macro).sort((a,b)=>b.vol-a.vol).forEach(c=>{
+      if(cards.length>=12||!c.q||seen.has(c.q)) return; seen.add(c.q);
+      const pct=Math.round(c.yes*100);
+      const chTxt=isNaN(c.chg)||c.chg===0?'':(c.chg>0?'▲ +':'▼ ')+(c.chg*100).toFixed(1).replace('.',',')+' pts';
+      const tag=c.slug?'a':'div', href=c.slug?` href="https://polymarket.com/event/${encodeURIComponent(c.slug)}" target="_blank" rel="noopener"`:'';
+      cards.push(`<${tag} class="pm-card"${href}><div class="pm-q">${escH(c.q)}</div>${pmOutRow('Probabilité « oui »',pct,'var(--ink)')}<div class="pm-foot"><span>Polymarket</span><span style="color:var(--${c.chg>=0?'up':'down'})">${chTxt?'24 h '+chTxt:''}</span></div></${tag}>`);
+    });
+    if(grid) grid.innerHTML = cards.length ? cards.join('') : '<div class="empty-mini">Polymarket a répondu, mais aucun marché macro ou géopolitique n\'est ressorti.</div>';
   }catch(e){
-    if(grid) grid.innerHTML='<div class="empty-mini">Marchés de prédiction indisponibles pour le moment</div>';
+    if(grid) grid.innerHTML='<div class="empty-mini">Marchés de prédiction indisponibles ('+escH(e.message||'erreur')+'). <button type="button" class="tbtn" onclick="fetchPredictions()">Réessayer</button></div>';
     console.warn('Polymarket',e.message);
   }
 }
@@ -2249,59 +2262,7 @@ async function fetchFxTicker(){
   }catch(e){ el.textContent='Cours FX momentanément indisponibles'; }
 }
 
-/* ══ TENDANCES FX — sparklines via Polygon.io ══
-   Plan gratuit = 5 requêtes/min + données différées. On limite le débit
-   et on met en cache 20h (les données sont journalières). */
-// Clé Polygon : jamais dans le code — chargée depuis Firestore (config/dataKeys).
-let POLY_KEY='';
-const FX_TRENDS=[['EUR/USD','EURUSD',4],['GBP/USD','GBPUSD',4],['USD/JPY','USDJPY',2],['USD/CHF','USDCHF',4],['AUD/USD','AUDUSD',4],['USD/CAD','USDCAD',4],['NZD/USD','NZDUSD',4],['XAU/USD','XAUUSD',1]];
-let polyQ=[], polyBusy=false, polyCount=0, polyMinStart=Date.now();
-function polyThrottle(fn){ polyQ.push(fn); polyPump(); }
-function polyPump(){
-  if(polyBusy||!polyQ.length) return;
-  const now=Date.now();
-  if(now-polyMinStart>=60000){ polyMinStart=now; polyCount=0; }
-  if(polyCount>=5){ setTimeout(polyPump, 60000-(now-polyMinStart)+250); return; }
-  polyBusy=true; polyCount++;
-  const fn=polyQ.shift();
-  Promise.resolve().then(fn).catch(()=>{}).finally(()=>{ polyBusy=false; setTimeout(polyPump, 350); });
-}
-function trendCacheGet(sym){ try{const c=JSON.parse(localStorage.getItem('poly_tr_'+sym)); if(c && Date.now()-c.t < 20*3600*1000) return c.v;}catch(e){} return null; }
-function trendCacheSet(sym,v){ try{localStorage.setItem('poly_tr_'+sym, JSON.stringify({t:Date.now(),v})); }catch(e){} }
-async function fetchTrend(sym){
-  if(!POLY_KEY) return [];
-  const to=new Date().toISOString().slice(0,10);
-  const from=new Date(Date.now()-45*864e5).toISOString().slice(0,10);
-  const url='https://api.polygon.io/v2/aggs/ticker/C:'+sym+'/range/1/day/'+from+'/'+to+'?adjusted=true&sort=asc&limit=60&apiKey='+POLY_KEY;
-  const r=await fetch(url); const j=await r.json();
-  return (j.results||[]).map(x=>x.c).filter(x=>typeof x==='number');
-}
-function sparkPath(vals,w,h){
-  const min=Math.min.apply(null,vals), max=Math.max.apply(null,vals), rng=(max-min)||1;
-  return vals.map((v,i)=>{ const x=(i/(vals.length-1))*w; const y=h-((v-min)/rng)*h; return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1); }).join(' ');
-}
-function renderTrendCard(pair,sym,dp,closes){
-  const card=document.getElementById('tr-'+sym); if(!card) return;
-  if(!closes||closes.length<2){ card.innerHTML='<div class="tr-top"><b>'+pair+'</b><span class="tr-val">—</span></div><div style="height:36px"></div><div class="tr-foot"><span>indispo</span><span>30 j</span></div>'; return; }
-  const first=closes[0], last=closes[closes.length-1];
-  const chg=first?((last-first)/first*100):0;
-  const up=last>=first, col=up?'var(--buy)':'var(--sell)';
-  card.innerHTML='<div class="tr-top"><b>'+pair+'</b><span class="tr-val">'+last.toFixed(dp)+'</span></div>'
-    +'<svg class="tr-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><path d="'+sparkPath(closes,120,36)+'" fill="none" stroke="'+col+'" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>'
-    +'<div class="tr-foot"><span style="color:'+col+'">'+(up?'▲ +':'▼ ')+chg.toFixed(2)+'%</span><span>30 j</span></div>';
-}
-function initTrends(){
-  const grid=document.getElementById('tr-grid'); if(!grid) return;
-  grid.innerHTML=FX_TRENDS.map(([p,s])=>'<div class="tr-card" id="tr-'+s+'"><div class="tr-top"><b>'+p+'</b><span class="tr-val">…</span></div><div style="height:36px"></div><div class="tr-foot"><span>chargement…</span><span>30 j</span></div></div>').join('');
-  FX_TRENDS.forEach(([p,s,dp])=>{
-    const cached=trendCacheGet(s);
-    if(cached && cached.length){ renderTrendCard(p,s,dp,cached); return; }
-    polyThrottle(async()=>{
-      try{ const c=await fetchTrend(s); if(c.length){ trendCacheSet(s,c); renderTrendCard(p,s,dp,c); } else renderTrendCard(p,s,dp,null); }
-      catch(e){ renderTrendCard(p,s,dp,null); }
-    });
-  });
-}
+let POLY_KEY='';   // clé Polygon encore lue dans config/dataKeys, plus utilisée ici depuis le retrait des tendances 30 j
 
 /* ══ ANALYSE IA DU MARCHÉ (Gemini) ══
    L'IA analyse les VRAIS scores du terminal + l'actu (recherche web).
@@ -2981,7 +2942,7 @@ const VIEWS=[
   ['dmx','DMX','Particuliers · contrarian'],
   ['articles','Articles','Flux filtrable'],
   ['live','Live TV','Chaînes financières'],
-  ['marches','Marchés','Prédictions · tendances'],
+  ['marches','Marchés','Prédictions Polymarket'],
   ['ia','Brief IA','Synthèse du jour'],
 ];
 const VIEW_KEY='fxmt_view';

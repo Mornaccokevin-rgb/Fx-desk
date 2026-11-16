@@ -3316,7 +3316,7 @@ async function loadCal(force){
       catch(e2){ throw e1; }
     }
     if(!j.events||!j.events.length) throw new Error('calendrier vide');
-    CAL={events:j.events,at:j.at||Date.now(),err:''}; lsSet('fxmt_cal',CAL);
+    CAL={events:j.events,at:j.at||Date.now(),err:'',source:j.source||'ForexFactory'}; lsSet('fxmt_cal',CAL);
   }catch(e){ CAL={events:[],at:0,err:e.message||'indisponible'}; }
   calLoading=false; renderCal2();
   if(!calTimer) calTimer=setInterval(()=>{ if(activeView==='calendrier') renderCal2(); },60000);   // compte à rebours et « passé » à jour
@@ -3340,7 +3340,7 @@ function renderCal2(){
   const foot=document.getElementById('cal-foot'), meta=document.getElementById('cal-meta');
   if(calLoading&&!CAL.events.length){ body.innerHTML='<div class="empty-mini">Chargement du calendrier…</div>'; return; }
   if(!CAL.events.length){ body.innerHTML='<div class="empty-mini">'+escH(/^Calendrier/.test(CAL.err)?CAL.err:'Calendrier indisponible ('+(CAL.err||'aucune donnée')+')')+'. <button type="button" class="tbtn" onclick="loadCal(true)">Réessayer</button></div>'; if(foot) foot.textContent=''; return; }
-  if(meta) meta.textContent='ForexFactory · '+new Date(CAL.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  if(meta) meta.textContent=(CAL.source||'ForexFactory')+' · '+new Date(CAL.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   const now=Date.now()/1000, mine=CAL_CCY.slice(0,8);
   if(calWeek==='nextweek'&&!hasNext) calWeek='thisweek';
   const list=CAL.events.filter(e=>e.week===calWeek&&(calCcy==='ALL'||(calCcy==='MINE'?mine.includes(e.ccy):e.ccy===calCcy))&&((CAL_IMP[e.impact]||[1])[0]>=calImp||(calImp<3&&e.impact==='holiday')));
@@ -3364,7 +3364,7 @@ function renderCal2(){
     });
   }
   body.innerHTML=html;
-  if(foot) foot.textContent='Heures affichées dans le fuseau de ton appareil. Source : ForexFactory (consensus et précédent ; le chiffre publié n\'est affiché que si la source le fournit). Fourchette basse – haute des attentes : pas encore branchée.';
+  if(foot) foot.textContent='Heures affichées dans le fuseau de ton appareil. Source : '+(CAL.source||'ForexFactory')+' (consensus et précédent ; le chiffre publié n\'est affiché que si la source le fournit). Fourchette basse – haute des attentes : pas encore branchée.';
 }
 
 /* ---------- Comparer : planisphère des 8 économies ---------- */

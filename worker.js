@@ -181,13 +181,38 @@ async function polymarketHistory(market) {
 /* Calendrier économique : fichiers hebdomadaires de ForexFactory (sans clé).
    Ils demandent de ne pas les solliciter souvent : réponse gardée une heure. */
 const FF = { thisweek: 'https://nfs.faireconomy.media/ff_calendar_thisweek.json', nextweek: 'https://nfs.faireconomy.media/ff_calendar_nextweek.json' };
-async function calendar() {
-  const trail = [], events = [];
+/* Seconde source si ForexFactory ne répond pas : le calendrier public de TradingView
+   (non documenté ; il donne aussi le chiffre publié). */
+const TV_CAL_COUNTRIES = { US: 'USD', EU: 'EUR', DE: 'EUR', FR: 'EUR', IT: 'EUR', ES: 'EUR', GB: 'GBP', JP: 'JPY', CH: 'CHF', CA: 'CAD', AU: 'AUD', NZ: 'NZD', CN: 'CNY' };
+const calFmt = (v, unit, scale) => (v == null || v === '' ? '' : String(v) + (scale || '') + (unit || ''));
+async function calendarTradingView(trail) {
+  const now = new Date(), day = now.getUTCDay();
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - ((day + 6) % 7)));
+  const nextMonday = monday.getTime() + 7 * 864e5, end = new Date(monday.getTime() + 14 * 864e5);
+  const url = 'https://economic-calendar.tradingview.com/events?from=' + monday.toISOString() + '&to=' + end.toISOString() + '&countries=' + Object.keys(TV_CAL_COUNTRIES).join(',');
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': UA, 'Origin': 'https://www.tradingview.com', 'Referer': 'https://www.tradingview.com/', 'Accept': 'application/json' }, signal: AbortSignal.timeout(9000), cf: { cacheTtl: 900, cacheEverything: true } });
+    if (!r.ok) { trail.push('tradingview : HTTP ' + r.status); return []; }
+    const j = await r.json(); const list = Array.isArray(j && j.result) ? j.result : [];
+    const out = [];
+    list.forEach(e => {
+      const ms = Date.parse(e.date); if (!isFinite(ms) || !e.title) return;
+      out.push({ t: Math.floor(ms / 1000), week: ms < nextMonday ? 'thisweek' : 'nextweek', ccy: TV_CAL_COUNTRIES[e.country] || String(e.currency || e.country || ''), title: String(e.title),
+        impact: e.importance >= 1 ? 'high' : e.importance === 0 ? 'medium' : 'low',
+        forecast: calFmt(e.forecast, e.unit, e.scale), previous: calFmt(e.previous, e.unit, e.scale), actual: calFmt(e.actual, e.unit, e.scale) });
+    });
+    trail.push('tradingview : ' + out.length); return out;
+  } catch (e) { trail.push('tradingview : ' + errText(e)); return []; }
+}
+async function calendar(wantDebug) {
+  const trail = []; let events = [], source = 'ForexFactory';
   await Promise.all(Object.entries(FF).map(async ([week, url]) => {
     try {
       const r = await fetch(url, { headers: { 'User-Agent': UA, 'Accept': 'application/json' }, signal: AbortSignal.timeout(8000), cf: { cacheTtl: 3600, cacheEverything: true } });
       if (!r.ok) { trail.push(week + ' : HTTP ' + r.status); return; }
-      const j = await r.json(); let n = 0;
+      const text = await r.text(); let j;
+      try { j = JSON.parse(text); } catch (e) { trail.push(week + ' : réponse non JSON (' + text.slice(0, 80).replace(/\s+/g, ' ') + ')'); return; }
+      let n = 0;
       (Array.isArray(j) ? j : []).forEach(e => {
         const ms = Date.parse(e.date); if (!isFinite(ms) || !e.title) return;
         events.push({ t: Math.floor(ms / 1000), week, ccy: String(e.country || '').toUpperCase(), title: String(e.title), impact: String(e.impact || '').toLowerCase(),
@@ -196,9 +221,13 @@ async function calendar() {
       trail.push(week + ' : ' + n);
     } catch (e) { trail.push(week + ' : ' + errText(e)); }
   }));
+  if (!events.some(e => e.week === 'thisweek')) {
+    const tv = await calendarTradingView(trail);
+    if (tv.length) { events = tv; source = 'TradingView'; }
+  }
   if (!events.length) return json({ error: 'Calendrier indisponible (' + trail.join(' · ') + ')' }, 502, 'no-store');
   events.sort((a, b) => a.t - b.t);
-  return json({ events, sources: trail, at: Date.now() }, 200, 'public, max-age=3600');
+  return json(Object.assign({ events: wantDebug ? events.slice(0, 5) : events, source, sources: trail, at: Date.now() }), 200, wantDebug ? 'no-store' : 'public, max-age=1800');
 }
 /* Diagnostic : ce que renvoie la page Econoday d'Interactive Brokers (fourchettes des attentes).
    Sert à voir si ces chiffres sont lisibles avant d'écrire quoi que ce soit dessus. */
@@ -208,10 +237,12 @@ async function econodayProbe(target) {
   try {
     const r = await fetch(page, { headers: { 'User-Agent': UA, 'Accept': 'text/html,*/*', 'Accept-Language': 'fr,en;q=0.8' }, signal: AbortSignal.timeout(9000) });
     const html = await r.text();
-    const frames = [...html.matchAll(/<(?:iframe|script)\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi)].map(m => m[1]).filter(u => /econoday|calendar|iframe/i.test(u)).slice(0, 20);
-    const compact = html.replace(/\s{2,}/g, ' ');
-    const at = compact.search(/consensus|econoday/i);
-    return json({ page, status: r.status, length: html.length, frames, text: cleanText(compact).slice(0, 2500), around: at >= 0 ? compact.slice(Math.max(0, at - 300), at + 2200) : '' }, 200, 'no-store');
+    const srcs = [...html.matchAll(/<(iframe|script|link)\b[^>]*\b(?:src|href|data-src)\s*=\s*["']([^"']+)["']/gi)].map(m => m[1].toLowerCase() + ' ' + m[2]).filter(u => !/favicon|\.css|\.png|fonts/i.test(u)).slice(0, 60);
+    const hits = [];
+    const re = /econoday|calendar/gi; let m;
+    while ((m = re.exec(html)) && hits.length < 14) { hits.push(html.slice(Math.max(0, m.index - 160), m.index + 260).replace(/\s+/g, ' ')); re.lastIndex = m.index + 400; }
+    const main = html.search(/<main|id=["']main|class=["'][^"']*content/i);
+    return json({ page, status: r.status, length: html.length, srcs, hits, mainText: cleanText(html.slice(main > 0 ? main : Math.floor(html.length / 2))).slice(0, 1800) }, 200, 'no-store');
   } catch (e) { return json({ page, error: errText(e) }, 502, 'no-store'); }
 }
 
@@ -225,7 +256,7 @@ export default {
       if (url.pathname === '/api/dmx') return url.searchParams.has('debug') ? dmx(env, true) : cached(request, ctx, () => dmx(env, false));
       if (url.pathname === '/api/polymarket') return url.searchParams.has('debug') ? polymarket(true) : cached(request, ctx, () => polymarket(false));
       if (url.pathname === '/api/polymarket/history') return cached(request, ctx, () => polymarketHistory(url.searchParams.get('market')));
-      if (url.pathname === '/api/calendar') return cached(request, ctx, calendar);
+      if (url.pathname === '/api/calendar') return url.searchParams.has('debug') ? calendar(true) : cached(request, ctx, () => calendar(false));
       if (url.pathname === '/api/econoday') return econodayProbe(url.searchParams.get('url'));
       return json({ error: 'Route inconnue' }, 404, 'no-store');
     }

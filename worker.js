@@ -229,23 +229,6 @@ async function calendar(wantDebug) {
   events.sort((a, b) => a.t - b.t);
   return json(Object.assign({ events: wantDebug ? events.slice(0, 5) : events, source, sources: trail, at: Date.now() }), 200, wantDebug ? 'no-store' : 'public, max-age=1800');
 }
-/* Diagnostic : ce que renvoie la page Econoday d'Interactive Brokers (fourchettes des attentes).
-   Sert à voir si ces chiffres sont lisibles avant d'écrire quoi que ce soit dessus. */
-async function econodayProbe(target) {
-  const allowed = /^https:\/\/([a-z0-9-]+\.)*(interactivebrokers\.co\.uk|interactivebrokers\.com|econoday\.com)\//i;
-  const page = target && allowed.test(target) ? target : 'https://www.interactivebrokers.co.uk/fr/education/econoday-events.php';
-  try {
-    const r = await fetch(page, { headers: { 'User-Agent': UA, 'Accept': 'text/html,*/*', 'Accept-Language': 'fr,en;q=0.8' }, signal: AbortSignal.timeout(9000) });
-    const html = await r.text();
-    const srcs = [...html.matchAll(/<(iframe|script|link)\b[^>]*\b(?:src|href|data-src)\s*=\s*["']([^"']+)["']/gi)].map(m => m[1].toLowerCase() + ' ' + m[2]).filter(u => !/favicon|\.css|\.png|fonts/i.test(u)).slice(0, 60);
-    const hits = [];
-    const re = /econoday|calendar/gi; let m;
-    while ((m = re.exec(html)) && hits.length < 14) { hits.push(html.slice(Math.max(0, m.index - 160), m.index + 260).replace(/\s+/g, ' ')); re.lastIndex = m.index + 400; }
-    const main = html.search(/<main|id=["']main|class=["'][^"']*content/i);
-    return json({ page, status: r.status, length: html.length, srcs, hits, mainText: cleanText(html.slice(main > 0 ? main : Math.floor(html.length / 2))).slice(0, 1800) }, 200, 'no-store');
-  } catch (e) { return json({ page, error: errText(e) }, 502, 'no-store'); }
-}
-
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -257,7 +240,6 @@ export default {
       if (url.pathname === '/api/polymarket') return url.searchParams.has('debug') ? polymarket(true) : cached(request, ctx, () => polymarket(false));
       if (url.pathname === '/api/polymarket/history') return cached(request, ctx, () => polymarketHistory(url.searchParams.get('market')));
       if (url.pathname === '/api/calendar') return url.searchParams.has('debug') ? calendar(true) : cached(request, ctx, () => calendar(false));
-      if (url.pathname === '/api/econoday') return econodayProbe(url.searchParams.get('url'));
       return json({ error: 'Route inconnue' }, 404, 'no-store');
     }
     return env.ASSETS.fetch(request);

@@ -823,7 +823,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
         <section class="card">
           <div class="card-head">
             <span class="card-title">Calendrier économique</span>
-            <span class="card-sub"><span class="badge-est" id="cal-meta">ForexFactory</span><button type="button" class="news-refresh-btn" id="cal-refresh" onclick="loadCal(true)" title="Recharger le calendrier" aria-label="Recharger">↻</button></span>
+            <span class="card-sub"><a class="srclink" style="margin-top:0;align-self:center" href="https://www.interactivebrokers.co.uk/fr/education/econoday-events.php" target="_blank" rel="noopener">Fourchettes des attentes (Econoday) ↗</a><span class="badge-est" id="cal-meta">Calendrier</span><button type="button" class="news-refresh-btn" id="cal-refresh" onclick="loadCal(true)" title="Recharger le calendrier" aria-label="Recharger">↻</button></span>
           </div>
           <div class="tools" id="cal-tools"></div>
           <div id="cal-body"><div class="empty-mini">Chargement du calendrier…</div></div>
@@ -3364,7 +3364,7 @@ function renderCal2(){
     });
   }
   body.innerHTML=html;
-  if(foot) foot.textContent='Heures affichées dans le fuseau de ton appareil. Source : '+(CAL.source||'ForexFactory')+' (consensus et précédent ; le chiffre publié n\'est affiché que si la source le fournit). Fourchette basse – haute des attentes : pas encore branchée.';
+  if(foot) foot.textContent='Heures affichées dans le fuseau de ton appareil. Source : '+(CAL.source||'ForexFactory')+' (consensus et précédent ; le chiffre publié n\'est affiché que si la source le fournit). Les fourchettes basse – haute des attentes (Econoday) ne peuvent pas être reprises ici : le lien en haut de la vue ouvre la page d\'Interactive Brokers.';
 }
 
 /* ---------- Comparer : planisphère des 8 économies ---------- */

@@ -603,6 +603,27 @@ a.news-item{text-decoration:none;color:inherit}
 .tv-msg{font-size:11px;color:var(--ink-soft);min-height:14px;line-height:1.45}
 @media (max-width:860px){.tv-grid{grid-template-columns:minmax(0,1fr)}.tv-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+/* ---------- vue Graphiques (widgets TradingView) ---------- */
+.ch-grid{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.ch-grid[data-n="2"],.ch-grid[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:860px){.ch-grid[data-n="2"],.ch-grid[data-n="4"]{grid-template-columns:minmax(0,1fr)}}
+.ch-slot{border:1px solid var(--line);border-radius:3px;overflow:hidden;min-width:0;display:flex;flex-direction:column;background:var(--card)}
+.ch-grid:not([data-n="1"]) .ch-slot.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.ch-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-bottom:1px solid var(--line)}
+.ch-pick{background:none;border:0;padding:0;color:var(--ink);font-family:var(--font-num);font-weight:700;font-size:12.5px;letter-spacing:.03em;cursor:pointer;text-align:left}
+.ch-pick span{font-family:var(--font-ui);font-weight:400;font-size:10.5px;color:var(--ink-soft);margin-left:8px;letter-spacing:0}
+.ch-hd .srclink{margin-top:0;align-self:center;white-space:nowrap}
+.ch-box{height:min(68vh,680px);min-height:380px}
+.ch-grid[data-n="2"] .ch-box{height:min(60vh,560px)}
+.ch-grid[data-n="4"] .ch-box{height:min(44vh,430px);min-height:320px}
+.ch-box .tradingview-widget-container__widget{height:calc(100% - 20px);width:100%}
+.ch-box .tradingview-widget-copyright{height:20px;line-height:20px;font-size:10px;text-align:right;padding:0 8px;font-family:var(--font-num)}
+.ch-box .tradingview-widget-copyright a{color:var(--ink-soft);text-decoration:none}
+.ch-cross{display:inline-flex;align-items:center;gap:4px}
+.ch-cross select{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:2px;padding:4px 6px;font-size:12px;font-family:var(--font-num)}
+button.dmx-sym{background:none;border:0;padding:0;color:inherit;cursor:pointer;text-align:left}
+button.dmx-sym:hover{text-decoration:underline}
+
 /* ---------- vue Comparer (planisphère) ---------- */
 .cmp-grid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;align-items:start}
 @media (max-width:980px){.cmp-grid{grid-template-columns:minmax(0,1fr)}}
@@ -753,6 +774,18 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
         </section>
       </div>
 
+      </section>
+
+      <section class="view" data-view="graphiques" id="view-graphiques" hidden>
+        <section class="card">
+          <div class="card-head">
+            <span class="card-title">Graphiques</span>
+            <span class="card-sub"><span class="badge-est">TradingView</span></span>
+          </div>
+          <div class="tools" id="ch-tools"></div>
+          <div class="ch-grid" id="ch-grid" data-n="1"></div>
+          <div class="foot" style="margin-top:10px">Graphiques fournis par TradingView (cours du courtier indiqué dans le symbole, parfois différés). Dans chaque graphique, clique le nom du symbole pour en chercher un autre et « Indicateurs » pour ajouter moyennes mobiles, RSI, etc. ; ces réglages ne sont pas mémorisés d'une visite à l'autre.</div>
+        </section>
       </section>
 
       <section class="view" data-view="compare" id="view-compare" hidden>
@@ -2941,6 +2974,7 @@ function renderFG(){
 ══════════════════════════════════════════════════════════════ */
 const VIEWS=[
   ['macro','Macro','Globe · 4 piliers'],
+  ['graphiques','Graphiques','TradingView'],
   ['compare','Comparer','Planisphère'],
   ['taux','Taux','Banques centrales'],
   ['cot','COT','Institutionnels'],
@@ -2954,6 +2988,7 @@ const VIEW_KEY='fxmt_view';
 let activeView='macro'; const viewSeen={};
 const VIEW_HOOKS={
   macro:()=>{ if(typeof size==='function') size(); },
+  graphiques:()=>{ chRender(); },
   compare:first=>{ if(first) loadCompare(); else renderCompare(); },
   taux:()=>{ renderRateExpectations(); },
   cot:first=>{ if(first) loadCot(false); else renderCot(); },
@@ -2993,7 +3028,7 @@ function initViews(){
   let rz=null;
   window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(activeView==='compare') drawCompareMap(); if(activeView==='cot') renderCotDetail(); },160); });
 }
-function onThemeChange(){ if(activeView==='compare'&&CMP) renderCompare(); }
+function onThemeChange(){ if(activeView==='compare'&&CMP) renderCompare(); if(activeView==='graphiques') chRender(); }
 
 /* ---------- Taux : tableau comparé ---------- */
 function renderRateTable(){
@@ -3093,7 +3128,9 @@ function renderDmx(){
   };
   html+='<div class="sec-h">Par paire — '+list.length+' paire'+(list.length>1?'s':'')+'</div><div class="dmx-list">'+list.map(p=>{
     const [cls,txt]=dmxSignal(p);
-    return '<div class="dmx-row"><span class="dmx-sym">'+escH(p.symbol.length===6?p.symbol.slice(0,3)+'/'+p.symbol.slice(3):p.symbol)+'</span>'
+    const tvSym=/^XA[UG]USD$/.test(p.symbol)?'OANDA:'+p.symbol:(/^[A-Z]{6}$/.test(p.symbol)?'FX:'+p.symbol:'');
+    const name=escH(p.symbol.length===6?p.symbol.slice(0,3)+'/'+p.symbol.slice(3):p.symbol);
+    return '<div class="dmx-row">'+(tvSym?'<button type="button" class="dmx-sym" onclick="openChart(\''+tvSym+'\')" title="Ouvrir le graphique">'+name+'</button>':'<span class="dmx-sym">'+name+'</span>')
       +'<span>'+lsBarHTML(dmxShare(p),'Acheteurs '+Math.round(p.longPct)+' %','Vendeurs '+Math.round(p.shortPct)+' %')+'</span>'
       +'<span class="dmx-vol">'+vol(p)+'</span><span class="dmx-sig '+cls+'">'+txt+'</span></div>';
   }).join('')+'</div>';
@@ -3180,6 +3217,80 @@ function tvRemove(id){
   try{ localStorage.setItem('fxmt_tv_custom',JSON.stringify(tvCustom().filter(c=>c.id!==id))); }catch(e){}
   if(tvCur===id) tvStop();
   tvRender();
+}
+
+/* ---------- Graphiques : widgets TradingView (intégration officielle, gratuite) ---------- */
+const CH_KEY='fxmt_charts';
+const CH_CCY=['EUR','GBP','AUD','NZD','USD','CAD','CHF','JPY'];   // ordre de cotation usuel : la première citée est la devise de base
+const CH_MAJORS=[['EUR/USD','FX:EURUSD'],['GBP/USD','FX:GBPUSD'],['USD/JPY','FX:USDJPY'],['USD/CHF','FX:USDCHF'],['USD/CAD','FX:USDCAD'],['AUD/USD','FX:AUDUSD'],['NZD/USD','FX:NZDUSD']];
+const CH_OTHERS=[['Dollar index','CAPITALCOM:DXY'],['Or','OANDA:XAUUSD'],['S&P 500','OANDA:SPX500USD'],['Nasdaq 100','OANDA:NAS100USD'],['Pétrole WTI','TVC:USOIL'],['US 10 ans','TVC:US10Y'],['Bitcoin','BITSTAMP:BTCUSD']];
+const CH_INTERVALS=[['15','15 min'],['60','1 h'],['240','4 h'],['D','Jour'],['W','Semaine']];
+const CH_SCRIPT='https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+let CH={layout:1,interval:'60',active:0,slots:['FX:EURUSD','FX:GBPUSD','FX:USDJPY','CAPITALCOM:DXY']}, chBuilt=[], chLoaded=false;
+function chLoad(){
+  if(chLoaded) return; chLoaded=true;
+  try{
+    const s=JSON.parse(localStorage.getItem(CH_KEY)||'null'); if(!s) return;
+    if([1,2,4].includes(s.layout)) CH.layout=s.layout;
+    if(CH_INTERVALS.some(x=>x[0]===s.interval)) CH.interval=s.interval;
+    if(Array.isArray(s.slots)) s.slots.slice(0,4).forEach((v,i)=>{ if(chValid(v)) CH.slots[i]=v; });
+    if(s.active>=0&&s.active<CH.layout) CH.active=s.active;
+  }catch(e){}
+}
+function chSave(){ try{ localStorage.setItem(CH_KEY,JSON.stringify(CH)); }catch(e){} }
+function chValid(sym){ return typeof sym==='string'&&/^[A-Z0-9_]{2,20}:[A-Z0-9_.!]{2,20}$/.test(sym); }
+function chPairSym(a,b){ const i=CH_CCY.indexOf(a), j=CH_CCY.indexOf(b); if(i<0||j<0||i===j) return ''; return 'FX:'+(i<j?a+b:b+a); }
+function chFx(sym){ const m=/^(?:FX|OANDA|FX_IDC):([A-Z]{3})([A-Z]{3})$/.exec(sym); return m&&CH_CCY.includes(m[1])&&CH_CCY.includes(m[2])?[m[1],m[2]]:null; }
+function chLabel(sym){ const fx=chFx(sym); if(fx) return fx[0]+'/'+fx[1]; const o=CH_OTHERS.find(x=>x[1]===sym); return o?o[0]:sym.split(':')[1]; }
+let chSel=null;   // les deux devises choisies dans « Autre paire », telles que l'utilisateur les a laissées
+function chSet(sym,keepSel){ if(!chValid(sym)) return; if(!keepSel) chSel=null; CH.slots[CH.active]=sym; chSave(); chRender(); }
+function chCross(){
+  const a=document.getElementById('ch-a'), b=document.getElementById('ch-b'); if(!a||!b) return;
+  chSel=[a.value,b.value];
+  const s=chPairSym(a.value,b.value);   // même devise des deux côtés : on attend le second choix
+  if(s) chSet(s,true);
+}
+function chInterval(v){ CH.interval=v; chSave(); chRender(); }
+function chLayout(n){ CH.layout=n; if(CH.active>=n) CH.active=0; chSave(); chRender(); }
+function chActive(i){ CH.active=i; chSel=null; chSave(); chRender(); }
+/* Ouvre la vue Graphiques sur un symbole (appelé depuis le DMX). */
+function openChart(sym){ chLoad(); if(chValid(sym)){ CH.slots[CH.active]=sym; chSave(); } setView('graphiques'); }
+function chRender(){
+  chLoad();
+  const tools=document.getElementById('ch-tools'), grid=document.getElementById('ch-grid'); if(!tools||!grid) return;
+  const cur=CH.slots[CH.active], fx=chFx(cur);
+  const chips=list=>list.map(([l,s])=>'<button type="button" aria-pressed="'+(cur===s)+'" onclick="chSet(\''+s+'\')">'+escH(l)+'</button>').join('');
+  const opts=sel=>CH_CCY.map(c=>'<option'+(c===sel?' selected':'')+'>'+c+'</option>').join('');
+  tools.innerHTML='<div class="seg"><span class="seg-l">Majeures</span>'+chips(CH_MAJORS)+'</div>'
+    +'<div class="ch-cross"><span class="seg-l">Autre paire</span><select id="ch-a" onchange="chCross()" aria-label="Devise de base">'+opts(chSel?chSel[0]:fx?fx[0]:'EUR')+'</select><span style="color:var(--ink-soft)">/</span><select id="ch-b" onchange="chCross()" aria-label="Seconde devise">'+opts(chSel?chSel[1]:fx?fx[1]:'JPY')+'</select></div>'
+    +'<div class="seg"><span class="seg-l">Autres marchés</span>'+chips(CH_OTHERS)+'</div>'
+    +'<div class="seg"><span class="seg-l">Unité</span>'+CH_INTERVALS.map(([v,l])=>'<button type="button" aria-pressed="'+(CH.interval===v)+'" onclick="chInterval(\''+v+'\')">'+l+'</button>').join('')+'</div>'
+    +'<div class="seg"><span class="seg-l">Écran</span>'+[1,2,4].map(n=>'<button type="button" aria-pressed="'+(CH.layout===n)+'" onclick="chLayout('+n+')">'+n+' graphique'+(n>1?'s':'')+'</button>').join('')+'</div>';
+  if(grid.children.length!==CH.layout){   // on ne reconstruit les cases que si leur nombre change : les graphiques déjà ouverts restent en place
+    grid.setAttribute('data-n',CH.layout); chBuilt=[];
+    grid.innerHTML=Array.from({length:CH.layout},(_,i)=>'<div class="ch-slot" id="ch-slot-'+i+'"><div class="ch-hd"><button type="button" class="ch-pick" id="ch-pick-'+i+'" onclick="chActive('+i+')"></button><a class="srclink" id="ch-open-'+i+'" target="_blank" rel="noopener">Ouvrir sur TradingView ↗</a></div><div class="ch-box" id="ch-box-'+i+'"></div></div>').join('');
+  }
+  for(let i=0;i<CH.layout;i++){
+    const sym=CH.slots[i];
+    document.getElementById('ch-slot-'+i).classList.toggle('on',i===CH.active);
+    document.getElementById('ch-pick-'+i).innerHTML=escH(chLabel(sym))+(CH.layout>1?'<span>'+(i===CH.active?'sélectionné — les boutons ci-dessus changent ce graphique':'cliquer pour sélectionner')+'</span>':'<span>'+escH(sym)+'</span>');
+    document.getElementById('ch-open-'+i).href='https://www.tradingview.com/chart/?symbol='+encodeURIComponent(sym);
+    chMount(i);
+  }
+}
+function chMount(i){
+  const box=document.getElementById('ch-box-'+i); if(!box) return;
+  const sym=CH.slots[i], key=[sym,CH.interval,isLight()?'clair':'sombre',CH.layout>1?'compact':'complet'].join('|');
+  if(chBuilt[i]===key&&box.firstChild) return;
+  chBuilt[i]=key; box.innerHTML='';
+  // Même montage que l'exemple officiel : conteneur, zone du widget, mention TradingView, puis le script qui porte sa configuration.
+  const wrap=document.createElement('div'); wrap.className='tradingview-widget-container'; wrap.style.cssText='height:100%;width:100%';
+  wrap.innerHTML='<div class="tradingview-widget-container__widget"></div><div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">Graphique par TradingView</a></div>';
+  const sc=document.createElement('script'); sc.type='text/javascript'; sc.async=true; sc.src=CH_SCRIPT;
+  sc.text=JSON.stringify({autosize:true,symbol:sym,interval:CH.interval,timezone:'Europe/Paris',theme:isLight()?'light':'dark',style:'1',locale:'fr',
+    allow_symbol_change:true,calendar:false,hide_side_toolbar:CH.layout>1,withdateranges:true,save_image:false,support_host:'https://www.tradingview.com'});
+  sc.onerror=()=>{ chBuilt[i]=''; box.innerHTML='<div class="empty-mini">Le graphique TradingView n\'a pas pu se charger (réseau ou bloqueur de publicité). <a class="srclink" style="display:inline" href="https://www.tradingview.com/chart/?symbol='+encodeURIComponent(sym)+'" target="_blank" rel="noopener">Ouvrir sur TradingView ↗</a></div>'; };
+  wrap.appendChild(sc); box.appendChild(wrap);
 }
 
 /* ---------- Comparer : planisphère des 8 économies ---------- */

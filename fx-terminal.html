@@ -625,6 +625,34 @@ a.news-item{text-decoration:none;color:inherit}
 button.dmx-sym{background:none;border:0;padding:0;color:inherit;cursor:pointer;text-align:left}
 button.dmx-sym:hover{text-decoration:underline}
 
+/* ---------- vue Marchés : performance, sentiment, tension, pétrole ---------- */
+.perf-grid{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:980px){.perf-grid{grid-template-columns:minmax(0,1fr)}}
+.perf-rank{display:flex;flex-direction:column;gap:7px}
+.perf-row{display:grid;grid-template-columns:40px minmax(0,1fr) 66px;gap:8px;align-items:center;font-family:var(--font-num);font-size:11.5px}
+.perf-row b{font-weight:700}
+.perf-row em{font-style:normal;text-align:right;font-variant-numeric:tabular-nums}
+.perf-row em.up,.ptbl td.up{color:var(--up)}.perf-row em.down,.ptbl td.down{color:var(--down)}
+.ptbl{border-collapse:collapse;font-family:var(--font-num);font-size:11px;width:100%;min-width:520px}
+.ptbl th{font-size:9.5px;letter-spacing:.06em;color:var(--ink-soft);font-weight:500;padding:5px 6px;text-align:right}
+.ptbl th:first-child,.ptbl td:first-child{text-align:left;font-weight:700;color:var(--ink)}
+.ptbl td{padding:6px;text-align:right;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ptbl td.dg{color:var(--line-strong);text-align:center}
+.mrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(70px,1fr) 44px 92px;gap:10px;align-items:center;padding:7px 2px;border-bottom:1px solid var(--line);font-size:12.5px}
+.mrow .lb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .sc{font-family:var(--font-num);font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.mrow .rt{font-size:11px;color:var(--ink-soft);text-align:right;white-space:nowrap}
+.mrow .rt.up{color:var(--up)}.mrow .rt.down{color:var(--down)}
+.meter{position:relative;height:8px;background:var(--hover);border-radius:2px}
+.meter i{position:absolute;left:0;top:0;height:100%;background:var(--ink);border-radius:2px}
+.meter::after{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--line-strong)}
+.mrow.geo-row{grid-template-columns:minmax(0,1fr) 120px 110px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 16px;margin-bottom:10px}
+.kpis span{display:flex;flex-direction:column;font-family:var(--font-num);font-size:9.5px;letter-spacing:.04em;color:var(--ink-soft);min-width:0}
+.kpis b{font-size:16px;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpis small{font-size:10.5px}
+.kpis small.up{color:var(--up)}.kpis small.down{color:var(--down)}
+
 /* ---------- vue Calendrier ---------- */
 .cal-next{border:1px solid var(--ink);border-radius:3px;padding:9px 12px;margin-bottom:12px;font-size:13px;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:baseline}
 .cal-next b{font-family:var(--font-num)}
@@ -877,6 +905,10 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
           <div class="card-head"><span class="card-title">Tableau comparé des banques centrales</span><span class="card-sub"><span class="badge-est">du taux le plus haut au plus bas</span></span></div>
           <div class="tbl-scroll"><table class="ctbl" id="rate-table"></table></div>
         </section>
+        <section class="card">
+          <div class="card-head"><span class="card-title">Rendements des emprunts d'État</span><span class="card-sub"><span class="badge-est" id="yld-meta">sources officielles</span></span></div>
+          <div id="yld-body"><div class="empty-mini">Chargement des rendements…</div></div>
+        </section>
       </section>
 
       <section class="view" data-view="cot" id="view-cot" hidden>
@@ -887,6 +919,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
           </div>
           <p class="lede">Positions des gros intervenants sur les futures de devises (CME, ICE), publiées chaque vendredi par la CFTC pour la situation du mardi. <b>Net</b> = contrats longs moins contrats courts. La <b>fourchette</b> situe le net actuel entre son plus bas (0) et son plus haut (100) de la période : aux extrêmes, le positionnement est chargé et le risque de retournement augmente.</p>
           <div class="tools">
+            <div class="seg" id="cot-groups" role="group" aria-label="Marchés"></div>
             <div class="seg" id="cot-cats" role="group" aria-label="Catégorie de traders"></div>
             <span class="key"><i style="background:var(--up)"></i>longs</span><span class="key"><i style="background:var(--down)"></i>courts</span>
           </div>
@@ -950,10 +983,28 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
 
       <section class="view" data-view="marches" id="view-marches" hidden>
         <section class="card">
+          <div class="card-head"><span class="card-title">Performance des devises</span><span class="card-sub"><span class="badge-est" id="perf-meta">BCE · Frankfurter</span></span></div>
+          <div class="tools" id="perf-tools"></div>
+          <div id="perf-body"><div class="empty-mini">Chargement des cours…</div></div>
+        </section>
+        <div class="deck">
+          <section class="card">
+            <div class="card-head"><span class="card-title">Fear &amp; Greed — le détail</span><span class="badge-est">CNN</span></div>
+            <div id="fgd-body"><div class="empty-mini">Chargement…</div></div>
+          </section>
+          <section class="card">
+            <div class="card-head"><span class="card-title">Tension géopolitique</span><span class="badge-est" id="geo-meta">GDELT</span></div>
+            <div id="geo-body"><div class="empty-mini">Chargement…</div></div>
+          </section>
+        </div>
+        <section class="card">
+          <div class="card-head"><span class="card-title">Pétrole — stocks américains et WTI</span><span class="badge-est">EIA · FRED</span></div>
+          <div id="oil-body"><div class="empty-mini">Chargement…</div></div>
+        </section>
+        <section class="card">
           <div class="card-head"><span class="card-title">Marchés de prédiction</span><span class="badge-est">Polymarket</span></div>
           <div class="pm-grid" id="pm-grid"><div class="empty-mini">Chargement des marchés…</div></div>
         </section>
-
       </section>
 
       <section class="view" data-view="ia" id="view-ia" hidden>
@@ -2023,9 +2074,26 @@ const COT_SEL={
   '6dca-aqww':'report_date_as_yyyy_mm_dd,open_interest_all,noncomm_positions_long_all,noncomm_positions_short_all',
   'gpe5-46if':'report_date_as_yyyy_mm_dd,open_interest_all,dealer_positions_long_all,dealer_positions_short_all,asset_mgr_positions_long,asset_mgr_positions_short,lev_money_positions_long,lev_money_positions_short',
 };
-let COT={date:'',by:{},tff:false,err:''}, cotCat='nc', cotSel=null, cotLoading=false;
-async function cotFetch(set,name){
-  const base='https://publicreporting.cftc.gov/resource/'+set+'.json?$where='+encodeURIComponent("contract_market_name='"+name+"'")
+/* Autres marchés : repérés par leur code CFTC, stable même quand le libellé du contrat change. */
+const COT_OTHER=[
+  ['','OR','088691','Or (COMEX)'],
+  ['','ARGENT','084691','Argent (COMEX)'],
+  ['','WTI','067651','Pétrole WTI (NYMEX)'],
+  ['','S&P 500','13874A','E-mini S&P 500'],
+  ['','NASDAQ','209742','E-mini Nasdaq 100'],
+  ['','UST 2 ANS','042601','T-Note 2 ans'],
+  ['','UST 10 ANS','043602','T-Note 10 ans'],
+  ['','VIX','1170E1','Futures VIX'],
+  ['','BITCOIN','133741','Bitcoin (CME)'],
+];
+const COT_EMPTY=()=>({date:'',by:{},tff:false,err:''});
+const COTS={fx:COT_EMPTY(),oth:COT_EMPTY()};
+let cotGroup='fx', COT=COTS.fx, cotCat='nc', cotSel=null, cotLoading=false;
+const cotList=()=>cotGroup==='fx'?COT_CCY:COT_OTHER;
+const cotWhere=row=>cotGroup==='fx'?"contract_market_name='"+row[2]+"'":"cftc_contract_market_code='"+row[2]+"'";
+function setCotGroup(g){ if(g===cotGroup||cotLoading) return; cotGroup=g; COT=COTS[g]; cotSel=null; if(COT.date) renderCot(); else loadCot(false); }
+async function cotFetch(set,where){
+  const base='https://publicreporting.cftc.gov/resource/'+set+'.json?$where='+encodeURIComponent(where)
     +'&$order='+encodeURIComponent('report_date_as_yyyy_mm_dd DESC')+'&$limit='+(COT_WEEKS+1);
   // 1er essai : colonnes utiles seulement (réponse légère) ; si un nom de colonne est refusé, on reprend la ligne complète.
   for(const url of [base+'&$select='+encodeURIComponent(COT_SEL[set]), base]){
@@ -2047,12 +2115,14 @@ function cotParse(rows){
 }
 async function loadCot(force){
   if(cotLoading) return;
-  const cached=!force&&lsGet('fxmt_cot3',6*3600*1000);
-  if(cached&&cached.by&&Object.keys(cached.by).length){ COT=cached; renderCot(); return; }
+  const g=cotGroup, ck=g==='fx'?'fxmt_cot3':'fxmt_cot3o';
+  const cached=!force&&lsGet(ck,6*3600*1000);
+  if(cached&&cached.by&&Object.keys(cached.by).length){ COT=COTS[g]=cached; renderCot(); return; }
   cotLoading=true; renderCot();
   const by={}; let date='', tff=false;
-  await Promise.all(COT_CCY.map(async([,code,name])=>{
-    const [leg,tf]=await Promise.all([cotFetch('6dca-aqww',name),cotFetch('gpe5-46if',name)]);
+  await Promise.all(cotList().map(async row=>{
+    const code=row[1], where=cotWhere(row);
+    const [leg,tf]=await Promise.all([cotFetch('6dca-aqww',where),cotFetch('gpe5-46if',where)]);
     const m=new Map();
     cotParse(leg).forEach(r=>m.set(r.d,r));
     cotParse(tf).forEach(r=>{
@@ -2065,8 +2135,9 @@ async function loadCot(force){
     by[code]=rows; if(rows[0].d>date) date=rows[0].d; if(rows.some(r=>r.lm)) tff=true;
   }));
   cotLoading=false;
-  if(Object.keys(by).length){ COT={date,by,tff,err:''}; lsSet('fxmt_cot3',COT); }
-  else COT={date:'',by:{},tff:false,err:'La CFTC ne répond pas pour le moment.'};
+  const res=Object.keys(by).length?{date,by,tff,err:''}:{date:'',by:{},tff:false,err:'La CFTC ne répond pas pour le moment.'};
+  if(res.date) lsSet(ck,res);
+  COTS[g]=res; if(cotGroup===g) COT=res;
   renderCot();
 }
 /* Chiffres d'une devise pour une catégorie. rows / nets : du plus récent au plus ancien. */
@@ -2110,6 +2181,8 @@ function renderCot(){
   const tbl=document.getElementById('cot-table'); if(!tbl) return;
   const dEl=document.getElementById('cot-date'), foot=document.getElementById('cot-foot'), cats=document.getElementById('cot-cats');
   const rb=document.getElementById('cot-refresh'); if(rb){ rb.classList.toggle('spinning',cotLoading); rb.disabled=cotLoading; }
+  const grp=document.getElementById('cot-groups');
+  if(grp) grp.innerHTML=[['fx','Devises'],['oth','Or, pétrole, indices, taux']].map(([k,l])=>'<button type="button" aria-pressed="'+(cotGroup===k)+'" onclick="setCotGroup(\''+k+'\')">'+l+'</button>').join('');
   const avail=COT_CATS.filter(c=>c[0]==='nc'||COT.tff);
   if(!avail.some(c=>c[0]===cotCat)) cotCat='nc';
   if(cats) cats.innerHTML=avail.map(c=>'<button type="button" aria-pressed="'+(c[0]===cotCat)+'" onclick="setCotCat(\''+c[0]+'\')" title="'+escH(c[2])+'">'+escH(c[1])+'</button>').join('');
@@ -2117,12 +2190,13 @@ function renderCot(){
   if(cotLoading&&!COT.date){ tbl.innerHTML='<div class="empty-mini">Chargement des données COT…</div>'; return; }
   if(!COT.date){ tbl.innerHTML='<div class="empty-mini">'+escH(COT.err||'Données COT indisponibles.')+' <button type="button" class="tbtn" onclick="loadCot(true)">Réessayer</button></div>'; if(foot) foot.textContent=''; renderCotDetail(); return; }
   let html='<div class="cot-row cot-head"><span>Devise</span><span class="r">Net (contrats)</span><span class="r">Δ 1 sem.</span><span>Longs / courts</span><span>Fourchette '+COT_WEEKS+' sem.</span><span>Net sur '+COT_WEEKS+' sem.</span></div>';
-  COT_CCY.forEach(([flag,code])=>{
+  cotList().forEach(row=>{
+    const flag=row[0], code=row[1], sub=cotGroup==='fx'?'':row[3];
     const s=cotStats(code,cotCat);
-    if(!s){ html+='<div class="cot-row"><span class="cot-ccy"><b>'+flag+' '+code+'</b><span class="cot-read flat">donnée indisponible</span></span></div>'; return; }
+    if(!s){ html+='<div class="cot-row"><span class="cot-ccy"><b>'+(flag?flag+' ':'')+escH(code)+'</b>'+(sub?'<span class="cot-read flat">'+escH(sub)+'</span>':'')+'<span class="cot-read flat">donnée indisponible</span></span></div>'; return; }
     const [txt,cls]=cotRead(s);
-    html+='<button type="button" class="cot-row" aria-pressed="'+(cotSel===code)+'" onclick="selectCot(\''+code+'\')">'
-      +'<span class="cot-ccy"><b>'+flag+' '+code+'</b><span class="cot-read '+cls+'">'+txt+'</span></span>'
+    html+='<button type="button" class="cot-row" aria-pressed="'+(cotSel===code)+'" onclick="selectCot(\''+escH(code)+'\')">'
+      +'<span class="cot-ccy"><b>'+(flag?flag+' ':'')+escH(code)+'</b>'+(sub?'<span class="cot-read flat">'+escH(sub)+'</span>':'')+'<span class="cot-read '+cls+'">'+txt+'</span></span>'
       +'<span class="cot-num '+signCls(s.net)+'" data-l="net">'+fmtSigned(s.net)+'</span>'
       +'<span class="cot-num '+signCls(s.chg||0)+'" data-l="Δ sem.">'+(s.chg==null?'—':fmtSigned(s.chg))+'</span>'
       +'<span class="cot-ls">'+lsBarHTML(s.pl,'Longs '+Math.round(s.pl)+' %','Courts '+(100-Math.round(s.pl))+' %')+'</span>'
@@ -2141,11 +2215,11 @@ function renderCotDetail(){
   const el=document.getElementById('cot-detail'); if(!el) return;
   const s=cotSel&&COT.date?cotStats(cotSel,cotCat):null;
   if(!s){ el.hidden=true; el.innerHTML=''; return; }
-  const meta=COT_CCY.find(c=>c[1]===cotSel), cat=COT_CATS.find(c=>c[0]===cotCat);
+  const meta=cotList().find(c=>c[1]===cotSel)||['',cotSel,''], cat=COT_CATS.find(c=>c[0]===cotCat);
   const oiPct=s.oi?(s.net/s.oi*100):null;
   el.hidden=false;
-  el.innerHTML='<div class="card-head"><span class="card-title">'+meta[0]+' '+cotSel+' — '+escH(cat[1])+' · position nette sur '+s.weeks+' semaines</span>'
-    +'<span class="card-sub"><span class="badge-est">'+escH(meta[2])+'</span><button type="button" class="tbtn" onclick="selectCot(\''+cotSel+'\')">Fermer</button></span></div>'
+  el.innerHTML='<div class="card-head"><span class="card-title">'+(meta[0]?meta[0]+' ':'')+escH(cotSel)+' — '+escH(cat[1])+' · position nette sur '+s.weeks+' semaines</span>'
+    +'<span class="card-sub"><span class="badge-est">'+escH(cotGroup==='fx'?meta[2]:(meta[3]||''))+'</span><button type="button" class="tbtn" onclick="selectCot(\''+escH(cotSel)+'\')">Fermer</button></span></div>'
     +'<div class="cot-dgrid">'
     +'<span>Net actuel<b class="'+signCls(s.net)+'" style="color:var(--'+(s.net>=0?'up':'down')+')">'+fmtSigned(s.net)+'</b></span>'
     +'<span>Δ 1 semaine<b>'+(s.chg==null?'—':fmtSigned(s.chg))+'</b></span>'
@@ -2916,7 +2990,7 @@ function fgLabelOf(v,rating){
 async function loadFearGreed(){
   const badge=document.getElementById('fgBadge');
   let j=null, lastErr='';
-  try{ const c=JSON.parse(localStorage.getItem('fxmt_fg')); if(c&&Date.now()-c.t<30*60e3) j=c.v; }catch(e){}
+  try{ const c=JSON.parse(localStorage.getItem('fxmt_fg2')); if(c&&Date.now()-c.t<30*60e3) j=c.v; }catch(e){}
   if(!j){
     // 1) route du site lui-même (worker.js, même origine)  2) ancien relais Notion si le site est ouvert ailleurs
     for(const url of ['/api/feargreed', NOTION_API+'/?source=feargreed']){
@@ -2925,7 +2999,7 @@ async function loadFearGreed(){
         const t=await r.json();
         if(!r.ok||!t||t.error){ lastErr=lastErr||(t&&t.error)||('HTTP '+r.status); continue; }
         const g=t.fear_and_greed||t; if((g.score!=null?g.score:g.value)==null){ lastErr=lastErr||'réponse vide'; continue; }
-        j=t; try{ localStorage.setItem('fxmt_fg',JSON.stringify({t:Date.now(),v:j})); }catch(e){} break;
+        j=t; try{ localStorage.setItem('fxmt_fg2',JSON.stringify({t:Date.now(),v:j})); }catch(e){} break;
       }catch(e){ lastErr=lastErr||'injoignable'; }
     }
   }
@@ -2942,8 +3016,10 @@ async function loadFearGreed(){
   FG.week=fg.previous_1_week!=null?Math.round(+fg.previous_1_week):null;
   const ts=fg.timestamp||fg.asof;
   FG.asof=ts&&!isNaN(Date.parse(ts))?new Date(ts).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'';
+  FG.month=fg.previous_1_month!=null?Math.round(+fg.previous_1_month):null; FG.year=fg.previous_1_year!=null?Math.round(+fg.previous_1_year):null;
+  FG.indicators=Array.isArray(j.indicators)?j.indicators:[]; FG.history=Array.isArray(j.history)?j.history:[];
   if(badge) badge.textContent='CNN';
-  renderFG();
+  renderFG(); if(typeof renderFgDetail==='function') renderFgDetail();
 }
 function renderFG(){
   const el=document.getElementById('fgGauge'); if(!el) return;
@@ -2985,7 +3061,7 @@ const VIEWS=[
   ['dmx','DMX','Particuliers · contrarian'],
   ['articles','Articles','Flux filtrable'],
   ['live','Live TV','Chaînes financières'],
-  ['marches','Marchés','Prédictions Polymarket'],
+  ['marches','Marchés','Devises · sentiment · risques'],
   ['ia','Brief IA','Synthèse du jour'],
 ];
 const VIEW_KEY='fxmt_view';
@@ -2995,7 +3071,8 @@ const VIEW_HOOKS={
   graphiques:()=>{ chRender(); },
   calendrier:first=>{ if(first) loadCal(false); else renderCal2(); },
   compare:first=>{ if(first) loadCompare(); else renderCompare(); },
-  taux:()=>{ renderRateExpectations(); },
+  taux:first=>{ renderRateExpectations(); if(first) loadRates(); else renderYields(); },
+  marches:first=>{ if(first){ loadPerf(); loadRates(); loadGeo(); } renderFgDetail(); },
   cot:first=>{ if(first) loadCot(false); else renderCot(); },
   dmx:first=>{ if(first) loadDmx(false); },
   articles:first=>{ if(first&&!allNews.length) loadNews(); else renderNews(); markNewsSeen(); },
@@ -3298,6 +3375,166 @@ function chMount(i){
   wrap.appendChild(sc); box.appendChild(wrap);
 }
 
+/* ---------- Marchés : performance des 8 devises (cours de référence BCE, via Frankfurter) ---------- */
+const PERF_CCY=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const PERF_SPANS=[['d1','1 jour'],['w1','1 semaine'],['m1','1 mois']];
+let PERF={now:null,then:{},date:'',err:''}, perfSpan='w1', perfLoading=false;
+async function frkRates(date){
+  const r=await fetch('https://api.frankfurter.dev/v2/rates?base=USD'+(date?'&date='+date:''));
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const a=await r.json(), m={USD:1}; let d='';
+  (Array.isArray(a)?a:[]).forEach(x=>{ if(x&&x.quote&&isFinite(+x.rate)){ m[x.quote]=+x.rate; if(x.date) d=x.date; } });
+  if(PERF_CCY.some(c=>!m[c])) throw new Error('cours incomplets');
+  return {m,d};
+}
+async function loadPerf(force){
+  if(perfLoading) return;
+  const c=!force&&lsGet('fxmt_perf',30*60*1000);
+  if(c&&c.now){ PERF=c; renderPerf(); return; }
+  perfLoading=true; renderPerf();
+  try{
+    const iso=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+    const same=(a,b)=>PERF_CCY.every(k=>Math.abs(a[k]-b[k])<1e-12);
+    const [now,w1,m1]=await Promise.all([frkRates(''),frkRates(iso(7)),frkRates(iso(30))]);
+    let d1=null;   // veille ouvrée : on recule jusqu'à trouver un cours différent du dernier (week-ends, jours fériés)
+    for(const n of [1,2,3,4]){ const x=await frkRates(iso(n)); if(!same(x.m,now.m)){ d1=x; break; } }
+    PERF={now:now.m,then:{d1:d1?d1.m:null,w1:w1.m,m1:m1.m},date:now.d||'',err:''}; lsSet('fxmt_perf',PERF);
+  }catch(e){ PERF={now:null,then:{},date:'',err:e.message||'indisponible'}; }
+  perfLoading=false; renderPerf();
+}
+function setPerfSpan(k){ perfSpan=k; renderPerf(); }
+/* Variation de X contre Y sur la période, en % : positive si X s'est apprécié. Cours exprimés en unités par dollar. */
+function perfChg(x,y,then){ const n=PERF.now; return ((n[y]/n[x])/(then[y]/then[x])-1)*100; }
+const fmtPct=(v,d)=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(d==null?2:d).replace('.',',')+' %';
+function renderPerf(){
+  const body=document.getElementById('perf-body'), tools=document.getElementById('perf-tools'); if(!body||!tools) return;
+  tools.innerHTML='<div class="seg"><span class="seg-l">Période</span>'+PERF_SPANS.map(([k,l])=>'<button type="button" aria-pressed="'+(perfSpan===k)+'" onclick="setPerfSpan(\''+k+'\')">'+l+'</button>').join('')+'</div>';
+  if(perfLoading&&!PERF.now){ body.innerHTML='<div class="empty-mini">Chargement des cours…</div>'; return; }
+  if(!PERF.now){ body.innerHTML='<div class="empty-mini">Cours indisponibles ('+escH(PERF.err||'aucune donnée')+'). <button type="button" class="tbtn" onclick="loadPerf(true)">Réessayer</button></div>'; return; }
+  const then=PERF.then[perfSpan];
+  const meta=document.getElementById('perf-meta'); if(meta) meta.textContent='BCE · Frankfurter'+(ISO_DAY.test(PERF.date)?' · cours du '+fmtMeetDate(PERF.date):'');
+  if(!then){ body.innerHTML='<div class="empty-mini">Pas de cours de comparaison pour cette période.</div>'; return; }
+  const avg=PERF_CCY.map(x=>({code:x,v:PERF_CCY.filter(y=>y!==x).reduce((s,y)=>s+perfChg(x,y,then),0)/(PERF_CCY.length-1)})).sort((a,b)=>b.v-a.v);
+  const mx=Math.max(...avg.map(a=>Math.abs(a.v)),0.01);
+  let cellMax=0.01; PERF_CCY.forEach(x=>PERF_CCY.forEach(y=>{ if(x!==y) cellMax=Math.max(cellMax,Math.abs(perfChg(x,y,then))); }));
+  const order=avg.map(a=>a.code);
+  body.innerHTML='<div class="perf-grid"><div><div class="sec-h" style="margin-top:0">Force moyenne contre les 7 autres</div><div class="perf-rank">'+avg.map(a=>{
+      const w=Math.abs(a.v)/mx*50, pos=a.v>=0;
+      return '<div class="perf-row"><b>'+a.code+'</b><span class="dmx-div" role="img" aria-label="'+a.code+' '+fmtPct(a.v)+'"><i style="'+(pos?'left:50%':'right:50%')+';width:'+w.toFixed(1)+'%;background:var(--'+(pos?'up':'down')+')"></i></span><em class="'+(pos?'up':'down')+'">'+fmtPct(a.v)+'</em></div>';
+    }).join('')+'</div></div>'
+    +'<div><div class="sec-h" style="margin-top:0">Chaque devise (ligne) contre chaque autre (colonne)</div><div class="tbl-scroll"><table class="ptbl"><thead><tr><th></th>'+order.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'
+    +order.map(x=>'<tr><td>'+x+'</td>'+order.map(y=>{
+      if(x===y) return '<td class="dg">—</td>';
+      const v=perfChg(x,y,then), a=(Math.abs(v)/cellMax*0.34).toFixed(2);
+      return '<td class="'+(v>=0?'up':'down')+'" style="background:color-mix(in srgb,var(--'+(v>=0?'up':'down')+') '+Math.round(a*100)+'%,transparent)">'+fmtPct(v)+'</td>';
+    }).join('')+'</tr>').join('')+'</tbody></table></div></div></div>'
+    +'<div class="foot" style="margin-top:10px">Cours de référence quotidiens de la BCE (un cours par jour ouvré, pas du temps réel). Lecture : sur la ligne EUR, colonne USD, une valeur positive signifie que l\'euro a monté contre le dollar sur la période.</div>';
+}
+
+/* ---------- Marchés : détail du Fear & Greed (sous-indicateurs CNN) ---------- */
+const FG_IND_LBL={market_momentum_sp500:'Momentum du S&P 500',market_momentum_sp125:'S&P 500 contre sa moyenne 125 jours',stock_price_strength:'Force des cours (plus hauts / plus bas)',
+  stock_price_breadth:'Largeur du marché (volumes)',put_call_options:'Options put / call',market_volatility_vix:'Volatilité (VIX)',market_volatility_vix_50:'VIX contre sa moyenne 50 jours',
+  junk_bond_demand:'Appétit pour le haut rendement',safe_haven_demand:'Demande de valeurs refuges'};
+function renderFgDetail(){
+  const el=document.getElementById('fgd-body'); if(!el) return;
+  if(FG.value==null){ el.innerHTML='<div class="empty-mini">'+escH(FG.asof||'Indice indisponible pour le moment.')+'</div>'; return; }
+  const cmp=(l,v)=>v==null?'':'<span>'+l+'<b>'+v+'</b><small class="'+(FG.value>v?'up':FG.value<v?'down':'')+'">'+(FG.value===v?'inchangé':(FG.value>v?'+':'−')+Math.abs(FG.value-v)+' depuis')+'</small></span>';
+  let html='<div class="kpis"><span>Indice<b>'+FG.value+' · '+escH(FG.label)+'</b><small>'+escH(FG.asof||'')+'</small></span>'+cmp('Veille',FG.prior)+cmp('Il y a 1 semaine',FG.week)+cmp('Il y a 1 mois',FG.month)+cmp('Il y a 1 an',FG.year)+'</div>';
+  const hist=(FG.history||[]).map(p=>+p[1]).filter(isFinite);
+  if(hist.length>10) html+='<div class="sec-h">Indice sur '+hist.length+' séances</div>'+sparkSVG(hist,false).replace('class="spark"','class="spark" style="height:54px"');
+  const inds=(FG.indicators||[]).filter(i=>isFinite(+i.score));
+  if(inds.length){
+    html+='<div class="sec-h">Les composantes (0 = peur extrême, 100 = avidité extrême)</div>'+inds.map(i=>{
+      const v=Math.round(+i.score), lbl=fgLabelOf(v,i.rating);
+      return '<div class="mrow"><span class="lb" title="'+escH(FG_IND_LBL[i.key]||i.key)+'">'+escH(FG_IND_LBL[i.key]||i.key.replace(/_/g,' '))+'</span><span class="meter" role="img" aria-label="'+v+' sur 100"><i style="width:'+Math.max(0,Math.min(100,v))+'%"></i></span><span class="sc">'+v+'</span><span class="rt">'+escH(lbl)+'</span></div>';
+    }).join('');
+  } else html+='<div class="empty-mini" style="padding:12px">Le détail des composantes arrivera à la prochaine actualisation de l\'indice (30 minutes au plus).</div>';
+  el.innerHTML=html;
+}
+
+/* ---------- Marchés : tension géopolitique (GDELT, part des articles mondiaux par thème) ---------- */
+let GEO={themes:[],at:0,err:''}, geoLoading=false;
+async function loadGeo(force){
+  if(geoLoading) return;
+  const c=!force&&lsGet('fxmt_geo',3*3600*1000);
+  if(c&&c.themes&&c.themes.length){ GEO=c; renderGeo(); return; }
+  geoLoading=true; renderGeo();
+  try{ const j=await apiJSON('/api/gdelt'); if(!j.themes||!j.themes.length) throw new Error('réponse vide'); GEO={themes:j.themes,at:j.at||Date.now(),err:''}; lsSet('fxmt_geo',GEO); }
+  catch(e){ GEO={themes:[],at:0,err:e.message||'indisponible'}; }
+  geoLoading=false; renderGeo();
+}
+function renderGeo(){
+  const el=document.getElementById('geo-body'); if(!el) return;
+  if(geoLoading&&!GEO.themes.length){ el.innerHTML='<div class="empty-mini">Interrogation de GDELT… la première lecture peut prendre une trentaine de secondes.</div>'; return; }
+  if(!GEO.themes.length){ el.innerHTML='<div class="empty-mini">Indisponible ('+escH(GEO.err||'aucune donnée')+'). <button type="button" class="tbtn" onclick="loadGeo(true)">Réessayer</button></div>'; return; }
+  const mean=a=>a.length?a.reduce((s,v)=>s+v,0)/a.length:0;
+  el.innerHTML='<div class="mrow geo-row" style="font-family:var(--font-num);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)"><span>Thème</span><span>3 mois</span><span style="text-align:right">7 j vs 30 j</span></div>'
+    +GEO.themes.map(t=>{
+      const v=t.series.map(p=>+p[1]), last7=mean(v.slice(-7)), base=mean(v.slice(-37,-7));
+      const chg=base>0?(last7/base-1)*100:0, cls=chg>=15?'down':chg<=-15?'up':'';
+      return '<div class="mrow geo-row"><span class="lb">'+escH(t.label)+'</span>'+sparkSVG(v,false)+'<span class="rt '+cls+'" style="font-family:var(--font-num)">'+(chg>=15?'▲ en hausse ':chg<=-15?'▼ en baisse ':'stable ')+fmtPct(chg,0)+'</span></div>';
+    }).join('')
+    +'<div class="foot" style="margin-top:10px">Part des articles de presse mondiaux qui traitent de chaque thème (GDELT). On compare la moyenne des 7 derniers jours à celle des 30 jours précédents : une hausse marquée signale un regain de tension, à recouper avec les actualités.</div>';
+}
+
+/* ---------- Rendements des emprunts d'État (vue Taux) et pétrole (vue Marchés) : route /api/rates ---------- */
+const YLD_ROWS=[['USD','🇺🇸','États-Unis'],['EUR','🇪🇺','Zone euro'],['CAD','🇨🇦','Canada'],['JPY','🇯🇵','Japon']];
+let RATES={yields:{},oil:null,sources:[],at:0,err:''}, ratesLoading=false, ratesAsked=false;
+async function loadRates(force){
+  if(ratesLoading||(ratesAsked&&!force)){ renderYields(); renderOil(); return; }
+  ratesAsked=true;
+  const c=!force&&lsGet('fxmt_rates',2*3600*1000);
+  if(c&&(c.oil||Object.keys(c.yields||{}).length)){ RATES=c; renderYields(); renderOil(); return; }
+  ratesLoading=true; renderYields(); renderOil();
+  try{ const j=await apiJSON('/api/rates'); RATES={yields:j.yields||{},oil:j.oil||null,sources:j.sources||[],at:j.at||Date.now(),err:''}; lsSet('fxmt_rates',RATES); }
+  catch(e){ RATES={yields:{},oil:null,sources:[],at:0,err:e.message||'indisponible'}; }
+  ratesLoading=false; renderYields(); renderOil();
+}
+const fmt2=v=>(+v).toFixed(2).replace('.',',');
+const fmtBp=d=>(d>0?'+':d<0?'−':'')+Math.round(Math.abs(d))+' pb';
+function yldStat(a){   // a : [[date, valeur]…] du plus ancien au plus récent
+  if(!a||!a.length) return null;
+  const last=a[a.length-1], wk=a.length>5?a[a.length-6]:null;
+  return {d:last[0],v:+last[1],dw:wk?(last[1]-wk[1])*100:null,vals:a.map(p=>+p[1])};
+}
+function renderYields(){
+  const el=document.getElementById('yld-body'); if(!el) return;
+  const rows=YLD_ROWS.filter(r=>RATES.yields[r[0]]);
+  if(ratesLoading&&!rows.length){ el.innerHTML='<div class="empty-mini">Chargement des rendements…</div>'; return; }
+  if(!rows.length){ el.innerHTML='<div class="empty-mini">Rendements indisponibles ('+escH(RATES.err||(RATES.sources||[]).join(' · ')||'aucune donnée')+'). <button type="button" class="tbtn" onclick="loadRates(true)">Réessayer</button></div>'; return; }
+  const us=yldStat((RATES.yields.USD||{}).y10);
+  const cell=(s,k)=>s?'<td class="n"><b>'+fmt2(s.v)+' %</b></td><td class="n" style="color:var(--'+(s.dw>0?'up':s.dw<0?'down':'ink-soft')+')">'+(s.dw==null?'—':fmtBp(s.dw))+'</td>':'<td class="n">—</td><td class="n">—</td>';
+  el.innerHTML='<div class="tbl-scroll"><table class="ctbl" style="min-width:640px"><thead><tr><th>Pays</th><th class="n">2 ans</th><th class="n">Δ 1 sem.</th><th class="n">10 ans</th><th class="n">Δ 1 sem.</th><th class="n">Pente 10 − 2 ans</th><th class="n">Écart 10 ans vs US</th><th>10 ans, 2 mois</th></tr></thead><tbody>'
+    +rows.map(([c,flag,name])=>{
+      const y=RATES.yields[c], s2=yldStat(y.y2), s10=yldStat(y.y10);
+      return '<tr style="cursor:default" title="'+escH(y.src||'')+(s10?' · '+s10.d:'')+'"><td>'+flag+' <b>'+name+'</b></td>'+cell(s2)+cell(s10)
+        +'<td class="n">'+(s2&&s10?fmtBp((s10.v-s2.v)*100):'—')+'</td><td class="n">'+(c==='USD'?'—':(s10&&us?fmtBp((s10.v-us.v)*100):'—'))+'</td>'
+        +'<td style="width:130px">'+(s10?sparkSVG(s10.vals,false):'')+'</td></tr>';
+    }).join('')+'</tbody></table></div>'
+    +'<div class="foot" style="margin-top:10px">pb = point de base (0,01 %). Sources : '+rows.map(r=>escH(RATES.yields[r[0]].src)).join(' ; ')+'. '
+    +(YLD_ROWS.length>rows.length?'Sans réponse pour le moment : '+YLD_ROWS.filter(r=>!RATES.yields[r[0]]).map(r=>r[2]).join(', ')+'. ':'')
+    +'Royaume-Uni, Suisse, Australie et Nouvelle-Zélande : pas encore de source ouverte branchée.</div>';
+  const meta=document.getElementById('yld-meta'), d=us?us.d:(rows.length?(yldStat(RATES.yields[rows[0][0]].y10)||{}).d:'');
+  if(meta&&ISO_DAY.test(d||'')) meta.textContent='au '+fmtMeetDate(d);
+}
+function renderOil(){
+  const el=document.getElementById('oil-body'); if(!el) return;
+  const o=RATES.oil;
+  if(ratesLoading&&!o){ el.innerHTML='<div class="empty-mini">Chargement…</div>'; return; }
+  if(!o||!o.stocks||!o.stocks.length){ el.innerHTML='<div class="empty-mini">Données pétrole indisponibles ('+escH(RATES.err||(RATES.sources||[]).filter(s=>/pétrole/.test(s)).join(' · ')||'aucune donnée')+'). <button type="button" class="tbtn" onclick="loadRates(true)">Réessayer</button></div>'; return; }
+  const st=o.stocks, last=st[st.length-1], prev=st.length>1?st[st.length-2]:null, yr=st.length>52?st[st.length-53]:null;
+  const mb=v=>(v/1000).toFixed(1).replace('.',',')+' Mb', dmb=d=>(d>0?'+':d<0?'−':'')+(Math.abs(d)/1000).toFixed(1).replace('.',',')+' Mb';
+  const w=o.wti||[], wl=w.length?w[w.length-1]:null, ww=w.length>5?w[w.length-6]:null;
+  const dW=prev?last[1]-prev[1]:null;
+  el.innerHTML='<div class="kpis">'
+    +'<span>Stocks de brut (hors réserve stratégique)<b>'+mb(last[1])+'</b><small>semaine au '+fmtMeetDate(last[0])+'</small></span>'
+    +(dW!=null?'<span>Variation sur 1 semaine<b>'+dmb(dW)+'</b><small>'+(dW<0?'déstockage : offre plus tendue':dW>0?'stocks en hausse : offre plus abondante':'inchangé')+'</small></span>':'')
+    +(yr?'<span>Sur 1 an<b>'+dmb(last[1]-yr[1])+'</b><small>contre '+mb(yr[1])+'</small></span>':'')
+    +(wl?'<span>WTI<b>'+fmt2(wl[1])+' $</b><small>'+(ww?fmtPct((wl[1]/ww[1]-1)*100,1)+' sur 1 semaine · ':'')+fmtMeetDate(wl[0])+'</small></span>':'')
+    +'</div><div class="sec-h">Stocks de brut sur '+st.length+' semaines</div>'+sparkSVG(st.map(p=>+p[1]),false).replace('class="spark"','class="spark" style="height:60px"')
+    +'<div class="foot" style="margin-top:10px">Mb = million de barils. Source : '+escH(o.src||'EIA')+', publication hebdomadaire (le mercredi). Le dollar canadien suit souvent le pétrole : un déstockage inattendu soutient le brut, et le CAD avec lui.</div>';
+}
+
 /* ---------- Calendrier économique (ForexFactory via /api/calendar) ---------- */
 const CAL_CCY=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD','CNY'];
 const CAL_IMP={high:[3,'Fort'],medium:[2,'Moyen'],low:[1,'Faible'],holiday:[0,'Férié']};
@@ -3374,7 +3611,36 @@ const CMP_IND={
   unemp:{label:'Chômage',long:'Taux de chômage',unit:'%'},
   emp:{label:'Emploi',long:'Taux d\'emploi — part de la population en âge de travailler qui a un emploi',unit:'%',
        caveat:'Taux d\'emploi : chaque pays a sa tranche d\'âge de référence, la comparaison est indicative.'},
+  core:{label:'Inflation cœur',long:'Inflation sous-jacente (hors énergie et alimentation), sur un an',unit:'%'},
+  gdp:{label:'PIB',long:'Croissance du PIB sur un trimestre',unit:'%',caveat:'PIB : les États-Unis publient un rythme annualisé, les autres une variation trimestrielle — à ne pas comparer tel quel.'},
+  retail:{label:'Ventes au détail',long:'Ventes au détail sur un mois',unit:'%'},
+  pmi:{label:'PMI manuf.',long:'PMI manufacturier (au-dessus de 50 : activité en expansion)',unit:''},
+  rate:{label:'Taux directeur',long:'Taux directeur de la banque centrale',unit:'%'},
 };
+const cmpVal=(ind,v)=>fmt1(v)+(CMP_IND[ind].unit?' '+CMP_IND[ind].unit:'');
+let cmpAuto=0, cmpAutoErr='';
+/* Reprend dans le relevé les chiffres plus récents publiés au calendrier (route /api/macro). */
+function cmpMerge(live){
+  let n=0;
+  Object.keys(live||{}).forEach(ind=>{
+    if(!CMP_IND[ind]) return;
+    const slot=(CMP.indicators[ind]=CMP.indicators[ind]||{});
+    Object.keys(live[ind]).forEach(ccy=>{
+      if(!CMP_CCY.includes(ccy)) return;
+      const x=live[ind][ccy], v=+x.v; let p=String(x.p||'');
+      if(!isFinite(v)||!/^\d{4}-(\d{2}|Q[1-4])$/.test(p)) return;
+      const s=slot[ccy];
+      if(!s){ slot[ccy]={freq:/Q/.test(p)?'Q':'M',src:'calendrier économique',series:[[p,v]],auto:true}; n++; return; }
+      if(s.freq==='Q'&&!/Q/.test(p)) p=p.slice(0,4)+'-Q'+Math.ceil(+p.slice(5)/3);
+      if(s.freq!=='Q'&&/Q/.test(p)) return;                       // périodicités incompatibles : on garde le relevé
+      const last=s.series[s.series.length-1];
+      if((ind==='cpi'||ind==='unemp')&&Math.abs(v-last[1])>2.5) return;   // garde-fou : un écart pareil signale une autre série
+      if(p>last[0]){ s.series.push([p,v]); s.auto=true; n++; }
+      else if(p===last[0]&&v!==+last[1]){ last[1]=v; s.auto=true; n++; }
+    });
+  });
+  return n;
+}
 /* Étiquettes de la carte : position (lon, lat) et, si l'étiquette est déportée, le point visé. */
 const CMP_LBL={USD:{at:[-99,39]},CAD:{at:[-108,60]},EUR:{at:[-34,40],to:[0,46.5]},GBP:{at:[-34,62],to:[-2.5,54]},
   CHF:{at:[10,25],to:[8.2,46.6]},JPY:{at:[163,27],to:[139,36]},AUD:{at:[134,-25]},NZD:{at:[156,-56],to:[171.5,-43]}};
@@ -3383,6 +3649,13 @@ async function loadCompare(){
   try{ const r=await fetch('compare-data.json',{cache:'no-cache'}); if(!r.ok) throw new Error('HTTP '+r.status); CMP=await r.json(); cmpErr=''; }
   catch(e){ CMP=null; cmpErr=e.message||'indisponible'; }
   if(!land.features.length&&typeof loadWorld==='function'){ try{ await loadWorld(); }catch(e){} }
+  renderCompare();
+  if(!CMP) return;
+  try{
+    let live=lsGet('fxmt_macro',3*3600*1000);
+    if(!live){ live=(await apiJSON('/api/macro')).indicators; lsSet('fxmt_macro',live); }
+    cmpAuto=cmpMerge(live); cmpAutoErr='';
+  }catch(e){ cmpAutoErr=e.message||'indisponible'; }
   renderCompare();
 }
 function cmpLast(ind,code){
@@ -3439,7 +3712,7 @@ function renderCompare(){
   const desc=document.getElementById('cmp-desc');
   if(desc) desc.innerHTML='<b>'+escH(meta.long)+'.</b> Les huit économies que tu trades sont en couleur ; clique un pays, une étiquette ou une ligne du classement pour ouvrir sa fiche.';
   drawCompareMap();
-  leg.innerHTML='<span>'+fmt1(sc.mn)+' %</span><span class="ramp" role="img" aria-label="Du plus foncé (valeur basse) au plus clair (valeur haute)"></span><span>'+fmt1(sc.mx)+' %</span>'
+  leg.innerHTML='<span>'+cmpVal(cmpInd,sc.mn)+'</span><span class="ramp" role="img" aria-label="Du plus foncé (valeur basse) au plus clair (valeur haute)"></span><span>'+cmpVal(cmpInd,sc.mx)+'</span>'
     +'<span>plus la valeur est élevée, plus la couleur est claire</span>'
     +(sc.n<CMP_CCY.length?'<span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--land),var(--land) 2px,var(--card) 2px,var(--card) 4px)"></i> donnée absente</span>':'')
     +'<span><i class="sw" style="background:var(--land)"></i> hors des 8 devises</span>';
@@ -3454,23 +3727,24 @@ function renderCompare(){
     const d=[]; if(prev!=null) d.push(fmtPt(x.v-prev)+' vs publication précédente'); if(ya!=null) d.push(fmtPt(x.v-ya)+' sur un an');
     return '<button type="button" class="cmp-kpi" aria-pressed="'+(cmpInd===k)+'" onclick="setCmpInd(\''+k+'\')">'
       +'<span class="cmp-kpi-l">'+CMP_IND[k].label+'</span>'+sparkSVG(x.series.map(s=>+s[1]),false)
-      +'<span class="cmp-kpi-v">'+fmt1(x.v)+' %</span>'
+      +'<span class="cmp-kpi-v">'+cmpVal(k,x.v)+'</span>'
       +'<span class="cmp-kpi-m">'+bits.join(' · ')+(d.length?'<br>'+d.join(' · '):'')+(x.note?'<br>'+escH(x.note):'')+'</span></button>';
   }).join('');
   // classement sur l'indicateur choisi, avec les deux autres en regard
-  const others=Object.keys(CMP_IND).filter(k=>k!==cmpInd), ranked=cmpRanked(cmpInd);
-  const top=Math.max(...ranked.filter(a=>a.x).map(a=>a.x.v),0)||1;
+  const others=['cpi','unemp','rate'].filter(k=>k!==cmpInd).slice(0,2), ranked=cmpRanked(cmpInd);
+  const top=Math.max(...ranked.filter(a=>a.x).map(a=>Math.abs(a.x.v)),0)||1;
   rank.innerHTML='<div class="cmp-r h"><span>#</span><span>Économie</span><span>'+escH(meta.label)+'</span><span style="text-align:right">Valeur</span><span style="text-align:right">Période</span>'
     +others.map(k=>'<span class="o">'+CMP_IND[k].label+'</span>').join('')+'</div>'
     +ranked.map((a,i)=>{
       const cc=CCY_BY[a.code], x=a.x;
       return '<button type="button" class="cmp-r" aria-pressed="'+(cmpSel===a.code)+'" onclick="setCmpSel(\''+a.code+'\')">'
         +'<span class="rk">'+(x?i+1:'—')+'</span><span class="nm"><b>'+cc.flag+' '+a.code+'</b><span>'+escH(cc.country)+'</span></span>'
-        +'<span class="bar">'+(x?'<i style="width:'+Math.max(2,x.v/top*100).toFixed(1)+'%;background:'+sc.color(x.v)+'"></i>':'')+'</span>'
-        +'<span class="v">'+(x?fmt1(x.v)+' %':'n.d.')+'</span><span class="p">'+(x?cmpPeriod(x.p)+(cmpStale(x)?' <span class="stale">!</span>':''):'')+'</span>'
-        +others.map(k=>{ const y=cmpLast(k,a.code); return '<span class="o">'+(y?'<b>'+fmt1(y.v)+' %</b>':'n.d.')+'</span>'; }).join('')+'</button>';
+        +'<span class="bar">'+(x?'<i style="width:'+Math.max(2,Math.abs(x.v)/top*100).toFixed(1)+'%;background:'+sc.color(x.v)+'"></i>':'')+'</span>'
+        +'<span class="v">'+(x?cmpVal(cmpInd,x.v):'n.d.')+'</span><span class="p">'+(x?cmpPeriod(x.p)+(cmpStale(x)?' <span class="stale">!</span>':''):'')+'</span>'
+        +others.map(k=>{ const y=cmpLast(k,a.code); return '<span class="o">'+(y?'<b>'+cmpVal(k,y.v)+'</b>':'n.d.')+'</span>'; }).join('')+'</button>';
     }).join('');
-  foot.innerHTML='Source : '+escH(CMP.source||'')+'. '+escH(CMP.note||'')+(meta.caveat?' '+escH(meta.caveat):'')+' Un « ancien » signale une période dépassée de plus de trois mois (six pour un chiffre trimestriel).';
+  foot.innerHTML='Source : '+escH(CMP.source||'')+'. '+escH(CMP.note||'')+(meta.caveat?' '+escH(meta.caveat):'')+' Un « ancien » signale une période dépassée de plus de trois mois (six pour un chiffre trimestriel).'
+    +(cmpAuto?' Mise à jour automatique : '+cmpAuto+' chiffre'+(cmpAuto>1?'s':'')+' plus récent'+(cmpAuto>1?'s':'')+' repris du calendrier économique.':cmpAutoErr?' Mise à jour automatique indisponible ('+escH(cmpAutoErr)+') : seul le relevé est affiché.':'');
 }
 function drawCompareMap(){
   const el=document.getElementById('cmp-map'); if(!el||!CMP||typeof d3==='undefined') return;
@@ -3501,7 +3775,7 @@ function drawCompareMap(){
   // étiquettes directes : code + valeur
   const fs=small?9:10.5, cw=fs*0.62, lh=fs+7;
   CMP_CCY.forEach(code=>{
-    const L=CMP_LBL[code], x=cmpLast(cmpInd,code), txt=small?code:(code+' '+(x?fmt1(x.v)+' %':'n.d.'));   // petit écran : le code seul, les valeurs sont dans le classement
+    const L=CMP_LBL[code], x=cmpLast(cmpInd,code), txt=small?code:(code+' '+(x?cmpVal(cmpInd,x.v):'n.d.'));   // petit écran : le code seul, les valeurs sont dans le classement
     const a=proj(L.at); if(!a) return;
     if(L.to){ const t=proj(L.to); if(t) s+='<line class="lead" x1="'+a[0].toFixed(1)+'" y1="'+a[1].toFixed(1)+'" x2="'+t[0].toFixed(1)+'" y2="'+t[1].toFixed(1)+'"/>'; }
     const w=txt.length*cw+10, px=Math.max(w/2+1,Math.min(W-w/2-1,a[0])), py=Math.max(lh/2+1,Math.min(H-lh/2-1,a[1]));
@@ -3513,7 +3787,7 @@ function drawCompareMap(){
   el.onpointermove=ev=>{
     const t=hit(ev); if(!t){ tip.hidden=true; return; }
     const code=t.getAttribute('data-c'), x=code?cmpLast(cmpInd,code):null, r=el.getBoundingClientRect();
-    tip.innerHTML=escH(t.getAttribute('data-n'))+(code?'<span>'+code+(x?' · '+fmt1(x.v)+' % · '+cmpPeriod(x.p):' · n.d.')+'</span>':'<span>hors des 8 devises</span>');
+    tip.innerHTML=escH(t.getAttribute('data-n'))+(code?'<span>'+code+(x?' · '+cmpVal(cmpInd,x.v)+' · '+cmpPeriod(x.p):' · n.d.')+'</span>':'<span>hors des 8 devises</span>');
     tip.style.left=Math.max(60,Math.min(r.width-60,ev.clientX-r.left))+'px'; tip.style.top=(ev.clientY-r.top)+'px'; tip.hidden=false;
   };
   el.onpointerleave=()=>{ tip.hidden=true; };

@@ -45,6 +45,8 @@
   --rx-hike:#2a78d6;--rx-hold:#898781;--rx-cut:#e34948;--rx-bps:#eb6834;
   /* planisphère : une seule teinte, du foncé (valeur basse) au clair (valeur haute) */
   --seq-lo:#0f2f5f;--seq-mid:#2f7fdc;--seq-hi:#bfe1ff;
+  /* calendrier : impact des publications */
+  --imp-high:#c93636;--imp-med:#e07b12;--imp-high-bg:rgba(201,54,54,.07);--imp-med-bg:rgba(224,123,18,.07);
   --fg1:#2a2d30;--fg2:#6b7075;--fg3:#a9aeb3;
   --font-ui:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
   --font-num:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -64,6 +66,7 @@
   --up-dim:rgba(99,185,139,.12);--down-dim:rgba(224,129,124,.12);--warn-dim:rgba(214,182,94,.12);--ink-dim:rgba(236,238,239,.07);
   --rx-hike:#3987e5;--rx-hold:#b4b2a9;--rx-cut:#e66767;--rx-bps:#d95926;
   --seq-lo:#1b4a8c;--seq-mid:#4c9bf0;--seq-hi:#d9edff;
+  --imp-high:#ea5f58;--imp-med:#f29a3f;--imp-high-bg:rgba(234,95,88,.09);--imp-med-bg:rgba(242,154,63,.08);
   --fg1:#d9dcdf;--fg2:#9aa0a5;--fg3:#5a6066;
   --shadow:0 18px 50px rgba(0,0,0,.55);
   color-scheme:dark;
@@ -680,15 +683,19 @@ button.dmx-sym:hover{text-decoration:underline}
 .kpis small.up{color:var(--up)}.kpis small.down{color:var(--down)}
 
 /* ---------- vue Calendrier ---------- */
-.cal-next{border:1px solid var(--ink);border-radius:3px;padding:9px 12px;margin-bottom:12px;font-size:13px;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:baseline}
+.cal-next{border:1px solid var(--ink);border-left-width:4px;border-radius:3px;padding:9px 12px;margin-bottom:12px;font-size:13px;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:baseline}
 .cal-next b{font-family:var(--font-num)}
+.cal-next.im3{border-color:var(--imp-high)}.cal-next.im2{border-color:var(--imp-med)}
 .cal-day{font-family:var(--font-num);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);padding:14px 4px 6px;border-bottom:1px solid var(--line-strong);display:flex;justify-content:space-between}
 .cal-day.today{color:var(--ink);font-weight:700}
-.cal-ev{display:grid;grid-template-columns:52px 46px 74px minmax(0,1fr) 84px 84px 84px;gap:12px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);font-size:12.5px}
+.cal-ev{display:grid;grid-template-columns:52px 46px 74px minmax(0,1fr) 84px 84px 84px;gap:12px;align-items:center;padding:8px 6px 8px 12px;border-bottom:1px solid var(--line);font-size:12.5px}
 .cal-ev.rng{grid-template-columns:52px 46px 74px minmax(0,1fr) 84px 84px 84px 110px}
-.cal-ev.h{font-family:var(--font-num);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:7px 4px}
+.cal-ev.h{font-family:var(--font-num);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:7px 6px 7px 12px}
+/* liseré et fond teinté : rouge pour un impact fort, orange pour un impact moyen */
+.cal-ev.im3{box-shadow:inset 4px 0 0 var(--imp-high);background:var(--imp-high-bg)}
+.cal-ev.im2{box-shadow:inset 4px 0 0 var(--imp-med);background:var(--imp-med-bg)}
 .cal-ev.past{opacity:.55}
-.cal-ev.nxt{background:var(--hover)}
+.cal-ev.nxt{outline:1px solid var(--ink);outline-offset:-1px}
 .cal-ev .tm{font-family:var(--font-num);font-variant-numeric:tabular-nums}
 .cal-ev .cc{font-family:var(--font-num);font-weight:700;font-size:11.5px}
 .cal-ev .ti{min-width:0;font-weight:500}
@@ -698,8 +705,14 @@ button.dmx-sym:hover{text-decoration:underline}
 .imp-g i{display:inline-flex;gap:2px;align-items:flex-end}
 .imp-g i u{width:3px;background:var(--line-strong);border-radius:1px;text-decoration:none}
 .imp-g i u:nth-child(1){height:5px}.imp-g i u:nth-child(2){height:8px}.imp-g i u:nth-child(3){height:11px}
-.imp-g.i1 u:nth-child(1),.imp-g.i2 u:nth-child(-n+2),.imp-g.i3 u{background:var(--ink)}
-.imp-g.i3{color:var(--ink);font-weight:700}
+.imp-g.i1 u:nth-child(1){background:var(--ink-soft)}
+.imp-g.i2 u:nth-child(-n+2){background:var(--imp-med)}
+.imp-g.i3 u{background:var(--imp-high)}
+.imp-g b{font-weight:600;border-radius:2px;padding:1px 6px;letter-spacing:.02em}
+.imp-g.i3 b{background:#c93636;color:#fff}
+.imp-g.i2 b{background:#ef8a1f;color:#231300}
+.imp-g.i1 b,.imp-g.i0 b{font-weight:400;padding:0}
+.key i.imp-h{background:var(--imp-high)}.key i.imp-m{background:var(--imp-med)}.key i.imp-l{background:var(--line-strong)}
 @media (max-width:860px){
   .cal-ev.h{display:none}
   .cal-ev,.cal-ev.rng{grid-template-columns:46px 40px minmax(0,1fr) auto;gap:4px 10px}
@@ -3518,6 +3531,7 @@ function renderCal2(){
   const hasNext=CAL.events.some(e=>e.week==='nextweek');
   tools.innerHTML='<div class="seg"><span class="seg-l">Semaine</span>'+seg(calWeek,'setCalWeek',[['thisweek','Cette semaine']].concat(hasNext?[['nextweek','Semaine prochaine']]:[]))+'</div>'
     +'<div class="seg"><span class="seg-l">Impact</span>'+seg(calImp,'setCalImp',[[3,'Fort'],[2,'Moyen et fort'],[0,'Tout']])+'</div>'
+    +'<span class="key"><i class="imp-h"></i>fort</span><span class="key"><i class="imp-m"></i>moyen</span><span class="key"><i class="imp-l"></i>faible</span>'
     +'<div class="seg"><span class="seg-l">Devise</span>'+seg(calCcy,'setCalCcy',[['MINE','Mes 8 devises'],['ALL','Toutes']].concat(CAL_CCY.filter(c=>CAL.events.some(e=>e.ccy===c)).map(c=>[c,c])))+'</div>';
   const foot=document.getElementById('cal-foot'), meta=document.getElementById('cal-meta');
   if(calLoading&&!CAL.events.length){ body.innerHTML='<div class="empty-mini">Chargement du calendrier…</div>'; return; }
@@ -3528,7 +3542,7 @@ function renderCal2(){
   const list=CAL.events.filter(e=>e.week===calWeek&&(calCcy==='ALL'||(calCcy==='MINE'?mine.includes(e.ccy):e.ccy===calCcy))&&((CAL_IMP[e.impact]||[1])[0]>=calImp||(calImp<3&&e.impact==='holiday')));
   const rng=list.some(e=>e.low||e.high);
   const next=list.find(e=>e.t>now&&e.impact!=='holiday');
-  let html=next?'<div class="cal-next"><span>Prochaine publication</span><b>'+escH(next.ccy)+'</b><span>'+escH(next.title)+'</span><b>'+calCountdown(next.t)+'</b></div>':'';
+  let html=next?'<div class="cal-next im'+(CAL_IMP[next.impact]||[1])[0]+'"><span>Prochaine publication</span><b>'+escH(next.ccy)+'</b><span>'+escH(next.title)+'</span><b>'+calCountdown(next.t)+'</b></div>':'';
   if(!list.length) html+='<div class="empty-mini">Aucune publication pour ces filtres.</div>';
   else{
     html+='<div class="cal-ev h'+(rng?' rng':'')+'"><span>Heure</span><span>Devise</span><span>Impact</span><span>Publication</span><span class="n">Publié</span><span class="n">Consensus</span><span class="n">Précédent</span>'+(rng?'<span class="n">Bas – haut</span>':'')+'</div>';
@@ -3538,9 +3552,9 @@ function renderCal2(){
       const d=new Date(e.t*1000), k=d.toDateString();
       if(k!==day){ day=k; html+='<div class="cal-day'+(k===todayK?' today':'')+'"><span>'+d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</span><span>'+(k===todayK?'aujourd\'hui':'')+'</span></div>'; }
       const im=CAL_IMP[e.impact]||[1,'Faible'], allDay=e.impact==='holiday';
-      html+='<div class="cal-ev'+(rng?' rng':'')+(e.t<now?' past':'')+(e===next?' nxt':'')+'">'
+      html+='<div class="cal-ev im'+im[0]+(rng?' rng':'')+(e.t<now?' past':'')+(e===next?' nxt':'')+'">'
         +'<span class="tm">'+(allDay?'—':d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}))+'</span><span class="cc">'+escH(e.ccy)+'</span>'
-        +'<span class="imp-g i'+im[0]+'"><i><u></u><u></u><u></u></i>'+im[1]+'</span><span class="ti">'+escH(e.title)+'</span>'
+        +'<span class="imp-g i'+im[0]+'"><i><u></u><u></u><u></u></i><b>'+im[1]+'</b></span><span class="ti">'+escH(e.title)+'</span>'
         +'<span class="n act" data-l="publié">'+escH(e.actual||'')+'</span><span class="n" data-l="consensus">'+escH(e.forecast||'')+'</span><span class="n" data-l="précédent">'+escH(e.previous||'')+'</span>'
         +(rng?'<span class="n" data-l="bas – haut">'+((e.low||e.high)?escH((e.low||'?')+' – '+(e.high||'?')):'')+'</span>':'')+'</div>';
     });

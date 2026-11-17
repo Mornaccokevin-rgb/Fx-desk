@@ -155,12 +155,17 @@ h1{margin:0;font-size:clamp(18px,2.4vw,24px);font-weight:700;letter-spacing:-0.0
 .empty-mini{padding:22px 10px;text-align:center;color:var(--ink-soft);font-size:12.5px;line-height:1.55}
 .note-banner{background:var(--warn-dim);border:1px solid var(--line);border-radius:3px;padding:10px 13px;font-size:11.5px;color:var(--ink-soft);line-height:1.55;margin-bottom:12px}
 .note-banner b{color:var(--ink)}
-.deck{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
-@media (max-width:860px){.deck{grid-template-columns:minmax(0,1fr)}}
 
-/* ---------- strip : sessions + fear & greed ---------- */
-.strip{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
-@media (max-width:860px){.strip{grid-template-columns:minmax(0,1fr)}}
+/* ---------- sessions + fear & greed : deux cartes de même hauteur, contenu étalé ---------- */
+.card.sessions,.card.fg{display:flex;flex-direction:column}
+.sessions .tl{flex:1;display:flex;flex-direction:column}
+#sessBands{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;padding:4px 0}
+.sessions .track{padding:0}
+.sessions .rail-bg{height:15px}
+.sessions .tname{font-size:12.5px}
+.fg .fg-body{flex:1;justify-content:center;gap:12px 28px}
+#fgGauge svg{width:min(220px,100%);height:auto;display:block}
+.fg .fg-val{font-size:38px}
 .tl{position:relative}
 .track{display:grid;grid-template-columns:62px minmax(0,1fr) 74px;gap:8px;align-items:center;padding:2.5px 0}
 .tname{font-size:11.5px;color:var(--ink-soft)}
@@ -188,12 +193,12 @@ h1{margin:0;font-size:clamp(18px,2.4vw,24px);font-weight:700;letter-spacing:-0.0
 .calwhat{font-size:12px;font-weight:500;line-height:1.3}
 .calexp{font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft)}
 
-/* ---------- grille principale ---------- */
-.board{display:grid;gap:16px;grid-template-columns:176px minmax(0,1fr) minmax(0,440px);align-items:start}
-@media (max-width:1240px){.board{grid-template-columns:160px minmax(0,1fr)}.read{grid-column:1 / -1}}
-@media (max-width:720px){
+/* ---------- globe (à gauche) + devises par rang (à droite) ---------- */
+.board-tile{container-type:inline-size}
+.board{display:grid;gap:18px;grid-template-columns:minmax(0,1fr) 236px;align-items:start}
+@container (max-width:640px){
   .board{grid-template-columns:minmax(0,1fr)}
-  .board .rail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .board .rail{order:-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
   .board .rail .rail-label{grid-column:1 / -1}
   .board .rail .ccy-rank{display:none}
   .board .rail button{padding:8px 8px;gap:6px}
@@ -221,11 +226,11 @@ h1{margin:0;font-size:clamp(18px,2.4vw,24px);font-weight:700;letter-spacing:-0.0
 .ccy-score.up{color:var(--up)}.ccy-score.down{color:var(--down)}.ccy-score.flat{color:var(--ink-soft)}
 
 /* ---------- globe ---------- */
-.stage{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0}
 .stage-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .stage-title{font-size:15px;font-weight:600;letter-spacing:-0.01em}
 .stage-sub{font-family:var(--font-num);font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
-.globe-box{position:relative;width:100%;aspect-ratio:1/1;max-width:100%;max-height:52vh;margin:0 auto;cursor:grab}
+.globe-box{position:relative;width:100%;aspect-ratio:1/1;max-width:100%;max-height:60vh;min-height:280px;margin:0 auto;cursor:grab}
 .globe-box.hit{cursor:pointer}
 .globe-box.drag{cursor:grabbing}
 canvas#globe{display:block;width:100%;height:100%;touch-action:none}
@@ -239,29 +244,28 @@ canvas#globe{display:block;width:100%;height:100%;touch-action:none}
 .globe-score b{font-family:var(--font-num);font-size:34px;font-weight:700;letter-spacing:-.02em}
 .globe-score span{font-family:var(--font-num);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
 
-/* ---------- piliers ---------- */
-.pillars{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-@media (max-width:560px){.pillars{grid-template-columns:repeat(3,minmax(0,1fr))}.pillars button:first-child{grid-column:1 / -1}}
-.pillars button{
-  background:var(--card);border:1px solid var(--line);border-radius:3px;
-  padding:8px 5px;cursor:pointer;color:var(--ink);font-size:12px;font-weight:500;
-  display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;
-  transition:border-color .15s,background .15s;
-}
-.pillars button span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.pillars button:hover{border-color:var(--line-strong)}
-.pillars button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.pillars .score{font-family:var(--font-num);font-size:10px;letter-spacing:.06em;opacity:.8;text-align:center}
-.pillars .score.up{color:var(--up)}.pillars .score.down{color:var(--down)}
-.pillars button[aria-pressed="true"] .score{color:var(--paper);opacity:.85}
-
 /* ---------- lecture ---------- */
-.read{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0;overflow-wrap:anywhere}
+.read{display:flex;flex-direction:column;gap:12px;min-width:0;overflow-wrap:anywhere;container-type:inline-size}
+.read-head .read-title{font-size:17px}
+.ov-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px 36px;align-items:start}
+@container (min-width:820px){.ov-grid.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.ov-main,.ov-side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ov-side:empty{display:none}
+.ov-side .sec-h:first-child{margin-top:0}
+.ovpil{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@container (max-width:520px){.ovpil{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ovp{display:flex;flex-direction:column;gap:3px;min-width:0}
+.ovp em{font-style:normal;font-family:var(--font-num);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ovp b{font-family:var(--font-num);font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.ovp b small{font-size:10px;font-weight:400;color:var(--ink-soft)}
+.ovp b.up{color:var(--up)}.ovp b.down{color:var(--down)}
+.ovp i{display:block;height:5px;background:var(--hover);border-radius:2px;overflow:hidden}
+.ovp i u{display:block;height:100%;background:var(--ink);border-radius:2px;text-decoration:none}
 .read-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .read-title{font-size:15px;font-weight:600}
 .verdict{font-family:var(--font-num);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:2px;border:1px solid currentColor;white-space:nowrap}
 .verdict.up{color:var(--up)}.verdict.down{color:var(--down)}.verdict.flat{color:var(--flat)}
-.synthese{font-size:13px;color:var(--ink-soft);margin:0;max-width:62ch;line-height:1.55}
+.synthese{font-size:13.5px;color:var(--ink-soft);margin:0;max-width:75ch;line-height:1.6}
 .synthese strong{color:var(--ink)}
 .rows{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
 .row{
@@ -473,8 +477,30 @@ html.rx-lock,html.rx-lock body{overflow:hidden;overscroll-behavior:none}
 /* ---------- coquille : vues + panneau de contrôle ---------- */
 .shell{display:grid;grid-template-columns:minmax(0,1fr) 188px;gap:16px;align-items:start}
 .views{min-width:0}
-.view{display:flex;flex-direction:column;gap:16px;min-width:0}
+/* Chaque vue est une grille de cartes : pleine largeur, ou demi-largeur (deux cartes côte à côte, de même hauteur). */
+.view{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch;min-width:0}
 .view[hidden]{display:none}
+.view>*{grid-column:1 / -1;min-width:0}
+.view>[data-w="half"]{grid-column:auto}
+@media (max-width:860px){.view>[data-w="half"]{grid-column:1 / -1}}
+/* ---------- mode disposition ---------- */
+.layout-bar{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;border:1px solid var(--ink);border-radius:4px;padding:9px 12px;margin-bottom:16px;background:var(--card);font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+.layout-bar[hidden]{display:none}
+.layout-bar b{color:var(--ink)}
+.layout-act{display:flex;gap:8px;flex-wrap:wrap}
+.view>[data-tile]{position:relative}
+.tile-bar{display:none}
+body.layout-edit .view>[data-tile]::after{content:'';position:absolute;inset:0;z-index:20;border:2px dashed var(--line-strong);border-radius:4px;background:color-mix(in srgb,var(--paper) 45%,transparent)}
+body.layout-edit .view>[data-tile].dragging::after{border:2px solid var(--ink);background:color-mix(in srgb,var(--ink) 10%,transparent)}
+body.layout-edit .tile-bar{display:flex;position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:21;gap:4px;align-items:center;background:var(--card);border:1px solid var(--ink);border-radius:4px;padding:4px;box-shadow:var(--shadow);max-width:calc(100% - 16px);flex-wrap:nowrap;justify-content:center}
+.tile-bar .tb-name{font-size:11.5px;font-weight:600;color:var(--ink);padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;min-width:0;flex:0 1 auto}
+.tile-bar button{flex:none}
+.tile-bar button{background:var(--card);border:1px solid var(--line);border-radius:3px;color:var(--ink);font-size:12px;padding:5px 9px;cursor:pointer;font-family:var(--font-ui);white-space:nowrap}
+.tile-bar button:hover{border-color:var(--ink)}
+.tile-bar button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.tile-bar .tb-drag{cursor:grab;touch-action:none;background:var(--ink);color:var(--paper);border-color:var(--ink)}
+body.layout-dragging,body.layout-dragging *{cursor:grabbing!important;user-select:none;-webkit-user-select:none}
+@media (max-width:860px){.tile-bar .tb-w{display:none}}
 .ctl{position:sticky;top:12px;display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:10px 8px}
 .ctl-label{font-family:var(--font-num);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);padding:0 4px 6px}
 .ctl button{
@@ -750,6 +776,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
       <button type="button" class="tbtn" id="mc-import-btn" style="display:none" onclick="openCompassImport()" title="Importer les notes préparées par Claude">📥 Importer une mise à jour</button>
       <span class="livebadge off" id="liveBadge" title="Notes du Macro Compass en attente">figé</span>
       <span class="clock" id="clock">—</span>
+      <button type="button" class="tbtn" id="layoutBtn" onclick="toggleLayoutEdit()" aria-pressed="false" title="Déplacer et redimensionner les cartes de la page">Disposition</button>
       <button type="button" class="tbtn icon" id="themeBtn" onclick="toggleTheme()" title="Thème clair / sombre" aria-label="Changer de thème">☾</button>
     </div>
   </header>
@@ -761,36 +788,38 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
 
   <div class="shell">
     <main class="views" id="views">
-
-      <section class="view" data-view="macro" id="view-macro">
-      <div class="strip">
-        <section class="card sessions">
-          <div class="card-head">
-            <span class="card-title">Sessions de trading</span>
-            <span class="card-sub" id="sessNow"></span>
-          </div>
-          <div class="tl">
-            <div id="sessBands"></div>
-            <span class="nowbar" id="nowBar"></span>
-          </div>
-          <div class="ticks"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
-        </section>
-
-        <section class="card fg">
-          <div class="card-head"><span class="card-title">Fear &amp; Greed</span><span class="badge-est" id="fgBadge">CNN</span></div>
-          <div class="fg-body">
-            <div id="fgGauge"></div>
-            <div class="fg-read">
-              <div class="fg-val" id="fgVal">—</div>
-              <div class="fg-label" id="fgLabel">Chargement…</div>
-              <div class="fg-meta" id="fgMeta"></div>
-              <a class="srclink" id="fgLink" href="https://www.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener">CNN ↗</a>
-            </div>
-          </div>
-        </section>
+      <div class="layout-bar" id="layoutBar" hidden>
+        <span class="layout-txt" id="layoutTxt"></span>
+        <span class="layout-act"><button type="button" class="tbtn" onclick="layoutReset()">Réinitialiser cette page</button><button type="button" class="tbtn primary" onclick="toggleLayoutEdit(false)">Terminé</button></span>
       </div>
 
-      <section class="card cal" id="calCard" hidden>
+      <section class="view" data-view="macro" id="view-macro">
+      <section class="card sessions" data-tile="sessions" data-w="half">
+        <div class="card-head">
+          <span class="card-title">Sessions de trading</span>
+          <span class="card-sub" id="sessNow"></span>
+        </div>
+        <div class="tl">
+          <div id="sessBands"></div>
+          <span class="nowbar" id="nowBar"></span>
+        </div>
+        <div class="ticks"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+      </section>
+
+      <section class="card fg" data-tile="feargreed" data-w="half">
+        <div class="card-head"><span class="card-title">Fear &amp; Greed</span><span class="badge-est" id="fgBadge">CNN</span></div>
+        <div class="fg-body">
+          <div id="fgGauge"></div>
+          <div class="fg-read">
+            <div class="fg-val" id="fgVal">—</div>
+            <div class="fg-label" id="fgLabel">Chargement…</div>
+            <div class="fg-meta" id="fgMeta"></div>
+            <a class="srclink" id="fgLink" href="https://www.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener">CNN ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="card cal" id="calCard" data-tile="publications" hidden>
         <div class="card-head">
           <span class="card-title">Prochaines publications</span>
           <span class="card-sub" id="calSub"></span>
@@ -798,45 +827,50 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
         <div class="calrow" id="calRow"></div>
       </section>
 
-      <div class="board">
-        <nav class="rail" id="rail" aria-label="Devises">
-          <div class="rail-label"><span>Devises</span><span>par rang</span></div><span id="dash-updated" hidden></span>
-        </nav>
-
-        <section class="stage">
-          <div class="stage-head">
-            <div class="stage-title" id="stageTitle">—</div>
-            <div class="stage-sub" id="stageSub">—</div>
-          </div>
-          <div class="globe-box" id="globeBox">
-            <div class="globe-score" id="globeScore" hidden><b>—</b><span>/ 100</span></div>
-            <canvas id="globe"></canvas>
-            <div class="tip" id="tip" hidden></div>
-            <div class="zoomer">
-              <button type="button" id="zin" aria-label="Zoomer">+</button>
-              <button type="button" id="zout" aria-label="Dézoomer">−</button>
+      <section class="card board-tile" data-tile="globe">
+        <div class="board">
+          <section class="stage">
+            <div class="stage-head">
+              <div class="stage-title" id="stageTitle">—</div>
+              <div class="stage-sub" id="stageSub">—</div>
             </div>
-          </div>
-          <div class="globe-hint" id="hint">—</div>
-          <div class="pillars" id="pillars"></div>
-        </section>
+            <div class="globe-box" id="globeBox">
+              <div class="globe-score" id="globeScore" hidden><b>—</b><span>/ 100</span></div>
+              <canvas id="globe"></canvas>
+              <div class="tip" id="tip" hidden></div>
+              <div class="zoomer">
+                <button type="button" id="zin" aria-label="Zoomer">+</button>
+                <button type="button" id="zout" aria-label="Dézoomer">−</button>
+              </div>
+            </div>
+            <div class="globe-hint" id="hint">—</div>
+          </section>
 
-        <section class="read">
-          <div id="backWrap" hidden><button type="button" class="backbtn" id="back">← Retour</button></div>
-          <div class="read-head">
-            <div class="read-title" id="readTitle">—</div>
-            <span class="verdict flat" id="verdict">—</span>
+          <nav class="rail" id="rail" aria-label="Devises">
+            <div class="rail-label"><span>Devises</span><span>par rang</span></div><span id="dash-updated" hidden></span>
+          </nav>
+        </div>
+      </section>
+
+      <section class="card read" data-tile="overview">
+        <div class="read-head">
+          <div class="read-title" id="readTitle">—</div>
+          <span class="verdict flat" id="verdict">—</span>
+        </div>
+        <div class="ov-grid" id="ovGrid">
+          <div class="ov-main">
+            <p class="synthese" id="synthese"></p>
+            <div class="rows" id="rows"></div>
           </div>
-          <p class="synthese" id="synthese"></p>
-          <div class="rows" id="rows"></div>
-          <div class="foot" id="foot"></div>
-        </section>
-      </div>
+          <div class="ov-side" id="ovSide"></div>
+        </div>
+        <div class="foot" id="foot"></div>
+      </section>
 
       </section>
 
       <section class="view" data-view="graphiques" id="view-graphiques" hidden>
-        <section class="card">
+        <section class="card" data-tile="charts">
           <div class="card-head">
             <span class="card-title">Graphiques</span>
             <span class="card-sub"><span class="badge-est">TradingView</span></span>
@@ -848,7 +882,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
       </section>
 
       <section class="view" data-view="calendrier" id="view-calendrier" hidden>
-        <section class="card">
+        <section class="card" data-tile="calendar">
           <div class="card-head">
             <span class="card-title">Calendrier économique</span>
             <span class="card-sub"><a class="srclink" style="margin-top:0;align-self:center" href="https://www.interactivebrokers.co.uk/fr/education/econoday-events.php" target="_blank" rel="noopener">Fourchettes des attentes (Econoday) ↗</a><span class="badge-est" id="cal-meta">Calendrier</span><button type="button" class="news-refresh-btn" id="cal-refresh" onclick="loadCal(true)" title="Recharger le calendrier" aria-label="Recharger">↻</button></span>
@@ -860,7 +894,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
       </section>
 
       <section class="view" data-view="compare" id="view-compare" hidden>
-        <section class="card">
+        <section class="card" data-tile="compare">
           <div class="card-head">
             <span class="card-title">Comparer les économies</span>
             <span class="card-sub"><span class="badge-est" id="cmp-asof">—</span></span>
@@ -883,7 +917,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
       </section>
 
       <section class="view" data-view="taux" id="view-taux" hidden>
-      <section class="card" id="ratesCard">
+      <section class="card" id="ratesCard" data-tile="rates">
         <div class="card-head">
           <span class="card-title">Attentes de politique monétaire</span>
           <span class="card-sub"><span class="badge-est" id="rate-updated">EST · à actualiser</span></span>
@@ -901,18 +935,18 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
         <div class="rate-grid" id="rate-grid"></div>
       </section>
 
-        <section class="card">
+        <section class="card" data-tile="ratetable">
           <div class="card-head"><span class="card-title">Tableau comparé des banques centrales</span><span class="card-sub"><span class="badge-est">du taux le plus haut au plus bas</span></span></div>
           <div class="tbl-scroll"><table class="ctbl" id="rate-table"></table></div>
         </section>
-        <section class="card">
+        <section class="card" data-tile="yields">
           <div class="card-head"><span class="card-title">Rendements des emprunts d'État</span><span class="card-sub"><span class="badge-est" id="yld-meta">sources officielles</span></span></div>
           <div id="yld-body"><div class="empty-mini">Chargement des rendements…</div></div>
         </section>
       </section>
 
       <section class="view" data-view="cot" id="view-cot" hidden>
-        <section class="card">
+        <section class="card" data-tile="cot">
           <div class="card-head">
             <span class="card-title">Positionnement institutionnel — COT</span>
             <span class="card-sub"><span class="badge-est" id="cot-date">CFTC</span><button type="button" class="news-refresh-btn" id="cot-refresh" onclick="loadCot(true)" title="Recharger les données CFTC" aria-label="Recharger">↻</button></span>
@@ -926,11 +960,11 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
           <div class="cot-table" id="cot-table"><div class="empty-mini">Chargement des données COT…</div></div>
           <div class="foot" id="cot-foot" style="margin-top:10px"></div>
         </section>
-        <section class="card" id="cot-detail" hidden></section>
+        <section class="card" id="cot-detail-card" data-tile="cotdetail" hidden><div id="cot-detail"></div></section>
       </section>
 
       <section class="view" data-view="dmx" id="view-dmx" hidden>
-        <section class="card">
+        <section class="card" data-tile="dmx">
           <div class="card-head">
             <span class="card-title">DMX — positionnement des particuliers</span>
             <span class="card-sub"><span class="badge-est" id="dmx-meta">Myfxbook</span><button type="button" class="news-refresh-btn" id="dmx-refresh" onclick="loadDmx(true)" title="Recharger" aria-label="Recharger">↻</button></span>
@@ -938,7 +972,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
           <p class="lede"><b>Dumb Money indeX</b> : part des traders particuliers acheteurs et vendeurs sur chaque paire (communauté Myfxbook). Lecture <b>contrarian</b> : quand la foule est massivement d'un côté, le signal va dans l'autre sens.</p>
           <div id="dmx-body"><div class="empty-mini">Chargement du positionnement…</div></div>
         </section>
-        <section class="card">
+        <section class="card" data-tile="dmxwidget">
           <details class="dmx-widget" id="dmx-widget" ontoggle="dmxWidgetMount()">
             <summary>Widget Myfxbook d'origine</summary>
             <div class="mfb-wrap" id="dmx-widget-box"></div>
@@ -947,7 +981,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
       </section>
 
       <section class="view" data-view="articles" id="view-articles" hidden>
-        <section class="card">
+        <section class="card" data-tile="articles">
           <div class="card-head">
             <span class="card-title">Articles</span>
             <span class="card-sub"><span class="news-updated" id="news-updated"></span><button type="button" class="news-refresh-btn" id="news-refresh-btn" onclick="refreshNews()" title="Rafraîchir les articles" aria-label="Rafraîchir">↻</button></span>
@@ -960,7 +994,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
       </section>
 
       <section class="view" data-view="live" id="view-live" hidden>
-        <section class="card">
+        <section class="card" data-tile="live">
           <div class="card-head">
             <span class="card-title">Live TV</span>
             <span class="card-sub"><span class="badge-est" id="tv-now">aucune chaîne</span><a class="srclink" id="tv-open" target="_blank" rel="noopener" style="margin-top:0" hidden>Ouvrir sur YouTube ↗</a></span>
@@ -982,33 +1016,31 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
       </section>
 
       <section class="view" data-view="marches" id="view-marches" hidden>
-        <section class="card">
+        <section class="card" data-tile="perf">
           <div class="card-head"><span class="card-title">Performance des devises</span><span class="card-sub"><span class="badge-est" id="perf-meta">BCE · Frankfurter</span></span></div>
           <div class="tools" id="perf-tools"></div>
           <div id="perf-body"><div class="empty-mini">Chargement des cours…</div></div>
         </section>
-        <div class="deck">
-          <section class="card">
-            <div class="card-head"><span class="card-title">Fear &amp; Greed — le détail</span><span class="badge-est">CNN</span></div>
-            <div id="fgd-body"><div class="empty-mini">Chargement…</div></div>
-          </section>
-          <section class="card">
-            <div class="card-head"><span class="card-title">Tension géopolitique</span><span class="badge-est" id="geo-meta">GDELT</span></div>
-            <div id="geo-body"><div class="empty-mini">Chargement…</div></div>
-          </section>
-        </div>
-        <section class="card">
+        <section class="card" data-tile="fgdetail" data-w="half">
+          <div class="card-head"><span class="card-title">Fear &amp; Greed — le détail</span><span class="badge-est">CNN</span></div>
+          <div id="fgd-body"><div class="empty-mini">Chargement…</div></div>
+        </section>
+        <section class="card" data-tile="geo" data-w="half">
+          <div class="card-head"><span class="card-title">Tension géopolitique</span><span class="badge-est" id="geo-meta">GDELT</span></div>
+          <div id="geo-body"><div class="empty-mini">Chargement…</div></div>
+        </section>
+        <section class="card" data-tile="oil">
           <div class="card-head"><span class="card-title">Pétrole — stocks américains et WTI</span><span class="badge-est">EIA · FRED</span></div>
           <div id="oil-body"><div class="empty-mini">Chargement…</div></div>
         </section>
-        <section class="card">
+        <section class="card" data-tile="polymarket">
           <div class="card-head"><span class="card-title">Marchés de prédiction</span><span class="badge-est">Polymarket</span></div>
           <div class="pm-grid" id="pm-grid"><div class="empty-mini">Chargement des marchés…</div></div>
         </section>
       </section>
 
       <section class="view" data-view="ia" id="view-ia" hidden>
-      <section class="card">
+      <section class="card" data-tile="ai">
         <div class="card-head">
           <span class="card-title">Analyse IA du marché</span>
           <span class="card-sub"><span class="badge-est" id="ai-brief-meta"></span><button type="button" class="tbtn primary" id="ai-brief-btn" onclick="generateAiBrief(true)">✨ Générer</button></span>
@@ -1042,7 +1074,6 @@ const CURRENCIES=[
   {code:'CAD',flag:'🇨🇦',name:'Dollar canadien',     country:'Canada',           ids:['124'],view:[-100,58]},
   {code:'CNH',flag:'🇨🇳',name:'Yuan (offshore)',     country:'Chine',            ids:['156'],view:[104,35]},
 ];
-let activeDim=null;   /* pilier affiché : null = vue d'ensemble */
 
 /* ══════════════════════════════════════════════════════════════
    CONFIG (clés chargées depuis Firestore, jamais en dur)
@@ -1212,31 +1243,21 @@ async function buildFromNotion(){
 ══════════════════════════════════════════════════════════════ */
 let MACRO_NOTES=[], macroNotesLoaded=false, activeSub=null;
 const NOTE_MAX_AGE=50; // jours : au-delà, on n'affiche pas (pas de vieux chiffre)
-const DIM_NOTE_KW={
-  croissance:/GDP|PIB|PMI|ISM|retail|ventes au d[ée]tail|durable goods|production industrielle|activit/i,
-  emploi:/NFP|non.?farm|payroll|ch[oô]mage|unemployment|jobless|claims|emploi|labour|labor|JOLTS|temps partiel|temps plein|part.?time|full.?time/i,
-  inflation:/CPI|PPI|PCE|inflation|\bIPC\b|prix/i,
-  monetaire:/\bFed\b|FOMC|BCE|\bBoE\b|\bBoJ\b|\bRBA\b|RBNZ|\bBNS\b|\bBoC\b|d[ée]cision de taux|meeting|minutes|rate decision/i
-};
 function loadMacroNotes(){
   if(!fxDb||!fxAuthUser||macroNotesLoaded) return;
   macroNotesLoaded=true;
   try{
     fxDb.collection('macroNotes').onSnapshot(snap=>{
       MACRO_NOTES=snap.docs.map(d=>({id:d.id,...d.data()}));
-      if(activeCcy&&activeDim) renderDetail();
+      if(activeCcy&&!focusF) renderDetail();
     }, e=>{ macroNotesLoaded=false; console.warn('macroNotes',e.message); });
   }catch(e){ macroNotesLoaded=false; }
 }
 function noteAgeDays(n){ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(n.date||''); if(!m) return 1e9; return (Date.now()-new Date(+m[1],+m[2]-1,+m[3]).getTime())/864e5; }
-function dimNotes(code,dim){
-  const kw=DIM_NOTE_KW[dim]; if(!kw) return [];
-  return MACRO_NOTES.filter(n=>{
-    const tags=(n.tags||[]).map(t=>String(t).toUpperCase());
-    if(!tags.includes(code)) return false;
-    if(!kw.test((n.event||'')+' '+(n.tags||[]).join(' '))) return false;
-    return noteAgeDays(n)<=NOTE_MAX_AGE;
-  }).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+/* Synthèses Daily FX récentes d'une devise (toutes données confondues). */
+function ccyNotes(code){
+  return MACRO_NOTES.filter(n=>(n.tags||[]).map(t=>String(t).toUpperCase()).includes(code)&&noteAgeDays(n)<=NOTE_MAX_AGE)
+    .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,10);
 }
 function subLabel(ev){
   ev=ev||'';
@@ -1256,38 +1277,19 @@ function noteRecapHTML(n){
   if(n.previous) figs.push('Préc. '+esc(n.previous));
   return `<div class="sub-recap"><div class="sub-recap-h">${esc(n.event)} <span class="sub-date">${esc(n.date||'')}</span></div>${figs.length?'<div class="sub-figs">'+figs.join(' · ')+'</div>':''}<div class="sub-analysis">${n.analysis||''}</div></div>`;
 }
-function openDimDetail(dim){ activeDim=(!dim||activeDim===dim)?null:dim; activeSub=null; renderDetail(); }
 function openSub(id){ activeSub=(activeSub===id?null:id); renderDetail(); }
 
-const PILLAR_META={
-  croissance:{key:'croissance',  lbl:'Croissance',          ico:'📈', notes:['croissance','emploi']},
-  inflation: {key:'inflation',   lbl:'Inflation',           ico:'🔥', notes:['inflation']},
-  monetaire: {key:'politiqueMonetaire', lbl:'Politique monétaire', ico:'🏦', notes:['monetaire']},
-  geo:       {key:'geopolitique',lbl:'Géopolitique',        ico:'🌍', notes:[]}
-};
 function escH(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtDay(iso){
   const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso||''); if(!m) return escH(iso||'');
   return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}).replace('.','');
 }
-// Lecture d'une donnée pour la devise : + soutien, - pèse, = neutre (toujours avec un libellé, jamais la couleur seule)
-function impactHTML(v){
-  const t=String(v||'').trim();
-  if(t==='+'||/^(soutien|positif|haussier)/i.test(t)) return '<span class="pv-imp" style="color:var(--buy)">▲ Soutien</span>';
-  if(t==='-'||t==='−'||/^(p[eè]se|n[ée]gatif|baissier)/i.test(t)) return '<span class="pv-imp" style="color:var(--sell)">▼ Pèse</span>';
-  if(t) return '<span class="pv-imp" style="color:var(--t3)">● Neutre</span>';
-  return '';
-}
-// Synthèses Daily FX liées au pilier (sous-composantes datées)
-function pillarNotesHTML(code,dim){
-  const meta=PILLAR_META[dim]; if(!meta||!meta.notes.length) return '';
-  const seen=new Set(), notes=[];
-  meta.notes.forEach(k=>dimNotes(code,k).forEach(n=>{ if(!seen.has(n.id)){ seen.add(n.id); notes.push(n); } }));
-  notes.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
-  if(!notes.length) return '';
-  let h='<div class="pv-sec"><div class="pv-h">📝 Synthèses Daily FX liées</div><div class="sub-chips">'+notes.map(n=>`<button class="sub-chip${activeSub===n.id?' active':''}" onclick="openSub('${n.id}')">${escH(subLabel(n.event))} <span class="sub-chip-date">${escH((n.date||'').slice(5))}</span></button>`).join('')+'</div>';
+// Synthèses Daily FX liées à la devise : pastilles datées, la synthèse s'ouvre au clic
+function ccyNotesHTML(code){
+  const notes=ccyNotes(code); if(!notes.length) return '';
+  let h='<div class="sec-h">Synthèses Daily FX récentes</div><div class="sub-chips">'+notes.map(n=>`<button type="button" class="sub-chip${activeSub===n.id?' active':''}" onclick="openSub('${escH(n.id)}')">${escH(subLabel(n.event))} <span class="sub-chip-date">${escH(fmtDay(n.date))}</span></button>`).join('')+'</div>';
   if(activeSub){ const n=notes.find(x=>x.id===activeSub); if(n) h+=noteRecapHTML(n); }
-  return h+'</div>';
+  return h;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -2210,14 +2212,15 @@ function renderCot(){
   renderCotDetail();
 }
 function setCotCat(c){ cotCat=c; renderCot(); }
-function selectCot(code){ cotSel=(cotSel===code?null:code); renderCot(); if(cotSel){ const el=document.getElementById('cot-detail'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest',behavior:'smooth'}); } }
+function selectCot(code){ cotSel=(cotSel===code?null:code); renderCot(); if(cotSel){ const el=document.getElementById('cot-detail-card'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest',behavior:'smooth'}); } }
 function renderCotDetail(){
   const el=document.getElementById('cot-detail'); if(!el) return;
   const s=cotSel&&COT.date?cotStats(cotSel,cotCat):null;
-  if(!s){ el.hidden=true; el.innerHTML=''; return; }
+  const card=document.getElementById('cot-detail-card');
+  if(!s){ if(card) card.hidden=true; el.innerHTML=''; return; }
   const meta=cotList().find(c=>c[1]===cotSel)||['',cotSel,''], cat=COT_CATS.find(c=>c[0]===cotCat);
   const oiPct=s.oi?(s.net/s.oi*100):null;
-  el.hidden=false;
+  if(card) card.hidden=false;
   el.innerHTML='<div class="card-head"><span class="card-title">'+(meta[0]?meta[0]+' ':'')+escH(cotSel)+' — '+escH(cat[1])+' · position nette sur '+s.weeks+' semaines</span>'
     +'<span class="card-sub"><span class="badge-est">'+escH(cotGroup==='fx'?meta[2]:(meta[3]||''))+'</span><button type="button" class="tbtn" onclick="selectCot(\''+escH(cotSel)+'\')">Fermer</button></span></div>'
     +'<div class="cot-dgrid">'
@@ -2529,7 +2532,6 @@ const frName=f=>FR[f.properties.name]||f.properties.name;
 /* ---------- état de l'interface ---------- */
 let focusF=null;      /* pays hors couverture cliqué sur le globe */
 let hoverF=null;
-let detailIdx=null;   /* ligne de données ouverte en fiche, sinon null */
 let locked=true;
 
 /* ---------- globe ---------- */
@@ -2741,7 +2743,7 @@ function initGlobe(){
 function pick(f){
   const c=ccyOf(f);
   if(c){ select(c.code); return; }
-  focusF=f; detailIdx=null; activeSub=null;
+  focusF=f; activeSub=null;
   rotateTo(d3.geoCentroid(f));
   renderGrid(); renderDetail();
 }
@@ -2769,33 +2771,6 @@ function buildRail(){
     rail.appendChild(b);
   });
 }
-function buildPillars(){
-  const el=document.getElementById('pillars'); el.innerHTML='';
-  const mk=(key,label)=>{
-    const b=document.createElement('button'); b.type='button'; b.dataset.key=key||'';
-    b.innerHTML=`<span>${label}</span><span class="score"></span>`;
-    b.addEventListener('click',()=>{
-      const wasFocus=!!focusF;
-      activeDim=key; activeSub=null; detailIdx=null; focusF=null;
-      if(wasFocus) rotateTo(CCY_BY[activeCcy].view);
-      renderGrid(); renderDetail(); setHint();
-    });
-    el.appendChild(b);
-  };
-  mk(null,"Vue d'ensemble");
-  PILLAR_LIST.forEach(([k,l])=>mk(k,l));
-}
-function syncPillars(){
-  const d=CCY_DATA[activeCcy];
-  [...document.getElementById('pillars').children].forEach(b=>{
-    const k=b.dataset.key||null, sc=b.querySelector('.score');
-    b.setAttribute('aria-pressed',String(k===activeDim&&!focusF));
-    if(!k){ sc.textContent=(!focusF&&d&&d.score!=null)?d.score+' / 100':'—'; sc.className='score'; return; }
-    const v=(d&&d.dims[k])?d.dims[k].score:null;
-    sc.textContent=(focusF||v==null)?'—':v+' / 100';
-    sc.className='score '+(focusF||v==null?'':scoreCls(v));
-  });
-}
 function renderStage(){
   const c=CCY_BY[activeCcy], d=CCY_DATA[activeCcy], gs=document.getElementById('globeScore');
   if(focusF){
@@ -2819,10 +2794,10 @@ function paintLive(){
   el.className='livebadge '+(on?'on':'off');
   el.title=on?('Notes du Macro Compass publiées'+(NOTION_UPDATED?' · MAJ '+NOTION_UPDATED:'')):'Notes du Macro Compass en attente (connexion au Sphinx Alliance)';
 }
-function renderGrid(){ buildRail(); syncPillars(); renderStage(); renderCal(); paintLive(); }
+function renderGrid(){ buildRail(); renderStage(); renderCal(); paintLive(); }
 function select(code){
   if(!CCY_BY[code]) return;
-  activeCcy=code; focusF=null; detailIdx=null; activeSub=null;
+  activeCcy=code; focusF=null; activeSub=null;
   rotateTo(CCY_BY[code].view);
   renderGrid(); renderDetail(); setHint();
 }
@@ -2850,85 +2825,54 @@ function renderCal(){
 }
 
 /* ---------- lecture : vue d'ensemble, pilier, fiche ---------- */
-const IMP={'+':['up','▲ Soutien'],'-':['down','▼ Pèse'],'−':['down','▼ Pèse']};
-function impOf(v){ const t=String(v||'').trim(); if(IMP[t]) return IMP[t]; if(/^(soutien|positif|haussier)/i.test(t)) return IMP['+']; if(/^(p[eè]se|n[ée]gatif|baissier)/i.test(t)) return IMP['-']; return t?['flat','● Neutre']:['flat','']; }
 function md(t){ return mdToHtmlFx(String(t||'')); }
 function setRead(title,verdict,vcls,synth){
   document.getElementById('readTitle').textContent=title;
   const v=document.getElementById('verdict'); v.textContent=verdict; v.className='verdict '+vcls;
   document.getElementById('synthese').innerHTML=synth;
 }
-function pillarDoc(code,dim){ const doc=MC_DOCS[code]||{}; const key={croissance:'croissance',inflation:'inflation',monetaire:'politiqueMonetaire',geo:'geopolitique'}[dim]; return (doc.pillars||{})[key]||{}; }
 function renderUncovered(){
   const name=frName(focusF);
   setRead(name,'pas de données','flat',"Le Compass ne suit que les neuf devises du rail. Clique l'une d'elles, ou un pays de sa zone, pour retrouver la lecture macro.");
   document.getElementById('rows').innerHTML=CURRENCIES.map(c=>{ const r=RATE_EXPECTATIONS[c.code]; const d=CCY_DATA[c.code];
     return `<button type="button" class="row" data-ccy="${c.code}"><span class="label"><span class="nm">${c.flag} ${c.name}</span><span class="meta">${r?r.bank+' '+escH(r.rate):'PBoC'}</span></span><span class="val">${c.code}</span><span class="right"><span class="imp ${scoreCls(d?d.score:null)}">${d&&d.score!=null?d.score+' / 100':'—'}</span></span></button>`; }).join('');
   document.querySelectorAll('.rows .row[data-ccy]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.ccy)));
+  document.getElementById('ovSide').innerHTML=''; document.getElementById('ovGrid').classList.remove('two');
   document.getElementById('foot').textContent='Zones couvertes par le Compass.';
 }
 function renderOverview(c,d,n,doc){
   const score=d.score, bias=n.bias||doc.bias||'neutre';
-  setRead(`${c.code} · Vue d'ensemble`, n.biasLabel||doc.biasLabel||(bias==='haussier'?'Haussier':bias==='baissier'?'Baissier':'Neutre'), biasCls(bias),
+  setRead(`${c.code} · ${c.name} — vue d'ensemble`, n.biasLabel||doc.biasLabel||(bias==='haussier'?'Haussier':bias==='baissier'?'Baissier':'Neutre'), biasCls(bias),
     (n.driver||doc.driver)?('<strong>Driver :</strong> '+md(n.driver||doc.driver)):'Notes en attente de la première mise à jour du Macro Compass.');
   let h=`<div class="ovmeta"><span><b>${score!=null?score:'—'}</b>note / 100</span><span><b>${n.rank!=null?'#'+n.rank:'—'}</b>force relative</span><span><b>${escH(n.vsLastWeek||doc.vsLastWeek||'—')}</b>vs semaine passée</span></div>`;
+  // notes des quatre piliers, en lecture seule
+  h+='<div class="sec-h">Notes par pilier</div><div class="ovpil">'+PILLAR_LIST.map(([k,l])=>{
+    const v=d.dims&&d.dims[k]?d.dims[k].score:null;
+    return `<span class="ovp"><em>${l}</em><b class="${scoreCls(v)}">${v!=null?v:'—'}<small> / 100</small></b><i><u style="width:${v!=null?Math.max(0,Math.min(100,v)):0}%"></u></i></span>`;
+  }).join('')+'</div>';
   if(doc.callout) h+=`<div class="dtext">${md(doc.callout)}</div>`;
+  document.getElementById('rows').innerHTML=h;
+  // colonne de droite : le mois, ce qui arrive, les synthèses Daily FX
+  let s='';
   const rc=doc.recap||null, faits=rc&&Array.isArray(rc.faits)?rc.faits:[];
   if(rc&&(rc.resume||faits.length)){
-    h+=`<div class="sec-h">Récap du mois${rc.periode?' · '+escH(rc.periode):''}</div>`;
-    if(rc.resume) h+=`<div class="recap-resume">${md(rc.resume)}</div>`;
-    if(faits.length) h+='<ul class="recap-list">'+faits.map(f=>`<li><span class="recap-d">${fmtDay(f.date)}</span><span>${md(f.texte||'')}</span></li>`).join('')+'</ul>';
+    s+=`<div class="sec-h">Récap du mois${rc.periode?' · '+escH(rc.periode):''}</div>`;
+    if(rc.resume) s+=`<div class="recap-resume">${md(rc.resume)}</div>`;
+    if(faits.length) s+='<ul class="recap-list">'+faits.map(f=>`<li><span class="recap-d">${fmtDay(f.date)}</span><span>${md(f.texte||'')}</span></li>`).join('')+'</ul>';
   } else if(n.mois){
-    h+=`<div class="sec-h">Le mois</div><div class="recap-resume">${md(n.mois)}</div>`;
+    s+=`<div class="sec-h">Le mois</div><div class="recap-resume">${md(n.mois)}</div>`;
   }
-  if(doc.catalyseur) h+=`<div class="recap-next"><b>À venir :</b> ${md(doc.catalyseur)}</div>`;
-  document.getElementById('rows').innerHTML=h;
-  document.getElementById('foot').innerHTML='Clique un pilier pour ses données détaillées.<br>Source : Notion (Biais &amp; Force Relative + Track Record Fondamental) + recherches'+(NOTION_UPDATED?' · MAJ '+escH(NOTION_UPDATED):'')+'.';
-}
-function renderPillar(c,d,doc){
-  const p=pillarDoc(c.code,activeDim), sc=d.dims&&d.dims[activeDim]?d.dims[activeDim].score:null;
-  setRead(`${PILLAR_LBL[activeDim]} — ${c.code}`, sc!=null?sc+' / 100':'—', scoreCls(sc), p.note?md(p.note):'Verdict en attente de la prochaine mise à jour du Macro Compass.');
-  const rows=Array.isArray(p.data)?p.data:[];
-  let h='';
-  if(rows.length){
-    h+=rows.map((r,i)=>{ const [cls,lbl]=impOf(r.impact); const per=[r.periode,r.date?fmtDay(r.date):''].filter(Boolean).join(' · ');
-      const ref=[r.consensus?'att. '+escH(r.consensus):'',r.precedent?'préc. '+escH(r.precedent):''].filter(Boolean).join(' · ');
-      return `<button type="button" class="row" data-i="${i}"><span class="label"><span class="nm">${escH(r.indicateur||r.nom||'')}</span><span class="meta">${escH(per)}${r.source&&/web/i.test(r.source)?' · web':''}</span></span><span class="val">${escH(r.actuel!=null&&r.actuel!==''?r.actuel:'—')}</span><span class="right">${lbl?`<span class="imp ${cls}">${lbl}</span>`:''}${ref?`<span>${ref}</span>`:''}</span></button>`; }).join('');
-  } else {
-    h+='<div class="empty-mini">Le tableau des données de ce pilier arrive avec la prochaine mise à jour du Macro Compass.</div>';
-  }
-  if(p.analyse) h+=`<div class="sec-h">Analyse</div><div class="dtext">${md(p.analyse)}</div>`;
-  const watch=Array.isArray(p.aSurveiller)?p.aSurveiller:[];
-  if(watch.length) h+='<div class="sec-h">À surveiller</div><ul class="watch">'+watch.map(w=>`<li><span class="recap-d">${fmtDay(w.date)}</span><span>${md(w.evenement||w.texte||'')}</span></li>`).join('')+'</ul>';
-  h+=pillarNotesHTML(c.code,activeDim);
-  document.getElementById('rows').innerHTML=h;
-  document.querySelectorAll('.rows .row[data-i]').forEach(b=>b.addEventListener('click',()=>{ detailIdx=+b.dataset.i; renderDetail(); }));
-  const srcs=Array.isArray(p.sources)&&p.sources.length?p.sources.map(escH).join(' · '):'';
-  document.getElementById('foot').innerHTML=(rows.length?'Clique une ligne pour sa fiche. Réel en gras, puis consensus et précédent ; la lecture dit si la donnée soutient la devise.<br>':'')+(srcs?'Sources : '+srcs+'.':'');
-}
-function renderRowDetail(c,d,doc){
-  const p=pillarDoc(c.code,activeDim), r=(Array.isArray(p.data)?p.data:[])[detailIdx];
-  if(!r){ detailIdx=null; renderPillar(c,d,doc); return; }
-  const [cls,lbl]=impOf(r.impact);
-  setRead(r.indicateur||r.nom||'Donnée', c.code, 'flat', r.commentaire?md(r.commentaire):'');
-  const per=[r.periode,r.date?fmtDay(r.date):''].filter(Boolean).join(' · ');
-  document.getElementById('rows').innerHTML=`
-    <div class="dhead"><span class="dval">${escH(r.actuel!=null&&r.actuel!==''?r.actuel:'—')}</span>${lbl?`<span class="imp ${cls}" style="font-size:12px;font-weight:600">${lbl}</span>`:''}<span class="dper">${escH(per)}</span></div>
-    <div class="dstats"><span><b>${escH(r.consensus||'—')}</b>consensus</span><span><b>${escH(r.precedent||'—')}</b>précédent</span><span><b>${escH(r.source||'Notion')}</b>source</span></div>`;
-  document.getElementById('foot').innerHTML=`Pilier ${PILLAR_LBL[activeDim]} · ${c.code}.`;
-  document.getElementById('backWrap').hidden=false;
-  document.getElementById('back').textContent='← Retour au pilier';
+  if(doc.catalyseur) s+=`<div class="recap-next"><b>À venir :</b> ${md(doc.catalyseur)}</div>`;
+  s+=ccyNotesHTML(c.code);
+  document.getElementById('ovSide').innerHTML=s;
+  document.getElementById('ovGrid').classList.toggle('two',!!s);
+  document.getElementById('foot').innerHTML='Source : Notion (Biais &amp; Force Relative + Track Record Fondamental) + recherches'+(NOTION_UPDATED?' · MAJ '+escH(NOTION_UPDATED):'')+'.';
 }
 function renderDetail(){
-  document.getElementById('backWrap').hidden=true;
-  if(focusF){ renderUncovered(); syncPillars(); renderStage(); return; }
+  if(focusF){ renderUncovered(); renderStage(); return; }
   const c=CCY_BY[activeCcy], d=CCY_DATA[activeCcy]||{score:null,dims:{},notion:{bias:'neutre',rank:null}}, n=d.notion||{}, doc=MC_DOCS[activeCcy]||{};
-  if(!activeDim) renderOverview(c,d,n,doc);
-  else if(detailIdx!=null) renderRowDetail(c,d,doc);
-  else renderPillar(c,d,doc);
-  syncPillars(); renderStage();
+  renderOverview(c,d,n,doc); renderStage();
 }
-document.getElementById('back').addEventListener('click',()=>{ detailIdx=null; renderDetail(); });
 
 /* ---------- sessions de trading ---------- */
 const SESSIONS=[
@@ -3094,6 +3038,7 @@ function setView(name,opts){
   try{ localStorage.setItem(VIEW_KEY,name); }catch(e){}
   if(!(opts&&opts.fromHash)){ try{ history.replaceState(null,'','#'+name); }catch(e){} }
   if(prev==='live'&&name!=='live') tvStop();
+  if(layoutEdit) layoutBarText();
   const first=!viewSeen[name]; viewSeen[name]=true;
   try{ if(VIEW_HOOKS[name]) VIEW_HOOKS[name](first); }catch(e){ console.warn('vue '+name,e); }
   if(prev!==name&&!(opts&&opts.initial)){
@@ -3794,6 +3739,116 @@ function drawCompareMap(){
   el.onclick=ev=>{ const t=hit(ev), code=t&&t.getAttribute('data-c'); if(code) setCmpSel(code); };
 }
 
+/* ══════════════════════════════════════════════════════════════
+   DISPOSITION — chaque carte d'une vue peut être déplacée et passer en
+   pleine largeur ou en demi-largeur. Mémorisé sur cet appareil.
+══════════════════════════════════════════════════════════════ */
+const LAYOUT_KEY='fxmt_layout';
+const LAYOUT_DEFAULT={};   // vue → disposition d'origine, relevée dans la page au démarrage
+const TILE_LBL={globe:'Globe et devises par rang',overview:'Vue d\'ensemble',cotdetail:'Détail d\'un marché (au clic)',dmxwidget:'Widget Myfxbook'};
+let layoutEdit=false;
+const viewEl=name=>document.getElementById('view-'+name);
+function tilesOf(name){ const v=viewEl(name); return v?[...v.children].filter(t=>t.dataset&&t.dataset.tile):[]; }
+function tileState(name){ return tilesOf(name).map(t=>({id:t.dataset.tile,w:t.dataset.w==='half'?'half':'full'})); }
+function layoutRead(){ try{ const o=JSON.parse(localStorage.getItem(LAYOUT_KEY)||'{}'); return o&&typeof o==='object'&&!Array.isArray(o)?o:{}; }catch(e){ return {}; } }
+function layoutWrite(o){ try{ localStorage.setItem(LAYOUT_KEY,JSON.stringify(o)); }catch(e){} }
+function layoutApply(name,list){
+  const v=viewEl(name); if(!v||!Array.isArray(list)) return;
+  const byId=new Map(tilesOf(name).map(t=>[t.dataset.tile,t])), def=LAYOUT_DEFAULT[name]||[];
+  const seq=list.map(x=>x&&x.id).filter((id,i,a)=>byId.has(id)&&a.indexOf(id)===i);
+  def.forEach((d,i)=>{   // carte absente de l'enregistrement (ajoutée depuis) : à sa place d'origine
+    if(seq.includes(d.id)) return;
+    const prev=def.slice(0,i).reverse().find(p=>seq.includes(p.id));
+    seq.splice(prev?seq.indexOf(prev.id)+1:0,0,d.id);
+  });
+  seq.forEach(id=>v.appendChild(byId.get(id)));
+  const w=Object.fromEntries(list.filter(x=>x&&x.id).map(x=>[x.id,x.w]));
+  def.forEach(d=>{ const t=byId.get(d.id); if(t){ t.dataset.w=(w[d.id]||d.w)==='half'?'half':'full'; syncTileBar(t); } });
+}
+function tileLabel(t){ const id=t.dataset.tile; if(TILE_LBL[id]) return TILE_LBL[id]; const c=t.querySelector('.card-title'); return c?c.textContent.trim():id; }
+function syncTileBar(t){ const b=t.querySelector(':scope>.tile-bar .tb-w'); if(b) b.textContent=t.dataset.w==='half'?'⇔ Pleine largeur':'⇔ Demi-largeur'; }
+function initLayout(){
+  document.querySelectorAll('.view').forEach(v=>{ LAYOUT_DEFAULT[v.dataset.view]=tileState(v.dataset.view); });
+  document.querySelectorAll('.view>[data-tile]').forEach(t=>{
+    const bar=document.createElement('div');
+    bar.className='tile-bar'; bar.setAttribute('role','toolbar'); bar.setAttribute('aria-label','Disposition : '+tileLabel(t));
+    bar.innerHTML='<button type="button" class="tb-drag" title="Maintenir et glisser pour déplacer la carte">⠿ Déplacer</button><span class="tb-name"></span>'
+      +'<button type="button" data-act="up" title="Monter" aria-label="Monter">↑</button><button type="button" data-act="down" title="Descendre" aria-label="Descendre">↓</button><button type="button" data-act="w" class="tb-w"></button>';
+    bar.querySelector('.tb-name').textContent=tileLabel(t);
+    bar.addEventListener('click',e=>{ const b=e.target.closest('button[data-act]'); if(b) tileAct(t,b.dataset.act); });
+    bar.querySelector('.tb-drag').addEventListener('pointerdown',e=>tileDragStart(e,t));
+    t.appendChild(bar); syncTileBar(t);
+  });
+  const saved=layoutRead(); Object.keys(saved).forEach(n=>{ if(LAYOUT_DEFAULT[n]) layoutApply(n,saved[n]); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&layoutEdit&&!document.querySelector('.rx-modal')) toggleLayoutEdit(false); });
+}
+function layoutChanged(name,save){
+  if(save!==false){ const o=layoutRead(); o[name]=tileState(name); layoutWrite(o); }
+  clearTimeout(layoutChanged._t);   // graphiques et carte se redessinent à leur nouvelle largeur
+  layoutChanged._t=setTimeout(()=>window.dispatchEvent(new Event('resize')),150);
+}
+function visibleSibling(t,dir){
+  let s=dir<0?t.previousElementSibling:t.nextElementSibling;
+  while(s&&(!s.dataset||!s.dataset.tile||s.hidden)) s=dir<0?s.previousElementSibling:s.nextElementSibling;
+  return s;
+}
+function tileAct(t,act){
+  const v=t.parentElement;
+  if(act==='up'){ const s=visibleSibling(t,-1); if(s) v.insertBefore(t,s); }
+  else if(act==='down'){ const s=visibleSibling(t,1); if(s) v.insertBefore(t,s.nextSibling); }
+  else if(act==='w'){ t.dataset.w=t.dataset.w==='half'?'full':'half'; syncTileBar(t); }
+  layoutChanged(v.dataset.view);
+  const b=t.querySelector(':scope>.tile-bar [data-act="'+act+'"]'); if(b) b.focus({preventScroll:true});
+}
+/* Glisser-déposer à la souris comme au doigt : la carte prend sa nouvelle place pendant le geste. */
+function tileDragStart(e,t){
+  if(e.button>0) return;
+  e.preventDefault();
+  const v=t.parentElement;
+  let lastY=e.clientY, moved=false, raf=0;
+  t.classList.add('dragging'); document.body.classList.add('layout-dragging');
+  const autoscroll=()=>{   // près du haut ou du bas de l'écran, la page défile
+    const m=70, sp=lastY<m?-(m-lastY)/4:lastY>innerHeight-m?(lastY-(innerHeight-m))/4:0;
+    if(sp) window.scrollBy(0,sp);
+    raf=requestAnimationFrame(autoscroll);
+  };
+  raf=requestAnimationFrame(autoscroll);
+  const move=ev=>{
+    lastY=ev.clientY;
+    const el=document.elementFromPoint(ev.clientX,ev.clientY), over=el&&el.closest?el.closest('.view>[data-tile]'):null;
+    if(!over||over===t||over.parentElement!==v) return;
+    const r=over.getBoundingClientRect(), side=r.width<v.clientWidth*0.75;   // voisine en demi-largeur : on compare à l'horizontale
+    const before=side?ev.clientX<r.left+r.width/2:ev.clientY<r.top+r.height/2;
+    if(before){ if(over.previousElementSibling!==t){ v.insertBefore(t,over); moved=true; } }
+    else if(over.nextElementSibling!==t){ v.insertBefore(t,over.nextSibling); moved=true; }
+  };
+  const end=()=>{
+    cancelAnimationFrame(raf);
+    window.removeEventListener('pointermove',move); window.removeEventListener('pointerup',end); window.removeEventListener('pointercancel',end); window.removeEventListener('blur',end);
+    t.classList.remove('dragging'); document.body.classList.remove('layout-dragging');
+    if(moved) layoutChanged(v.dataset.view);
+  };
+  window.addEventListener('pointermove',move); window.addEventListener('pointerup',end); window.addEventListener('pointercancel',end); window.addEventListener('blur',end);
+}
+function layoutBarText(){
+  const el=document.getElementById('layoutTxt'); if(!el) return;
+  const v=VIEWS.find(x=>x[0]===activeView);
+  el.innerHTML='<b>Disposition de la page « '+escH(v?v[1]:'')+' »</b> — glisse une carte par « ⠿ Déplacer » ou utilise ↑ ↓ ; « ⇔ » la passe en pleine largeur ou en demi-largeur (deux demi-largeurs côte à côte gardent la même hauteur). Mémorisé sur cet appareil.';
+}
+function toggleLayoutEdit(on){
+  layoutEdit=on==null?!layoutEdit:!!on;
+  document.body.classList.toggle('layout-edit',layoutEdit);
+  const b=document.getElementById('layoutBtn'); if(b){ b.setAttribute('aria-pressed',String(layoutEdit)); b.classList.toggle('primary',layoutEdit); }
+  const bar=document.getElementById('layoutBar'); if(bar) bar.hidden=!layoutEdit;
+  if(layoutEdit) layoutBarText();
+}
+function layoutReset(){
+  layoutApply(activeView,LAYOUT_DEFAULT[activeView]);
+  const o=layoutRead(); delete o[activeView]; layoutWrite(o);
+  layoutChanged(activeView,false);
+  toast('Disposition d\'origine rétablie pour cette page');
+}
+
 function init(){
   { // Dans le hub : on suit son thème courant (même sans préférence enregistrée). Seul : la nôtre, clair par défaut.
     let light=localStorage.getItem(THEME_KEY)!=='dark';
@@ -3803,7 +3858,7 @@ function init(){
     }
     applyTheme(light); }
   applyHubZoom();
-  buildPillars();
+  initLayout();
   initGlobe();
   renderGrid(); renderDetail(); setHint();
   tick(); setInterval(tick,1000);

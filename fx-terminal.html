@@ -46,6 +46,7 @@
   /* planisphère : une seule teinte, du foncé (valeur basse) au clair (valeur haute) */
   --seq-lo:#0f2f5f;--seq-mid:#2f7fdc;--seq-hi:#bfe1ff;
   /* calendrier : impact des publications */
+  --sea-cur:#d9730d;   /* saisonnalité : année en cours */
   --imp-high:#c93636;--imp-med:#e07b12;--imp-high-bg:rgba(201,54,54,.07);--imp-med-bg:rgba(224,123,18,.07);
   --fg1:#2a2d30;--fg2:#6b7075;--fg3:#a9aeb3;
   --font-ui:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
@@ -66,6 +67,7 @@
   --up-dim:rgba(99,185,139,.12);--down-dim:rgba(224,129,124,.12);--warn-dim:rgba(214,182,94,.12);--ink-dim:rgba(236,238,239,.07);
   --rx-hike:#3987e5;--rx-hold:#b4b2a9;--rx-cut:#e66767;--rx-bps:#d95926;
   --seq-lo:#1b4a8c;--seq-mid:#4c9bf0;--seq-hi:#d9edff;
+  --sea-cur:#f29a3f;
   --imp-high:#ea5f58;--imp-med:#f29a3f;--imp-high-bg:rgba(234,95,88,.09);--imp-med-bg:rgba(242,154,63,.08);
   --fg1:#d9dcdf;--fg2:#9aa0a5;--fg3:#5a6066;
   --shadow:0 18px 50px rgba(0,0,0,.55);
@@ -722,6 +724,46 @@ button.dmx-sym:hover{text-decoration:underline}
   .cal-ev .n:empty{display:none}
 }
 
+/* ---------- vue Saisonnalité ---------- */
+.sea-chk{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink);cursor:pointer}
+.sea-chk input{accent-color:var(--sea-cur);width:15px;height:15px}
+.sea-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+@media (max-width:900px){.sea-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sea-kpi{border:1px solid var(--line);border-radius:3px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.sea-kpi-l{font-family:var(--font-num);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sea-kpi b{font-family:var(--font-num);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.sea-kpi b.up{color:var(--up)}.sea-kpi b.down{color:var(--down)}
+.sea-kpi-s{font-size:11px;color:var(--ink-soft);line-height:1.4}
+/* sur téléphone, le graphique garde sa largeur et défile plutôt que de rétrécir */
+.sea-chart-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sea-chart{position:relative;min-width:720px}
+.sea-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.sea-chart text{font-family:var(--font-num);font-size:10px;fill:var(--ink-soft)}
+.sea-chart text.sea-end{fill:var(--ink);font-weight:700}
+.sea-chart text.sea-cur-l{fill:var(--sea-cur);font-weight:700}
+.sea-chart text.sea-today{fill:var(--ink)}
+.sea-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px}
+.sea-tbl{min-width:0}
+.sea-tbl tbody tr{cursor:default}
+.sea-tbl tr.cur td{background:var(--hover);font-weight:600}
+.sea-tbl td.n.up{color:var(--up)}.sea-tbl td.n.down{color:var(--down)}
+.sea-now{font-family:var(--font-num);font-size:9px;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border-radius:2px;padding:1px 5px;margin-left:4px}
+.sea-y{font-size:10px;color:var(--ink-soft)}
+.sea-share{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-num);font-size:11.5px}
+.sea-share-bar{width:60px;height:6px;background:var(--hover);border-radius:2px;overflow:hidden;display:inline-block}
+.sea-share-bar i{display:block;height:100%;background:var(--ink)}
+.sea-wins{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.sea-win{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(80px,1fr) 78px 118px;gap:12px;align-items:center;padding:9px 4px;border:0;border-bottom:1px solid var(--line);background:none;color:inherit;text-align:left;width:100%;font:inherit;cursor:pointer}
+.sea-win:hover,.sea-win[aria-pressed="true"]{background:var(--hover)}
+.sea-win-d{display:flex;flex-direction:column;min-width:0}
+.sea-win-d b{font-size:13px}
+.sea-win-d span,.sea-win-h{font-family:var(--font-num);font-size:10.5px;color:var(--ink-soft)}
+.sea-win-track{position:relative;height:8px;background:var(--hover);border-radius:2px}
+.sea-win-track i{position:absolute;top:0;height:100%;background:var(--ink);border-radius:2px;min-width:3px}
+.sea-win-v{font-family:var(--font-num);font-weight:700;font-size:13px;text-align:right}
+.sea-win-v.up{color:var(--up)}.sea-win-v.down{color:var(--down)}
+@media (max-width:560px){.sea-win{grid-template-columns:minmax(0,1fr) auto}.sea-win-track{grid-column:1 / -1;grid-row:2}.sea-win-h{grid-column:1 / -1}}
+
 /* ---------- vue Comparer (planisphère) ---------- */
 .cmp-grid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;align-items:start}
 @media (max-width:980px){.cmp-grid{grid-template-columns:minmax(0,1fr)}}
@@ -903,6 +945,28 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
           <div class="tools" id="cal-tools"></div>
           <div id="cal-body"><div class="empty-mini">Chargement du calendrier…</div></div>
           <div class="foot" id="cal-foot" style="margin-top:10px"></div>
+        </section>
+      </section>
+
+      <section class="view" data-view="saisonnalite" id="view-saisonnalite" hidden>
+        <section class="card" data-tile="seasonality">
+          <div class="card-head">
+            <span class="card-title">Saisonnalité</span>
+            <span class="card-sub"><span class="badge-est" id="sea-meta">Fixings BCE</span><button type="button" class="news-refresh-btn" id="sea-refresh" onclick="loadSeason(true)" title="Chercher les nouveaux fixings" aria-label="Recharger">↻</button></span>
+          </div>
+          <div class="tools" id="sea-tools"></div>
+          <div class="sea-kpis" id="sea-kpis"></div>
+          <div class="sea-chart-scroll"><div class="sea-chart" id="sea-chart"><div class="empty-mini">Chargement…</div></div></div>
+          <div class="sea-legend" id="sea-legend"></div>
+          <div class="foot" style="margin-top:10px">Courbe : trajectoire moyenne de la paire depuis le premier fixing de chaque année, sur les années complètes (l'année en cours est exclue de la moyenne). La bande grise est l'<b>erreur-type de la moyenne</b> (σ/√n) : quand elle recouvre 0, la moyenne ne se distingue pas du hasard. La dispersion brute des années (±1σ) est donnée au survol.<br>Données : fixings de référence de la BCE (16 h 00, heure de Francfort, jours ouvrés, depuis 1999), et non des clôtures de broker : des écarts de quelques points sont normaux. Une régularité passée n'est pas une prévision : c'est un contexte à croiser avec le macro, jamais un signal seul.</div>
+        </section>
+        <section class="card" data-tile="seamonths" data-w="half">
+          <div class="card-head"><span class="card-title">Mois par mois</span></div>
+          <div id="sea-months"></div>
+        </section>
+        <section class="card" data-tile="seawindows" data-w="half">
+          <div class="card-head"><span class="card-title">Fenêtres saisonnières</span></div>
+          <div id="sea-windows"></div>
         </section>
       </section>
 
@@ -3012,6 +3076,7 @@ const VIEWS=[
   ['macro','Macro','Globe · 4 piliers'],
   ['graphiques','Graphiques','TradingView'],
   ['calendrier','Calendrier','Publications · consensus'],
+  ['saisonnalite','Saisonnalité','Profil moyen · fixings BCE'],
   ['compare','Comparer','Planisphère'],
   ['taux','Taux','Banques centrales'],
   ['cot','COT','Institutionnels'],
@@ -3027,6 +3092,7 @@ const VIEW_HOOKS={
   macro:()=>{ if(typeof size==='function') size(); },
   graphiques:()=>{ chRender(); },
   calendrier:first=>{ if(first) loadCal(false); else renderCal2(); },
+  saisonnalite:first=>{ if(first) loadSeason(false); else renderSeason(); },
   compare:first=>{ if(first) loadCompare(); else renderCompare(); },
   taux:first=>{ renderRateExpectations(); if(first) loadRates(); else renderYields(); },
   marches:first=>{ if(first){ loadPerf(); loadRates(); loadGeo(); } renderFgDetail(); },
@@ -3066,9 +3132,9 @@ function initViews(){
   setView(VIEWS.some(v=>v[0]===fromHash)?fromHash:(stored||'macro'),{initial:true});
   window.addEventListener('hashchange',()=>{ const h=(location.hash||'').replace('#',''); if(h&&h!==activeView&&VIEWS.some(v=>v[0]===h)) setView(h,{fromHash:true}); });
   let rz=null;
-  window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(activeView==='compare') drawCompareMap(); if(activeView==='cot') renderCotDetail(); },160); });
+  window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(activeView==='compare') drawCompareMap(); if(activeView==='cot') renderCotDetail(); if(activeView==='saisonnalite') renderSeaChart(); },160); });
 }
-function onThemeChange(){ if(activeView==='compare'&&CMP) renderCompare(); if(activeView==='graphiques') chRender(); }
+function onThemeChange(){ if(activeView==='compare'&&CMP) renderCompare(); if(activeView==='graphiques') chRender(); if(activeView==='saisonnalite') renderSeaChart(); }
 
 /* ---------- Taux : tableau comparé ---------- */
 function renderRateTable(){
@@ -3491,6 +3557,226 @@ function renderOil(){
     +(wl?'<span>WTI<b>'+fmt2(wl[1])+' $</b><small>'+(ww?fmtPct((wl[1]/ww[1]-1)*100,1)+' sur 1 semaine · ':'')+fmtMeetDate(wl[0])+'</small></span>':'')
     +'</div><div class="sec-h">Stocks de brut sur '+st.length+' semaines</div>'+sparkSVG(st.map(p=>+p[1]),false).replace('class="spark"','class="spark" style="height:60px"')
     +'<div class="foot" style="margin-top:10px">Mb = million de barils. Source : '+escH(o.src||'EIA')+', publication hebdomadaire (le mercredi). Le dollar canadien suit souvent le pétrole : un déstockage inattendu soutient le brut, et le CAD avec lui.</div>';
+}
+
+/* ---------- Saisonnalité : moteur de calcul (fonctions pures, sans DOM) ---------- */
+const SEA_CCY=['EUR','GBP','AUD','NZD','USD','CAD','CHF','JPY'];   // ordre de cotation usuel
+const SEA_MDAYS=[31,29,31,30,31,30,31,31,30,31,30,31];
+const SEA_MSTART=SEA_MDAYS.reduce((a,n,i)=>(a.push(i?a[i-1]+SEA_MDAYS[i-1]:0),a),[]);   // 1ʳᵉ case de chaque mois (année bissextile)
+const seaSlot=iso=>SEA_MSTART[+iso.slice(5,7)-1]+(+iso.slice(8,10))-1;                  // 0 … 365
+/* Cours d'une paire : prix = r[cotation] / r[base], avec r[EUR] = 1. */
+function seaPairSeries(data,base,quote){
+  const rb=base==='EUR'?null:data.r[base], rq=quote==='EUR'?null:data.r[quote], dates=[], p=[];
+  for(let i=0;i<data.dates.length;i++){
+    const b=rb?rb[i]:1, q=rq?rq[i]:1;
+    if(b>0&&q>0){ dates.push(data.dates[i]); p.push(q/b); }
+  }
+  return {dates,p};
+}
+/* Trajectoire de chaque année : log-rendement depuis le premier fixing de l'année,
+   étalé sur 366 cases, remplissage vers l'avant (week-ends, jours fériés, 29 février). */
+function seaYears(s){
+  const by=new Map();
+  for(let i=0;i<s.dates.length;i++){ const y=+s.dates[i].slice(0,4); if(!by.has(y)) by.set(y,[]); by.get(y).push(i); }
+  const out=[];
+  by.forEach((idx,y)=>{
+    const p0=s.p[idx[0]], traj=new Array(366), fix=new Array(366).fill(null);
+    idx.forEach(i=>{ fix[seaSlot(s.dates[i])]=Math.log(s.p[i]/p0); });
+    // jusqu'au 31 décembre : une année finie garde son dernier niveau ; pour l'année en cours, `last` borne l'affichage
+    let v=0; const last=seaSlot(s.dates[idx[idx.length-1]]);
+    for(let k=0;k<366;k++){ if(fix[k]!=null) v=fix[k]; traj[k]=v; }
+    // mois : du dernier fixing du mois précédent (janvier : premier fixing de l'année) au dernier fixing du mois
+    const lastOf=new Array(12).fill(null); idx.forEach(i=>{ lastOf[+s.dates[i].slice(5,7)-1]=s.p[i]; });
+    const months=lastOf.map((pe,m)=>{ const ps=m===0?p0:lastOf[m-1]; return pe!=null&&ps!=null?pe/ps-1:null; });
+    out.push({y,n:idx.length,traj,last,months,p0,pLast:s.p[idx[idx.length-1]],dLast:s.dates[idx[idx.length-1]],dFirst:s.dates[idx[0]]});
+  });
+  return out.sort((a,b)=>a.y-b.y);
+}
+const seaPct=x=>(Math.exp(x)-1)*100;
+/* Profil moyen sur les années complètes (≥ 200 fixings, année en cours exclue), `depth` dernières ou toutes. */
+function seasonality(data,base,quote,opt){
+  opt=opt||{};
+  const curY=opt.year||new Date().getFullYear();
+  const years=seaYears(seaPairSeries(data,base,quote));
+  const complete=years.filter(Y=>Y.n>=200&&Y.y<curY);
+  const used=opt.depth?complete.slice(-opt.depth):complete;
+  const n=used.length, mean=[], sd=[], se=[];
+  for(let k=0;k<366;k++){
+    let s=0; used.forEach(Y=>{ s+=Y.traj[k]; }); const m=n?s/n:0;
+    let v=0; used.forEach(Y=>{ v+=(Y.traj[k]-m)**2; }); const d=n>1?Math.sqrt(v/(n-1)):0;
+    mean.push(m); sd.push(d); se.push(n?d/Math.sqrt(n):0);
+  }
+  const months=SEA_MDAYS.map((_,m)=>{
+    const vals=used.map(Y=>({y:Y.y,v:Y.months[m]})).filter(x=>x.v!=null);
+    const avg=vals.length?seaPct(vals.reduce((a,x)=>a+Math.log(1+x.v),0)/vals.length):null;   // moyenne des log-rendements, ramenée en %
+    const up=vals.filter(x=>x.v>0).length, down=vals.filter(x=>x.v<0).length;
+    const best=vals.reduce((a,x)=>!a||x.v>a.v?x:a,null), worst=vals.reduce((a,x)=>!a||x.v<a.v?x:a,null);
+    return {m,avg,n:vals.length,up,down,best:best&&{y:best.y,v:best.v*100},worst:worst&&{y:worst.y,v:worst.v*100}};
+  });
+  const cur=years.find(Y=>Y.y===curY)||null;
+  return {base,quote,years,complete,used,n,mean,sd,se,months,cur,curY,annual:seaPct(mean[365]),
+    annualSimple:n?used.reduce((a,Y)=>a+(Math.exp(Y.traj[365])-1),0)/n*100:null,
+    annualUp:used.filter(Y=>Y.traj[365]>0).length};
+}
+/* Fenêtres saisonnières : longueurs 10 → 60 jours (pas de 2), même sens ≥ 70 % des années,
+   moyenne ≥ 0,5 % en valeur absolue ; classées par régularité, puis par netteté (moyenne
+   rapportée à son erreur-type) ; les 5 meilleures sans chevauchement. */
+function seaWindows(S,o){
+  o=Object.assign({minLen:10,maxLen:60,step:2,minHit:0.7,minAbs:0.5,top:5},o||{});
+  const Y=S.used, n=Y.length, cand=[], r=new Array(n);
+  if(n<3) return [];
+  for(let L=o.minLen;L<=o.maxLen;L+=o.step){
+    for(let s=0;s+L<=365;s++){
+      const e=s+L; let sum=0, up=0, dn=0;
+      for(let i=0;i<n;i++){ r[i]=Y[i].traj[e]-Y[i].traj[s]; sum+=r[i]; if(r[i]>0) up++; else if(r[i]<0) dn++; }
+      const m=sum/n, mp=seaPct(m), hits=m>=0?up:dn, hit=hits/n;
+      if(hit<o.minHit||Math.abs(mp)<o.minAbs) continue;
+      let v=0; for(let i=0;i<n;i++) v+=(r[i]-m)**2;
+      const se=Math.sqrt(v/(n-1))/Math.sqrt(n);
+      cand.push({s,e,L,mean:mp,hits,n,hit,t:se>0?Math.abs(m)/se:Infinity});
+    }
+  }
+  cand.sort((a,b)=>b.hit-a.hit||b.t-a.t);
+  const pick=[];
+  for(const c of cand){ if(pick.length>=o.top) break; if(pick.every(p=>c.e<=p.s||c.s>=p.e)) pick.push(c); }
+  return pick.sort((a,b)=>a.s-b.s);
+}
+
+/* ══ SAISONNALITÉ — profil moyen d'une paire sur l'année (fixings BCE via Frankfurter) ══ */
+const SEA_KEY='fxmt_season_v1', SEA_PREF='fxmt_sea', SEA_SYMS=['USD','GBP','JPY','CHF','CAD','AUD','NZD'];
+const SEA_MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const SEA_MSHORT=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+let SEA_DATA=null, seaLoading=false, seaErr='', seaHi=null, SEA_LAST=null;
+const SEA_P={base:'EUR',quote:'USD',depth:15,cur:true};
+try{ Object.assign(SEA_P,JSON.parse(localStorage.getItem(SEA_PREF))||{}); }catch(e){}
+if(!SEA_CCY.includes(SEA_P.base)||!SEA_CCY.includes(SEA_P.quote)||SEA_P.base===SEA_P.quote){ SEA_P.base='EUR'; SEA_P.quote='USD'; }
+function seaSavePref(){ try{ localStorage.setItem(SEA_PREF,JSON.stringify(SEA_P)); }catch(e){} }
+const seaISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const seaNext=iso=>{ const d=new Date(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10)+1); return seaISO(d); };
+function seaSlotLabel(k){ let m=0; while(m<11&&SEA_MSTART[m+1]<=k) m++; return (k-SEA_MSTART[m]+1)+' '+SEA_MSHORT[m]; }
+const seaFmt=(v,d)=>v==null||!isFinite(v)?'—':(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(d==null?2:d).replace('.',',')+' %';
+const seaCls=v=>v>0?'up':v<0?'down':'';
+/* Historique complet en cache local ; ensuite, seuls les jours manquants sont téléchargés. */
+async function loadSeason(force){
+  if(seaLoading) return;
+  let data=null;
+  try{ const c=JSON.parse(localStorage.getItem(SEA_KEY)); if(c&&c.v===1&&Array.isArray(c.dates)&&c.r&&SEA_SYMS.every(s=>Array.isArray(c.r[s])&&c.r[s].length===c.dates.length)) data=c; }catch(e){}
+  if(data&&data.dates.length&&!force&&Date.now()-(data.t||0)<6*3600e3){ SEA_DATA=data; renderSeason(); return; }
+  seaLoading=true; renderSeason();
+  try{
+    if(!data) data={v:1,t:0,dates:[],r:Object.fromEntries(SEA_SYMS.map(s=>[s,[]]))};
+    const from=data.dates.length?seaNext(data.dates[data.dates.length-1]):'1999-01-04', to=seaISO(new Date());
+    if(from<=to){
+      const r=await fetch('https://api.frankfurter.dev/v1/'+from+'..'+to+'?base=EUR&symbols='+SEA_SYMS.join(','));
+      if(r.ok){
+        const j=await r.json(), rates=(j&&j.rates)||{};
+        const last=data.dates.length?data.dates[data.dates.length-1]:'';
+        Object.keys(rates).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&d>last).sort().forEach(d=>{
+          data.dates.push(d); SEA_SYMS.forEach(s=>{ const v=+(rates[d]||{})[s]; data.r[s].push(isFinite(v)&&v>0?v:null); });
+        });
+      } else if(!data.dates.length) throw new Error('Frankfurter a répondu HTTP '+r.status);
+      // (rien de neuf depuis le dernier fixing : la source répond 404, on garde le cache)
+    }
+    if(!data.dates.length) throw new Error('aucun fixing reçu');
+    data.t=Date.now(); SEA_DATA=data; seaErr='';
+    try{ localStorage.setItem(SEA_KEY,JSON.stringify(data)); }catch(e){ /* stockage plein : l'historique reste en mémoire pour cette visite */ }
+  }catch(e){ seaErr=e.message||'source injoignable'; if(data&&data.dates.length) SEA_DATA=data; }
+  seaLoading=false; renderSeason();
+}
+function setSeaPair(b,q){ if(!SEA_CCY.includes(b)||!SEA_CCY.includes(q)) return; if(b===q){ q=b===SEA_P.quote?SEA_P.base:SEA_P.quote; if(q===b) q=b==='EUR'?'USD':'EUR'; } SEA_P.base=b; SEA_P.quote=q; seaHi=null; seaSavePref(); renderSeason(); }
+function seaInvert(){ setSeaPair(SEA_P.quote,SEA_P.base); }
+function setSeaDepth(d){ SEA_P.depth=+d||0; seaHi=null; seaSavePref(); renderSeason(); }
+function setSeaCur(on){ SEA_P.cur=!!on; seaSavePref(); renderSeaChart(); }
+function seaDir(avg,up,down,n){ return avg>=0?(up+' année'+(up>1?'s':'')+' sur '+n+' en hausse'):(down+' année'+(down>1?'s':'')+' sur '+n+' en baisse'); }
+function renderSeason(){
+  const tools=document.getElementById('sea-tools'); if(!tools) return;
+  const opt=sel=>SEA_CCY.map(c=>'<option'+(c===sel?' selected':'')+'>'+c+'</option>').join('');
+  tools.innerHTML='<div class="ch-cross"><span class="seg-l">Paire</span><select id="sea-b" onchange="setSeaPair(this.value,SEA_P.quote)" aria-label="Devise de base">'+opt(SEA_P.base)+'</select><span style="color:var(--ink-soft)">/</span><select id="sea-q" onchange="setSeaPair(SEA_P.base,this.value)" aria-label="Devise de cotation">'+opt(SEA_P.quote)+'</select><button type="button" class="tbtn" onclick="seaInvert()" title="Inverser la paire">⇄ Inverser</button></div>'
+    +'<div class="seg"><span class="seg-l">Profondeur</span>'+[[5,'5 ans'],[10,'10 ans'],[15,'15 ans'],[20,'20 ans'],[0,'Tout']].map(([d,l])=>'<button type="button" aria-pressed="'+(SEA_P.depth===d)+'" onclick="setSeaDepth('+d+')">'+l+'</button>').join('')+'</div>'
+    +'<label class="sea-chk"><input type="checkbox" '+(SEA_P.cur?'checked':'')+' onchange="setSeaCur(this.checked)"> Année en cours</label>';
+  const meta=document.getElementById('sea-meta'), rb=document.getElementById('sea-refresh');
+  if(rb){ rb.classList.toggle('spinning',seaLoading); rb.disabled=seaLoading; }
+  const empty=html=>{ ['sea-kpis','sea-legend','sea-months','sea-windows'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=''; }); document.getElementById('sea-chart').innerHTML='<div class="empty-mini">'+html+'</div>'; SEA_LAST=null; };
+  if(!SEA_DATA){ empty(seaLoading?'Téléchargement de l\'historique des fixings BCE depuis 1999 (une seule fois, ensuite gardé sur cet appareil)…':'Historique indisponible ('+escH(seaErr||'aucune donnée')+'). <button type="button" class="tbtn" onclick="loadSeason(true)">Réessayer</button>'); return; }
+  const last=SEA_DATA.dates[SEA_DATA.dates.length-1];
+  if(meta) meta.textContent='Fixings BCE · '+SEA_DATA.dates.length.toLocaleString('fr-FR')+' jours · dernier '+fmtMeetDate(last)+(seaErr?' · mise à jour impossible':'');
+  const S=seasonality(SEA_DATA,SEA_P.base,SEA_P.quote,{depth:SEA_P.depth||0});
+  SEA_LAST=S;
+  if(S.n<3){ empty('Pas assez d\'années complètes pour cette paire ('+S.n+').'); return; }
+  const pair=SEA_P.base+'/'+SEA_P.quote, curM=new Date().getMonth(), mc=S.months[curM];
+  const best=S.months.reduce((a,m)=>m.avg!=null&&(!a||m.avg>a.avg)?m:a,null), worst=S.months.reduce((a,m)=>m.avg!=null&&(!a||m.avg<a.avg)?m:a,null);
+  const annDown=S.n-S.annualUp-S.used.filter(Y=>Y.traj[365]===0).length;
+  const kpi=(l,v,sub)=>'<div class="sea-kpi"><span class="sea-kpi-l">'+l+'</span><b class="'+seaCls(v)+'">'+seaFmt(v)+'</b><span class="sea-kpi-s">'+sub+'</span></div>';
+  document.getElementById('sea-kpis').innerHTML=
+    kpi('Année moyenne · '+pair,S.annual,seaDir(S.annual,S.annualUp,annDown,S.n)+' · '+S.used[0].y+'–'+S.used[S.n-1].y)
+    +kpi('Mois en cours · '+SEA_MONTHS[curM],mc.avg,seaDir(mc.avg,mc.up,mc.down,mc.n))
+    +kpi('Meilleur mois · '+SEA_MONTHS[best.m],best.avg,seaDir(best.avg,best.up,best.down,best.n))
+    +kpi('Pire mois · '+SEA_MONTHS[worst.m],worst.avg,seaDir(worst.avg,worst.up,worst.down,worst.n));
+  document.getElementById('sea-legend').innerHTML='<span class="key"><i style="background:var(--ink)"></i>moyenne de '+S.n+' années ('+S.used[0].y+'–'+S.used[S.n-1].y+')</span><span class="key"><i style="background:color-mix(in srgb,var(--ink) 18%,transparent)"></i>erreur-type de la moyenne (σ/√n)</span>'+(S.cur?'<span class="key"><i style="background:var(--sea-cur)"></i>'+S.curY+' (année en cours)</span>':'');
+  // tableau mois par mois
+  document.getElementById('sea-months').innerHTML='<div class="tbl-scroll"><table class="ctbl sea-tbl"><thead><tr><th>Mois</th><th class="n">Moyenne</th><th>Années en hausse</th><th class="n">Meilleure</th><th class="n">Pire</th></tr></thead><tbody>'
+    +S.months.map(m=>'<tr class="'+(m.m===curM?'cur':'')+'"><td>'+SEA_MONTHS[m.m]+(m.m===curM?' <span class="sea-now">en cours</span>':'')+'</td><td class="n '+seaCls(m.avg)+'"><b>'+seaFmt(m.avg)+'</b></td>'
+      +'<td><span class="sea-share"><span class="sea-share-bar"><i style="width:'+(m.n?m.up/m.n*100:0).toFixed(0)+'%"></i></span>'+m.up+'/'+m.n+'</span></td>'
+      +'<td class="n">'+(m.best?seaFmt(m.best.v)+' <span class="sea-y">'+m.best.y+'</span>':'—')+'</td><td class="n">'+(m.worst?seaFmt(m.worst.v)+' <span class="sea-y">'+m.worst.y+'</span>':'—')+'</td></tr>').join('')
+    +'</tbody></table></div><div class="foot" style="margin-top:8px">Un mois se mesure du dernier fixing du mois précédent au dernier fixing du mois. Janvier part donc du premier fixing de l\'année et ne contient pas le saut du Nouvel An. Moyenne des log-rendements, ramenée en %.</div>';
+  // fenêtres
+  const W=seaWindows(S);
+  document.getElementById('sea-windows').innerHTML=(W.length?'<div class="sea-wins">'+W.map((w,i)=>{
+      const on=seaHi&&seaHi.s===w.s&&seaHi.e===w.e;
+      return '<button type="button" class="sea-win" aria-pressed="'+!!on+'" onclick="seaHighlight('+w.s+','+w.e+')">'
+        +'<span class="sea-win-d"><b>'+seaSlotLabel(w.s)+' → '+seaSlotLabel(w.e)+'</b><span>'+w.L+' jours</span></span>'
+        +'<span class="sea-win-track" aria-hidden="true"><i style="left:'+(w.s/365*100).toFixed(2)+'%;width:'+((w.e-w.s)/365*100).toFixed(2)+'%"></i></span>'
+        +'<span class="sea-win-v '+seaCls(w.mean)+'">'+seaFmt(w.mean)+'</span><span class="sea-win-h">'+(w.mean>=0?w.hits+'/'+w.n+' en hausse':w.hits+'/'+w.n+' en baisse')+'</span></button>';
+    }).join('')+'</div>':'<div class="empty-mini">Aucune fenêtre ne passe les filtres sur cette profondeur.</div>')
+    +'<div class="foot" style="margin-top:8px">Fenêtres de 10 à 60 jours où la paire est partie dans le même sens au moins 70 % des années, avec une moyenne d\'au moins 0,5 % ; classées par régularité puis par netteté (moyenne rapportée à son erreur-type), les 5 meilleures sans chevauchement. Clique une fenêtre pour la repérer sur le graphique.</div>';
+  renderSeaChart();
+}
+function seaHighlight(s,e){ seaHi=seaHi&&seaHi.s===s&&seaHi.e===e?null:{s,e}; document.querySelectorAll('.sea-win').forEach(b=>{ b.setAttribute('aria-pressed',String(!!seaHi&&b.getAttribute('onclick')==='seaHighlight('+seaHi.s+','+seaHi.e+')')); }); renderSeaChart(); }
+function renderSeaChart(){
+  const el=document.getElementById('sea-chart'), S=SEA_LAST; if(!el||!S||typeof d3==='undefined') return;
+  const W=Math.max(720,Math.round(el.clientWidth||720)), H=340, m={l:52,r:58,t:16,b:28};
+  const k0=0,k1=365, x=d3.scaleLinear().domain([k0,k1]).range([m.l,W-m.r]);
+  const mean=S.mean.map(seaPct), lo=S.mean.map((v,i)=>seaPct(v-S.se[i])), hi=S.mean.map((v,i)=>seaPct(v+S.se[i]));
+  const cur=S.cur&&SEA_P.cur?S.cur.traj.slice(0,S.cur.last+1).map(seaPct):null;
+  let ymin=Math.min(0,...lo), ymax=Math.max(0,...hi);
+  if(cur){ ymin=Math.min(ymin,...cur); ymax=Math.max(ymax,...cur); }
+  const pad=(ymax-ymin)*0.08||0.5; ymin-=pad; ymax+=pad;
+  const y=d3.scaleLinear().domain([ymin,ymax]).range([H-m.b,m.t]).nice(5);
+  const line=d3.line().x((d,i)=>x(i)).y(d=>y(d)), area=d3.area().x((d,i)=>x(i)).y0((d,i)=>y(lo[i])).y1((d,i)=>y(hi[i]));
+  const today=new Date(), tk=SEA_MSTART[today.getMonth()]+today.getDate()-1;
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Profil saisonnier moyen de '+S.base+'/'+S.quote+'">';
+  if(seaHi) s+='<rect x="'+x(seaHi.s).toFixed(1)+'" y="'+m.t+'" width="'+(x(seaHi.e)-x(seaHi.s)).toFixed(1)+'" height="'+(H-m.t-m.b)+'" fill="color-mix(in srgb,var(--ink) 8%,transparent)"/>';
+  y.ticks(5).forEach(t=>{ s+='<line x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+y(t).toFixed(1)+'" y2="'+y(t).toFixed(1)+'" stroke="var(--'+(t===0?'line-strong':'line')+')" stroke-width="1"'+(t===0?'':' stroke-dasharray="2 3"')+'/><text x="'+(m.l-8)+'" y="'+(y(t)+3.5).toFixed(1)+'" text-anchor="end">'+seaFmt(t,Math.abs(t)<1&&t!==0?1:0).replace(' %','%')+'</text>'; });
+  SEA_MSTART.forEach((k,i)=>{ s+='<line x1="'+x(k).toFixed(1)+'" x2="'+x(k).toFixed(1)+'" y1="'+m.t+'" y2="'+(H-m.b)+'" stroke="var(--line)" stroke-width="1"/><text x="'+x(k+SEA_MDAYS[i]/2).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle">'+SEA_MSHORT[i]+'</text>'; });
+  s+='<path d="'+area(mean)+'" fill="color-mix(in srgb,var(--ink) 16%,transparent)"/>';
+  s+='<path d="'+line(mean)+'" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>';
+  s+='<text x="'+(x(365)+6).toFixed(1)+'" y="'+(y(mean[365])+4).toFixed(1)+'" class="sea-end">'+seaFmt(mean[365],1)+'</text>';
+  if(cur){
+    const kl=cur.length-1;
+    s+='<path d="'+line(cur)+'" fill="none" stroke="var(--sea-cur)" stroke-width="1.8" stroke-linejoin="round"/>'
+      +'<circle cx="'+x(kl).toFixed(1)+'" cy="'+y(cur[kl]).toFixed(1)+'" r="3.5" fill="var(--sea-cur)" stroke="var(--card)" stroke-width="1.5"/>'
+      +'<text x="'+(x(kl)+(kl>300?-6:7)).toFixed(1)+'" y="'+(y(cur[kl])+16).toFixed(1)+'" text-anchor="'+(kl>300?'end':'start')+'" class="sea-cur-l">'+S.curY+' : '+seaFmt(cur[kl])+'</text>';   // sous le point : ne croise pas le repère du jour
+  }
+  if(tk>=0&&tk<=365) s+='<line x1="'+x(tk).toFixed(1)+'" x2="'+x(tk).toFixed(1)+'" y1="'+m.t+'" y2="'+(H-m.b)+'" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3"/><text x="'+(x(tk)+4).toFixed(1)+'" y="'+(m.t+10)+'" class="sea-today">aujourd\'hui</text>';
+  s+='<line class="sc-guide" x1="0" x2="0" y1="'+m.t+'" y2="'+(H-m.b)+'" stroke="var(--ink-soft)" stroke-width="1" visibility="hidden"/>'
+    +'<circle class="sc-dot" r="4" fill="var(--card)" stroke="var(--ink)" stroke-width="2" visibility="hidden"/>'
+    +'<rect class="sc-hit" x="'+m.l+'" y="'+m.t+'" width="'+(W-m.l-m.r)+'" height="'+(H-m.t-m.b)+'" fill="transparent"/></svg><div class="chart-tip" hidden></div>';
+  el.innerHTML=s;
+  const svg=el.querySelector('svg'), tip=el.querySelector('.chart-tip'), guide=el.querySelector('.sc-guide'), dot=el.querySelector('.sc-dot'), hit=el.querySelector('.sc-hit');
+  const move=ev=>{
+    const r=svg.getBoundingClientRect(), sc=W/r.width, k=Math.max(0,Math.min(365,Math.round(x.invert((ev.clientX-r.left)*sc))));
+    guide.setAttribute('x1',x(k)); guide.setAttribute('x2',x(k)); guide.setAttribute('visibility','visible');
+    dot.setAttribute('cx',x(k)); dot.setAttribute('cy',y(mean[k])); dot.setAttribute('visibility','visible');
+    const vals=S.used.map(Y=>seaPct(Y.traj[k])), up=vals.filter(v=>v>0).length;
+    tip.innerHTML='<b>'+seaSlotLabel(k)+'</b><br>moyenne '+seaFmt(mean[k])+' (± '+(seaPct(S.mean[k]+S.se[k])-mean[k]).toFixed(2).replace('.',',')+' erreur-type)'
+      +'<br>dispersion ±1σ : '+seaFmt(seaPct(S.mean[k]-S.sd[k]))+' à '+seaFmt(seaPct(S.mean[k]+S.sd[k]))
+      +'<br>années au-dessus de 0 : '+up+'/'+S.n
+      +(cur&&k<cur.length?'<br><span style="color:var(--sea-cur)">'+S.curY+' : '+seaFmt(cur[k])+'</span>':'');
+    tip.hidden=false;
+    tip.style.left=Math.max(110,Math.min(r.width-110,x(k)/sc))+'px'; tip.style.top=(y(mean[k])/sc)+'px';
+  };
+  hit.addEventListener('pointermove',move); hit.addEventListener('pointerdown',move);
+  hit.addEventListener('pointerleave',()=>{ tip.hidden=true; guide.setAttribute('visibility','hidden'); dot.setAttribute('visibility','hidden'); });
 }
 
 /* ---------- Calendrier économique (ForexFactory via /api/calendar) ---------- */

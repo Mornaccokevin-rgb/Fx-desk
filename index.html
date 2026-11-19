@@ -3001,6 +3001,23 @@
     .set-msg { font-size: 12px; margin-top: 8px; min-height: 16px; line-height: 1.5 }
     .set-msg.ok { color: var(--fx-green, #22c55e) }
     .set-msg.err { color: var(--fx-red) }
+    /* compteur de consommation Claude */
+    .aiu { --aiu-ok: #22c55e; --aiu-mid: #f59e0b; --aiu-hi: #ef4444; border: 1px solid var(--fx-bd); border-radius: 12px; padding: 14px 16px; background: var(--fx-card2) }
+    body.light-mode .aiu { --aiu-ok: #16a34a; --aiu-mid: #d97706; --aiu-hi: #dc2626 }
+    .aiu-tag { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--fx-muted); border: 1px solid var(--fx-bd); border-radius: 6px; padding: 2px 6px }
+    .aiu-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px }
+    .aiu-left { font-size: 30px; font-weight: 700; color: var(--fx-text); font-variant-numeric: tabular-nums; line-height: 1.1 }
+    .aiu-left-sub { font-size: 12px; color: var(--fx-muted) }
+    .aiu-bar { height: 10px; border-radius: 6px; background: rgba(127, 127, 127, .18); overflow: hidden }
+    .aiu-bar span { display: block; height: 100%; border-radius: 6px; transition: width .4s ease, background .2s }
+    .aiu-bar.ok span { background: var(--aiu-ok) } .aiu-bar.mid span { background: var(--aiu-mid) } .aiu-bar.hi span { background: var(--aiu-hi) }
+    .aiu-detail { font-size: 12px; color: var(--fx-muted); margin: 7px 0 4px; font-variant-numeric: tabular-nums }
+    .aiu-warn { font-size: 12px; line-height: 1.5; color: var(--aiu-mid); margin: 6px 0 }
+    .aiu-row { margin-top: 10px }
+    .aiu-budget { font-size: 12px; color: var(--fx-text); font-weight: 600 }
+    .aiu-budget-inp { width: 90px; margin-bottom: 0 }
+    .aiu-cur { font-size: 13px; color: var(--fx-muted); margin-left: -4px }
+    .aiu-sync { margin: 6px 0 }
     .set-key-row { display: flex; gap: 8px; align-items: flex-start }
     .set-key-row .fx-inp { flex: 1; min-width: 0 }
     .set-masked { -webkit-text-security: disc }
@@ -4690,6 +4707,26 @@
                     <div class="set-hint" style="margin-top:10px">🔒 Ta clé est personnelle : elle reste uniquement dans ce navigateur, liée à ton compte, et n'est jamais envoyée à Firebase ni partagée avec les autres membres. Elle sert à toutes les fonctions IA du Sphinx Alliance : brief du Macro Compass, Set-ups fondamentaux et Coach IA du Performance Tracker. Les appels sont facturés sur ton compte du fournisseur (Gemini propose une clé gratuite via Google AI Studio).</div>
                     <a class="set-link" style="display:inline-block;margin-top:8px" href="guide-cle-api.pdf" target="_blank" rel="noopener">📄 Guide : obtenir sa clé API (Gemini, Claude, ChatGPT)</a>
                 </div>
+                <div class="set-section aiu" id="aiu-block" style="display:none">
+                    <div class="set-lbl">Consommation de la clé Claude <span class="aiu-tag">estimation</span></div>
+                    <div class="aiu-head"><span class="aiu-left" id="aiu-left">—</span><span class="aiu-left-sub" id="aiu-left-sub"></span></div>
+                    <div class="aiu-bar ok" id="aiu-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><span id="aiu-fill"></span></div>
+                    <div class="aiu-detail" id="aiu-detail"></div>
+                    <div class="aiu-warn" id="aiu-warn" hidden></div>
+                    <div class="set-row aiu-row">
+                        <label class="aiu-budget" for="aiu-budget">Budget</label>
+                        <input type="text" id="aiu-budget" class="fx-inp set-inp aiu-budget-inp" inputmode="decimal" autocomplete="off" aria-label="Budget en dollars">
+                        <span class="aiu-cur">$</span>
+                        <button type="button" class="set-btn ghost" onclick="saveAiBudget()">Fixer le budget</button>
+                        <button type="button" class="set-btn ghost danger-txt" onclick="resetAiUsage()">Remettre à zéro</button>
+                    </div>
+                    <div class="set-msg" id="aiu-msg"></div>
+                    <div class="set-lbl" style="margin-top:12px">Modèle et tarif</div>
+                    <select id="aiu-model" class="fx-inp set-inp" onchange="pickClaudeModel(this.value)" aria-label="Modèle Claude et son tarif"></select>
+                    <div class="set-hint" id="aiu-rate"></div>
+                    <div class="set-hint aiu-sync" id="aiu-sync"></div>
+                    <div class="set-hint">Anthropic ne publie aucun solde restant : ce compteur est une <b>estimation</b>, calculée après chaque appel à partir des tokens que l'API renvoie et du barème public. Il ne voit que les appels faits depuis le Sphinx Alliance. Ton vrai solde est dans la console Anthropic (Billing).</div>
+                </div>
                 <div class="set-section" id="dk-block" style="display:none">
                     <div class="set-lbl">Clés de données de l'alliance (rédacteurs)</div>
                     <div class="set-hint" style="margin-bottom:8px">Utilisées par le Macro Compass pour tous les membres : Finnhub (flux de news) et Polygon (tendances FX). Stockées dans Firestore, lisibles seulement par les membres connectés — jamais dans le code du site.</div>
@@ -5225,7 +5262,7 @@
     // ── IA : fournisseur, clé et modèle (stockés sur cet appareil) ──
     const AI_PROVIDERS = {
         gemini: { label: 'Gemini', model: 'gemini-3.8-flash', keyUrl: 'https://aistudio.google.com/apikey' },
-        claude: { label: 'Claude', model: 'claude-opus-5', keyUrl: 'https://console.anthropic.com/settings/keys' },
+        claude: { label: 'Claude', model: 'claude-opus-5-5', keyUrl: 'https://console.anthropic.com/settings/keys' },
         openai: { label: 'ChatGPT', model: 'gpt-5', keyUrl: 'https://platform.openai.com/api-keys' }
     };
     window.AI_PROVIDERS = AI_PROVIDERS;   // lu par le Macro Compass (iframe, même origine)
@@ -5315,6 +5352,7 @@
         document.getElementById('ai-key-eye').className = 'ti ti-eye';
         document.getElementById('ai-model-input').value = cleanModelName(p, st.models[p]);
         document.getElementById('ai-key-link').href = AI_PROVIDERS[p].keyUrl;
+        renderAiUsage();
     }
     function selectAiProvider(p) {
         if (!AI_PROVIDERS[p]) return;
@@ -5363,6 +5401,178 @@
         }
     }
 
+    // ── IA : compteur de consommation de la clé Claude ──────────────
+    //  L'API Anthropic ne publie AUCUN solde restant (l'API Admin de coûts exige
+    //  une clé Admin, compte à l'échelle de l'organisation et retarde de 4 à 24 h).
+    //  Le compteur est donc une estimation : chaque réponse renvoie ses tokens dans
+    //  response.usage, valorisés au barème public ci-dessous ($ par million de tokens).
+    //  Synchronisé entre appareils dans users/{uid}/settings/aiUsage (incréments
+    //  atomiques) ; localStorage n'en est que le miroir d'affichage.
+    const CLAUDE_PRICES = {   // entrée / sortie / lecture de cache ; écriture de cache = 1,25 × entrée
+        'claude-sonnet-5-5': { label: 'Claude Sonnet 5.5', in: 2, out: 10, read: 0.10 },
+        'claude-opus-5-5':   { label: 'Claude Opus 5.5', in: 4, out: 20, read: 0.20 },
+        'claude-haiku-5-5':  { label: 'Claude Haiku 5.5', in: 0.10, out: 0.50, read: 0.01 },
+        'claude-fable-5-2':  { label: 'Claude Fable 5.2', in: 8, out: 40, read: 0.20 },
+        'claude-sonnet-5':   { label: 'Claude Sonnet 5', in: 2, out: 10, read: 0.20 },
+        'claude-opus-5':     { label: 'Claude Opus 5', in: 5, out: 25, read: 0.50 },
+        'claude-fable-5-1':  { label: 'Claude Fable 5.1', in: 10, out: 50, read: 0.25 },
+        // modèle de repli que le serveur peut utiliser après un refus : absent de la liste, mais facturé
+        'claude-opus-4-8':   { label: 'Claude Opus 4.8', in: 5, out: 25, read: 0.50, fallbackOnly: true }
+    };
+    // Modèles qui acceptent le repli serveur après un refus (Haiku 5.5 n'en a pas).
+    const CLAUDE_FALLBACK_MODELS = new Set(['claude-fable-5-2', 'claude-fable-5-1', 'claude-fable-5', 'claude-opus-5-5', 'claude-opus-5', 'claude-sonnet-5-5']);
+    const AIU_DEFAULT_BUDGET = 5;
+    const normModel = m => String(m || '').trim().replace(/-\d{8}$/, '');
+    const aiuTok = u => ['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'cache_creation_input_tokens'].reduce((s, k) => s + Math.max(0, +(u && u[k]) || 0), 0);
+    // coût = (entrée×in + lecture cache×read + écriture cache×in×1,25 + sortie×out) / 1e6 ; null si hors barème
+    function claudeCostOf(model, u) {
+        const p = CLAUDE_PRICES[normModel(model)];
+        if (!p) return null;
+        const n = k => Math.max(0, +(u && u[k]) || 0);
+        return (n('input_tokens') * p.in + n('cache_read_input_tokens') * p.read + n('cache_creation_input_tokens') * p.in * 1.25 + n('output_tokens') * p.out) / 1e6;
+    }
+    // Un appel = une ou plusieurs tentatives : avec le repli serveur, usage.iterations
+    // détaille chacune (la tentative refusée au tarif du modèle demandé, le repli au
+    // sien) ; sans détail, l'usage global est celui du modèle qui a répondu.
+    function claudeCallCost(reqModel, d) {
+        const u = (d && d.usage) || {};
+        const its = Array.isArray(u.iterations) ? u.iterations.filter(x => x && aiuTok(x) > 0) : [];
+        const parts = its.length
+            ? its.map(x => ({ model: x.model || (x.type === 'fallback_message' ? (d.model || reqModel) : reqModel), u: x }))
+            : [{ model: (d && d.model) || reqModel, u }];
+        let cost = 0, tokens = 0; const unknown = [];
+        parts.forEach(p => {
+            tokens += aiuTok(p.u);
+            const c = claudeCostOf(p.model, p.u);
+            if (c == null) { if (aiuTok(p.u) > 0 && !unknown.includes(normModel(p.model))) unknown.push(normModel(p.model)); }
+            else cost += c;
+        });
+        return { cost, tokens, unknown };
+    }
+    let aiuState = null, aiuUnsub = null, aiuRef = null, aiuUid = null, aiuServerSeen = false, aiuSeeded = false, aiuOffline = false;
+    const aiuMirrorKey = () => 'sphinx_aiusage_' + (aiuUid || (auth && auth.currentUser && auth.currentUser.uid) || 'anon');
+    function aiuBlank() { return { spent: 0, calls: 0, tokens: 0, budget: AIU_DEFAULT_BUDGET, unknownModels: [] }; }
+    function aiuClean(o) {
+        const b = aiuBlank(); o = o || {};
+        return {
+            spent: Math.max(0, +o.spent || 0), calls: Math.max(0, Math.round(+o.calls || 0)), tokens: Math.max(0, Math.round(+o.tokens || 0)),
+            budget: isFinite(+o.budget) && +o.budget > 0 ? +o.budget : b.budget,
+            unknownModels: Array.isArray(o.unknownModels) ? o.unknownModels.filter(x => typeof x === 'string').slice(0, 10) : []
+        };
+    }
+    function aiuLoadMirror() { try { aiuState = aiuClean(JSON.parse(localStorage.getItem(aiuMirrorKey()))); } catch (e) { aiuState = aiuBlank(); } }
+    function aiuSaveMirror() { try { localStorage.setItem(aiuMirrorKey(), JSON.stringify(aiuState)); } catch (e) {} }
+    // Écoute du document du compte : attachée à la connexion, détachée à la déconnexion.
+    function aiUsageAttach(user) {
+        if (aiuUnsub) { try { aiuUnsub(); } catch (e) {} aiuUnsub = null; }
+        aiuRef = null; aiuServerSeen = false; aiuSeeded = false; aiuOffline = false;
+        aiuUid = user ? user.uid : null;
+        aiuLoadMirror();
+        if (user && db && typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) {
+            aiuRef = db.collection('users').doc(user.uid).collection('settings').doc('aiUsage');
+            aiuUnsub = aiuRef.onSnapshot({ includeMetadataChanges: true }, snap => {
+                aiuOffline = snap.metadata.fromCache;
+                if (!snap.metadata.fromCache) aiuServerSeen = true;
+                if (snap.exists) {
+                    aiuState = aiuClean(snap.data()); aiuSaveMirror();   // le document fait foi
+                } else if (!snap.metadata.fromCache && !aiuSeeded) {
+                    // Première fois pour ce compte : on crée le document à partir du miroir local,
+                    // jamais d'après un instantané hors ligne (il écraserait le vrai total au retour du réseau).
+                    aiuSeeded = true;
+                    const seed = aiuState || aiuBlank();
+                    const ref = aiuRef;
+                    db.runTransaction(async t => {
+                        const s = await t.get(ref);
+                        if (!s.exists) t.set(ref, { spent: seed.spent, calls: seed.calls, tokens: seed.tokens, budget: seed.budget, unknownModels: seed.unknownModels, createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    }).catch(e => console.warn('aiUsage (création)', e.message));
+                }
+                renderAiUsage();
+            }, err => { console.warn('aiUsage', err.message); aiuRef = null; aiuUnsub = null; renderAiUsage(); });
+        }
+        renderAiUsage();
+    }
+    // Appelé après chaque réponse Claude, avant toute erreur (un refus est facturé).
+    function recordClaudeUsage(reqModel, d) {
+        const r = claudeCallCost(reqModel, d);
+        if (!aiuState) aiuLoadMirror();
+        aiuState.spent += r.cost; aiuState.calls += 1; aiuState.tokens += r.tokens;
+        r.unknown.forEach(m => { if (!aiuState.unknownModels.includes(m)) aiuState.unknownModels.push(m); });
+        aiuSaveMirror();   // la barre bouge tout de suite ; le document la corrige dès son prochain instantané
+        if (aiuRef) {
+            const FV = firebase.firestore.FieldValue;
+            const upd = { spent: FV.increment(r.cost), calls: FV.increment(1), tokens: FV.increment(r.tokens), updatedAt: FV.serverTimestamp() };
+            if (r.unknown.length) upd.unknownModels = FV.arrayUnion.apply(null, r.unknown);
+            aiuRef.set(upd, { merge: true }).catch(e => console.warn('aiUsage (incrément)', e.message));
+        }
+        renderAiUsage();
+        return r;
+    }
+    function saveAiBudget() {
+        const v = parseFloat(String(document.getElementById('aiu-budget').value).replace(',', '.'));
+        if (!isFinite(v) || v <= 0) return setMsg('aiu-msg', 'Indique un budget en dollars, supérieur à zéro.', 'err');
+        if (!aiuState) aiuLoadMirror();
+        aiuState.budget = Math.round(v * 100) / 100; aiuSaveMirror();
+        if (aiuRef) aiuRef.set({ budget: aiuState.budget, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(e => setMsg('aiu-msg', 'Budget gardé sur cet appareil seulement : ' + e.message, 'err'));
+        setMsg('aiu-msg', 'Budget fixé à ' + aiuMoney(aiuState.budget) + '.', 'ok');
+        renderAiUsage();
+    }
+    function resetAiUsage() {
+        if (!confirm('Remettre le compteur de consommation Claude à zéro ' + (aiuRef ? 'sur tous tes appareils' : 'sur cet appareil') + ' ? Le budget est conservé.')) return;
+        if (!aiuState) aiuLoadMirror();
+        Object.assign(aiuState, { spent: 0, calls: 0, tokens: 0, unknownModels: [] }); aiuSaveMirror();
+        if (aiuRef) {
+            const FV = firebase.firestore.FieldValue;
+            aiuRef.set({ spent: 0, calls: 0, tokens: 0, unknownModels: FV.delete(), resetAt: FV.serverTimestamp(), updatedAt: FV.serverTimestamp() }, { merge: true })
+                .catch(e => setMsg('aiu-msg', 'Remise à zéro faite sur cet appareil seulement : ' + e.message, 'err'));
+        }
+        setMsg('aiu-msg', 'Compteur remis à zéro.', 'ok');
+        renderAiUsage();
+    }
+    function pickClaudeModel(m) {
+        if (!CLAUDE_PRICES[m]) return;
+        document.getElementById('ai-model-input').value = m;
+        setMsg('ai-msg', 'Modèle ' + CLAUDE_PRICES[m].label + ' choisi : clique « Enregistrer » pour l\'utiliser.', '');
+        renderAiUsage();
+    }
+    function aiuMoney(v) { v = +v || 0; return (Math.abs(v) < 0.995 && v !== 0 ? v.toFixed(3) : v.toFixed(2)).replace('.', ',') + ' $'; }
+    const aiuRate = v => (Number.isInteger(+v) ? String(+v) : (+v).toFixed(2)).replace('.', ',');
+    function renderAiUsage() {
+        const box = document.getElementById('aiu-block');
+        if (!box) return;
+        const show = aiDraftProvider === 'claude';
+        box.style.display = show ? '' : 'none';
+        if (!show) return;
+        if (!aiuState) aiuLoadMirror();
+        const s = aiuState, left = s.budget - s.spent, pct = s.budget > 0 ? Math.min(100, s.spent / s.budget * 100) : 0;
+        const lvl = pct >= 90 ? 'hi' : pct >= 70 ? 'mid' : 'ok';
+        document.getElementById('aiu-left').textContent = left >= 0 ? aiuMoney(left) : '− ' + aiuMoney(-left);
+        document.getElementById('aiu-left-sub').textContent = left >= 0 ? 'restants sur ton budget (estimation)' : 'au-delà de ton budget (estimation)';
+        const bar = document.getElementById('aiu-bar'), fill = document.getElementById('aiu-fill');
+        bar.className = 'aiu-bar ' + lvl; fill.style.width = pct.toFixed(1) + '%';
+        bar.setAttribute('aria-valuenow', String(Math.round(pct)));
+        bar.setAttribute('aria-label', 'Budget consommé à ' + Math.round(pct) + ' %');
+        document.getElementById('aiu-detail').textContent = aiuMoney(s.spent) + ' dépensés sur ' + aiuMoney(s.budget) + ' · ' + s.calls.toLocaleString('fr-FR') + ' appel' + (s.calls > 1 ? 's' : '') + ' · ' + s.tokens.toLocaleString('fr-FR') + ' tokens';
+        const warn = document.getElementById('aiu-warn');
+        const curModel = normModel(document.getElementById('ai-model-input').value) || AI_PROVIDERS.claude.model;
+        const msgs = [];
+        if (s.unknownModels.length) msgs.push('Modèle hors barème : ' + s.unknownModels.join(', ') + '. Ses appels sont comptés 0 $ : le compteur sous-estime ta dépense réelle.');
+        if (!CLAUDE_PRICES[curModel]) msgs.push('Le modèle « ' + curModel + ' » n\'est pas dans le barème : ses appels compteront 0 $.');
+        warn.hidden = !msgs.length; warn.textContent = msgs.length ? '⚠️ ' + msgs.join(' ') : '';
+        const bud = document.getElementById('aiu-budget');
+        if (document.activeElement !== bud) bud.value = String(s.budget).replace('.', ',');
+        const sel = document.getElementById('aiu-model');
+        const opts = Object.keys(CLAUDE_PRICES).filter(k => !CLAUDE_PRICES[k].fallbackOnly);
+        sel.innerHTML = opts.map(k => { const p = CLAUDE_PRICES[k]; return '<option value="' + k + '">' + p.label + ' — ' + aiuRate(p.in) + ' $ / ' + aiuRate(p.out) + ' $ par million de tokens (entrée / sortie)</option>'; }).join('')
+            + (CLAUDE_PRICES[curModel] && !CLAUDE_PRICES[curModel].fallbackOnly ? '' : '<option value="" selected>' + escHtml(curModel) + ' — hors barème</option>');
+        if (opts.includes(curModel)) sel.value = curModel;
+        const p = CLAUDE_PRICES[curModel];
+        document.getElementById('aiu-rate').textContent = p ? ('Lecture de cache ' + aiuRate(p.read) + ' $, écriture de cache ' + aiuRate(Math.round(p.in * 125) / 100) + ' $ par million de tokens.') : '';
+        const sync = document.getElementById('aiu-sync');
+        sync.textContent = aiuRef
+            ? (aiuServerSeen && !aiuOffline ? '🔄 Synchronisé avec ton compte : le même compteur sur tous tes appareils.' : '⏳ Hors ligne ou en attente du serveur : affichage local, les appels seront ajoutés au total du compte au retour du réseau.')
+            : '📱 Local à cet appareil (connecte-toi pour synchroniser le compteur entre tes appareils).';
+    }
+
     // Appel texte simple vers le fournisseur choisi (appel direct depuis le navigateur).
     async function callAi(cfg, system, user, maxTokens) {
         const readErr = async r => {
@@ -5407,14 +5617,16 @@
                 'anthropic-dangerous-direct-browser-access': 'true'
             };
             const body = { model: cfg.model, max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] };
-            // Repli automatique côté serveur si le modèle refuse une requête (Opus 5 / Fable 5.1).
-            if (cfg.model === 'claude-opus-5' || cfg.model === 'claude-fable-5-1') {
+            // Repli automatique côté serveur si le modèle refuse une requête (modèles actuels, Sonnet 5.5 compris ;
+            // Haiku 5.5 n'a pas de repli).
+            if (CLAUDE_FALLBACK_MODELS.has(normModel(cfg.model))) {
                 headers['anthropic-beta'] = 'server-side-fallback-2026-07-01';
                 body.fallbacks = 'default';
             }
             const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
             if (!r.ok) throw await readErr(r);
             const d = await r.json();
+            try { recordClaudeUsage(cfg.model, d); } catch (e) { console.warn('compteur Claude', e); }   // avant toute erreur : un refus est facturé
             if (d.stop_reason === 'refusal') throw new Error('Le modèle a refusé la requête' + (d.stop_details && d.stop_details.explanation ? ' : ' + d.stop_details.explanation : '.'));
             const text = (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
             if (!text) throw new Error('Réponse vide (' + d.stop_reason + ')');
@@ -6309,6 +6521,7 @@ Ce qui manque ou est daté.`;
         db = app.firestore();
         localStorage.removeItem('sphinx_switch_to');   // ancien mécanisme de bascule
         auth.onAuthStateChanged(function(user) {
+            try { aiUsageAttach(user); } catch (e) { console.warn('compteur Claude', e); }
             if (user) {
                 rememberAccount(user, saAppName);
                 // Juste connecté avec son mot de passe, ou déjà vérifié dans cet onglet → hub.

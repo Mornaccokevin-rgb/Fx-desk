@@ -7,13 +7,14 @@
      /api/dmx        sentiment des particuliers (Myfxbook)
      /api/polymarket marchés de prédiction (Fed, économie, géopolitique)
      /api/calendar   calendrier économique (ForexFactory, sinon TradingView)
-     /api/macro      dernières statistiques publiées par pays (planisphère)
+     /api/macro      dernières statistiques publiées par pays (planisphère, décisions de taux,
+                     PMI : calendrier TradingView et titres de presse)
      /api/rates      rendements 2 et 10 ans, stocks de pétrole
      /api/gdelt      tension géopolitique (volume d'articles)
    Aucune clé dans ce fichier. Pour l'API officielle Myfxbook (facultative),
    les identifiants se règlent dans Cloudflare en tant que secrets du Worker
    (MYFXBOOK_EMAIL, MYFXBOOK_PASSWORD), jamais dans le dépôt. */
-import { parseFeed, mergeNews, parseOutlookHtml, outlookFromApi, widgetUrlFromScript, cleanText } from './api-lib.mjs';
+import { parseFeed, mergeNews, parseOutlookHtml, outlookFromApi, widgetUrlFromScript, cleanText, pmiHeadlines } from './api-lib.mjs';
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const CNN = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
@@ -346,13 +347,30 @@ const MACRO_PICK = [
   ['unemp', /^Unemployment Rate( Prel| Final)?$/i],
   ['gdp', /^GDP Growth Rate QoQ( Adv| Prel| Final| Flash| 2nd Est| 3rd Est)?$/i],
   ['retail', /^Retail Sales MoM( Adv| Prel| Final)?$/i],
-  ['pmi', /^(ISM Manufacturing PMI|.*Manufacturing PMI( Flash| Final)?)$/i],
-  ['rate', /Interest Rate Decision$/i],
+  ['ism', /^ISM Manufacturing PMI$/i],
+  ['isms', /^ISM (Services|Non-Manufacturing) PMI$/i],
+  ['pmi', /^((S&P Global|HCOB|au Jibun Bank|Jibun Bank|Judo Bank|procure\.ch) )?Manufacturing PMI( Flash| Final)?$|^Business ?NZ PMI$/i],
+  ['pmis', /^((S&P Global|HCOB|au Jibun Bank|Jibun Bank|Judo Bank|procure\.ch) )?Services PMI( Flash| Final)?$|^Business ?NZ (PSI|Services Index)$/i],
+  ['pmic', /^((S&P Global|HCOB|au Jibun Bank|Jibun Bank|Judo Bank) )?Composite PMI( Flash| Final)?$/i],
 ];
+/* Décisions de taux : le code TradingView est plus sûr que l'intitulé (la Fed, la BoE, la BoJ
+   et la BoC sont publiées sous le seul titre « Interest Rate »). BCE : taux de dépôt et taux refi. */
+function macroKey(e) {
+  const tk = String(e.ticker || ''), t = String(e.title || '');
+  if (tk === 'ECONOMICS:EUDIR') return 'rate';
+  if (tk === 'ECONOMICS:EUINTR') return 'rateMro';
+  if (/^ECONOMICS:(US|GB|JP|CA|AU|NZ|CH)INTR$/.test(tk)) return 'rate';
+  if (tk === 'ECONOMICS:USBCOI') return 'ism';
+  if (!tk) {
+    if (e.country === 'EU') { if (/^Deposit Facility Rate$/i.test(t)) return 'rate'; if (/^ECB Interest Rate Decision$/i.test(t)) return 'rateMro'; }
+    else if (/^(Interest Rate|.*Interest Rate Decision)$/i.test(t)) return 'rate';
+  }
+  const hit = MACRO_PICK.find(([, re]) => re.test(t)); return hit ? hit[0] : null;
+}
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
 function macroPeriod(e, key) {   // période de référence d'une publication → « 2026-10 » ou « 2026-Q3 »
   const rel = new Date(e.date);
-  if (key === 'rate') return rel.toISOString().slice(0, 7);
+  if (key === 'rate' || key === 'rateMro') return rel.toISOString().slice(0, 7);
   const ref = e.referenceDate && isFinite(Date.parse(e.referenceDate)) ? new Date(e.referenceDate) : null;
   const p = String(e.period || '').trim();
   const q = /^Q([1-4])$/i.exec(p);
@@ -362,33 +380,70 @@ function macroPeriod(e, key) {   // période de référence d'une publication �
   if (m) { const y = m > rel.getUTCMonth() + 1 ? rel.getUTCFullYear() - 1 : rel.getUTCFullYear(); return y + '-' + String(m).padStart(2, '0'); }
   return '';
 }
+/* Le calendrier TradingView tronque les longues périodes : on le lit par tranches de 15 jours. */
+async function tvEvents(days, span) {
+  const end = Date.now(), parts = [];
+  for (let t = end - days * 864e5; t < end; t += span * 864e5) parts.push([t, Math.min(end, t + span * 864e5)]);
+  const res = await Promise.all(parts.map(async ([a, b]) => {
+    const url = 'https://economic-calendar.tradingview.com/events?from=' + new Date(a).toISOString() + '&to=' + new Date(b).toISOString() + '&countries=' + Object.keys(MACRO_COUNTRIES).join(',');
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': UA, 'Origin': 'https://www.tradingview.com', 'Referer': 'https://www.tradingview.com/', 'Accept': 'application/json' }, signal: AbortSignal.timeout(12000), cf: { cacheTtl: 3600, cacheEverything: true } });
+      if (!r.ok) return { err: 'HTTP ' + r.status };
+      const j = await r.json(); return { list: Array.isArray(j && j.result) ? j.result : [] };
+    } catch (e) { return { err: errText(e) }; }
+  }));
+  const seen = new Set(), list = [];
+  res.forEach(x => (x.list || []).forEach(e => { const k = e.id || (e.country + '|' + e.title + '|' + e.date); if (!seen.has(k)) { seen.add(k); list.push(e); } }));
+  return { list, parts: res.map(x => (x.list ? x.list.length : x.err)) };
+}
+/* PMI S&P Global / HCOB : chiffres absents du calendrier TradingView, repris des titres de presse. */
+const PMI_NEWS = [['Manufacturing PMI', 'Eurozone OR UK OR Japan'], ['Manufacturing PMI', 'Australia OR Canada OR "S&P Global"'], ['Services PMI', 'Eurozone OR UK OR Japan'],
+  ['Services PMI', 'Australia OR Canada OR "S&P Global"'], ['Composite PMI', 'Eurozone OR UK OR Japan'], ['Composite PMI', 'Australia OR Canada OR "S&P Global"']];
+async function pmiNews(trail) {
+  const out = [];
+  await Promise.all(PMI_NEWS.map(async ([kind, where]) => {
+    const q = 'intitle:"' + kind + '" (' + where + ') when:75d';
+    try {
+      const r = await fetch('https://news.google.com/rss/search?q=' + encodeURIComponent(q) + '&hl=en-US&gl=US&ceid=US:en', { headers: { 'User-Agent': UA, 'Accept': 'application/rss+xml, application/xml, text/xml, */*' }, signal: AbortSignal.timeout(8000), cf: { cacheTtl: 1800, cacheEverything: true } });
+      if (!r.ok) { trail.push(kind + ' (' + where + ') : HTTP ' + r.status); return; }
+      const recs = pmiHeadlines(await r.text()); out.push(...recs); trail.push(kind + ' (' + where + ') : ' + recs.length + ' titre(s) retenu(s)');
+    } catch (e) { trail.push(kind + ' (' + where + ') : ' + errText(e)); }
+  }));
+  return out;
+}
 async function macro(wantDebug) {
-  const url = 'https://economic-calendar.tradingview.com/events?from=' + new Date(Date.now() - 115 * 864e5).toISOString() + '&to=' + new Date().toISOString() + '&countries=' + Object.keys(MACRO_COUNTRIES).join(',');
-  let list;
-  try {
-    const r = await fetch(url, { headers: { 'User-Agent': UA, 'Origin': 'https://www.tradingview.com', 'Referer': 'https://www.tradingview.com/', 'Accept': 'application/json' }, signal: AbortSignal.timeout(12000), cf: { cacheTtl: 3600, cacheEverything: true } });
-    if (!r.ok) return json({ error: 'Calendrier TradingView : HTTP ' + r.status }, 502, 'no-store');
-    const j = await r.json(); list = Array.isArray(j && j.result) ? j.result : [];
-  } catch (e) { return json({ error: 'Calendrier TradingView : ' + errText(e) }, 502, 'no-store'); }
-  const indicators = {}; let used = 0;
-  list.forEach(e => {
+  const pmiTrail = [], [tv, news] = await Promise.all([tvEvents(120, 15), pmiNews(pmiTrail)]);
+  if (!tv.list.length && !news.length) return json({ error: 'Calendrier TradingView : ' + tv.parts.join(' · '), pmi: pmiTrail }, 502, 'no-store');
+  // candidats par indicateur / devise / période ; à période égale : calendrier > presse, définitif > provisoire, puis le plus récent
+  const cand = {}; let used = 0;
+  const put = (key, ccy, p, x) => {
+    const slot = ((cand[key] = cand[key] || {})[ccy] = cand[key][ccy] || {}), cur = slot[p];
+    if (cur && (cur.rank > x.rank || (cur.rank === x.rank && (cur.prelim < x.prelim || (cur.prelim === x.prelim && cur.rel >= x.rel))))) return;
+    slot[p] = x;
+  };
+  tv.list.forEach(e => {
     const ccy = MACRO_COUNTRIES[e.country], v = typeof e.actual === 'number' ? e.actual : parseFloat(e.actual);
     if (!ccy || !isFinite(v) || !e.title || !isFinite(Date.parse(e.date))) return;
-    const hit = MACRO_PICK.find(([, re]) => re.test(e.title)); if (!hit) return;
-    const key = hit[0], p = macroPeriod(e, key); if (!p) return;
-    const slot = (indicators[key] = indicators[key] || {}), cur = slot[ccy];
-    const isIsm = /^ISM /i.test(e.title);
-    // on garde la période la plus récente ; à période égale, la publication la plus récente (l'ISM prime pour les États-Unis)
-    if (cur && (cur.p > p || (cur.p === p && (cur.rel > e.date || (cur.ism && !isIsm))))) return;
-    slot[ccy] = { p, v, title: e.title, rel: e.date, ism: isIsm }; used++;
+    const key = macroKey(e); if (!key) return;
+    const p = macroPeriod(e, key); if (!p) return;
+    const prev = typeof e.previous === 'number' ? e.previous : parseFloat(e.previous);
+    put(key, ccy, p, { v, title: String(e.title), rel: new Date(e.date).toISOString(), rank: 2, prelim: /\b(Flash|Prel|Adv|Preliminary)\b/i.test(e.title) ? 1 : 0,
+      src: 'calendrier TradingView', ticker: e.ticker || '', prev: isFinite(prev) ? prev : null });
+    used++;
   });
-  Object.values(indicators).forEach(slot => Object.values(slot).forEach(x => { delete x.ism; }));
-  const body = { indicators, events: list.length, at: Date.now() };
+  news.forEach(x => { put(x.key, x.ccy, x.p, { v: x.v, title: x.title, rel: x.rel, rank: 1, prelim: x.prelim ? 1 : 0, src: 'presse (' + x.source + ')' }); used++; });
+  const indicators = {};
+  Object.entries(cand).forEach(([key, byCcy]) => Object.entries(byCcy).forEach(([ccy, byP]) => {
+    const ps = Object.keys(byP).sort(), last = byP[ps[ps.length - 1]];
+    (indicators[key] = indicators[key] || {})[ccy] = { p: ps[ps.length - 1], v: last.v, title: last.title, rel: last.rel, src: last.src, prelim: !!last.prelim,
+      prev: last.prev == null ? undefined : last.prev, prev0: byP[ps[0]].prev == null ? undefined : byP[ps[0]].prev, ticker: last.ticker || undefined, hist: ps.map(p => [p, byP[p].v]) };
+  }));
+  const body = { indicators, events: tv.list.length, sources: { tradingview: tv.parts, pmi: pmiTrail }, at: Date.now() };
   if (wantDebug) {
-    const count = {}; list.forEach(e => { const k = e.country + ' | ' + e.title; count[k] = (count[k] || 0) + 1; });
-    body.debug = { sample: list.slice(0, 2), titles: Object.keys(count).filter(k => /inflation|cpi|unemploy|employment|gdp|retail|pmi|interest rate/i.test(k)).sort() };
+    const count = {}; tv.list.forEach(e => { const k = e.country + ' | ' + e.title + (e.ticker ? ' | ' + e.ticker : '') + (e.actual == null ? ' | sans chiffre' : ''); count[k] = (count[k] || 0) + 1; });
+    body.debug = { titles: Object.keys(count).filter(k => /inflation|cpi|unemploy|employment|gdp|retail|pmi|psi|interest rate|deposit/i.test(k)).sort(), pmiHeadlines: news.map(x => x.ccy + ' ' + x.key + ' ' + x.p + ' = ' + x.v + (x.prelim ? ' (flash)' : '') + ' ← ' + x.title) };
   }
-  if (!used && !wantDebug) return json({ error: 'Aucune statistique reconnue dans le calendrier (' + list.length + ' publications lues)' }, 502, 'no-store');
+  if (!used && !wantDebug) return json({ error: 'Aucune statistique reconnue dans le calendrier (' + tv.list.length + ' publications lues)' }, 502, 'no-store');
   return json(body, 200, wantDebug ? 'no-store' : 'public, max-age=10800');
 }
 

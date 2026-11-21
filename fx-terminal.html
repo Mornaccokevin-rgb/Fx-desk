@@ -341,6 +341,7 @@ button.row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .rate-flag{font-size:17px}
 .rate-bank{font-size:13px;font-weight:600;white-space:nowrap}
 .rate-now{font-family:var(--font-num);font-size:12.5px;font-weight:700;margin-left:auto}
+.rate-auto{font-size:10px;font-weight:600;color:var(--ink-soft);margin-left:3px;cursor:help}
 .rate-meet{font-size:10.5px;color:var(--ink-soft);margin-bottom:10px;font-family:var(--font-num)}
 .rate-meet b{color:var(--ink);font-weight:600}
 .rate-cd{color:var(--ink-soft);font-weight:400}
@@ -458,6 +459,10 @@ html.rx-lock,html.rx-lock body{overflow:hidden;overscroll-behavior:none}
 .rd-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--ink-soft);margin-bottom:6px}
 .rd-legend span{display:flex;align-items:center;gap:6px}
 .rd-legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.rd-legend .rd-key{gap:6px}.rd-legend .rd-key em{font-style:normal}
+.rd-legend .rd-grad{width:72px;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--rx-cut),var(--rx-hold),var(--rx-hike))}
+.rd-legend b{color:var(--ink);font-weight:600}
+.rd-legend .rd-now{display:block}
 .rd-chart{position:relative;height:220px}
 .rd-chart.md{height:200px}.rd-chart.sm{height:150px}
 .rd-empty{font-size:12px;color:var(--ink-soft);line-height:1.6;padding:14px;border:1px dashed var(--line-strong);border-radius:3px}
@@ -765,8 +770,7 @@ button.dmx-sym:hover{text-decoration:underline}
 @media (max-width:560px){.sea-win{grid-template-columns:minmax(0,1fr) auto}.sea-win-track{grid-column:1 / -1;grid-row:2}.sea-win-h{grid-column:1 / -1}}
 
 /* ---------- vue Comparer (planisphère) ---------- */
-.cmp-grid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;align-items:start}
-@media (max-width:980px){.cmp-grid{grid-template-columns:minmax(0,1fr)}}
+.cmp-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
 .cmp-map{position:relative;width:100%;min-height:120px}
 .cmp-map svg{display:block;width:100%;height:auto}
 .cmp-map .sph{fill:var(--ocean)}
@@ -786,7 +790,8 @@ button.dmx-sym:hover{text-decoration:underline}
 .cmp-legend{display:flex;align-items:center;gap:8px 10px;font-family:var(--font-num);font-size:10px;color:var(--ink-soft);margin-top:8px;flex-wrap:wrap}
 .cmp-legend .ramp{flex:0 0 150px;height:10px;border-radius:2px;border:1px solid var(--line-strong);background:linear-gradient(90deg,var(--seq-lo),var(--seq-mid),var(--seq-hi))}
 .cmp-legend .sw{width:12px;height:10px;border-radius:2px;border:1px solid var(--line-strong);display:inline-block}
-.cmp-side{display:flex;flex-direction:column;gap:8px;min-width:0}
+.cmp-side{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;min-width:0;align-items:stretch}
+.cmp-side .cmp-side-h{grid-column:1 / -1}
 .cmp-side-h{display:flex;align-items:baseline;gap:8px;font-size:15px;font-weight:600}
 .cmp-side-h span{font-family:var(--font-num);font-size:10px;letter-spacing:.1em;color:var(--ink-soft)}
 .cmp-kpi{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:2px 10px;align-items:center;border:1px solid var(--line);border-radius:3px;padding:9px 11px;background:none;color:inherit;text-align:left;cursor:pointer;width:100%;font:inherit;transition:border-color .12s}
@@ -798,9 +803,23 @@ button.dmx-sym:hover{text-decoration:underline}
 .cmp-kpi .spark{grid-row:1 / span 2;grid-column:2;height:36px}
 .stale{color:var(--warn);font-weight:700}
 .cmp-rank{display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:14px}
-.cmp-r{display:grid;grid-template-columns:20px 150px minmax(110px,1fr) 62px 80px 88px 88px;gap:12px;align-items:center;padding:8px 4px;border:0;border-bottom:1px solid var(--line);background:none;color:inherit;text-align:left;width:100%;font:inherit}
-button.cmp-r{cursor:pointer}
-button.cmp-r:hover,button.cmp-r[aria-pressed="true"]{background:var(--hover)}
+.cmp-r{display:grid;grid-template-columns:20px 150px minmax(110px,1fr) 62px 80px 88px 88px 14px;gap:12px;align-items:center;padding:8px 4px;border:0;border-bottom:1px solid var(--line);background:none;color:inherit;text-align:left;width:100%;font:inherit;text-decoration:none}
+button.cmp-r,a.cmp-r{cursor:pointer}
+button.cmp-r:hover,button.cmp-r[aria-pressed="true"],a.cmp-r:hover,a.cmp-r.on{background:var(--hover)}
+a.cmp-r:focus-visible,button.cmp-r:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.cmp-r .go{font-size:12px;color:var(--ink-soft);text-align:right}
+a.cmp-r:hover .go{color:var(--ink)}
+.cmp-r.cmp-all{display:flex;align-items:baseline;justify-content:center;gap:10px;padding:12px 4px;font-family:var(--font-num);font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.cmp-r.cmp-all .sub{font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink-soft);font-size:11px}
+.cmp-tv-box{max-width:1100px}
+.cmp-tv-box h3{margin:0 0 4px;font-size:15px}
+.cmp-tv-sub{font-size:11.5px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5}
+.cmp-tv-chart{height:min(560px,62vh);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.cmp-tv-chart .tradingview-widget-copyright{font-size:10.5px;padding:6px 8px}.cmp-tv-chart .tradingview-widget-copyright a{color:var(--ink-soft)}
+.cmp-tv-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.cmp-tv-links a{font-family:var(--font-num);font-size:11px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:3px;padding:5px 8px}
+.cmp-tv-links a:hover{border-color:var(--ink)}
+.cmp-tv-links a span{color:var(--ink-soft)}
 .cmp-r.h{font-family:var(--font-num);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:7px 4px}
 .cmp-r .rk{font-family:var(--font-num);font-size:10.5px;color:var(--ink-soft)}
 .cmp-r .nm{display:flex;flex-direction:column;min-width:0}
@@ -811,7 +830,7 @@ button.cmp-r:hover,button.cmp-r[aria-pressed="true"]{background:var(--hover)}
 .cmp-r .v{font-family:var(--font-num);font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .cmp-r .p,.cmp-r .o{font-family:var(--font-num);font-size:10.5px;color:var(--ink-soft);text-align:right;white-space:nowrap}
 .cmp-r .o b{color:var(--ink);font-weight:600}
-@media (max-width:860px){.cmp-r{grid-template-columns:18px 64px minmax(60px,1fr) 58px 74px}.cmp-r .o{display:none}.cmp-r .nm span{display:none}}
+@media (max-width:860px){.cmp-r{grid-template-columns:18px 64px minmax(60px,1fr) 58px 74px 12px}.cmp-r.cmp-all{flex-direction:column;align-items:center;gap:2px}.cmp-r .o{display:none}.cmp-r .nm span{display:none}}
 
 /* ---------- divers ---------- */
 .toast{position:fixed;bottom:22px;right:22px;max-width:calc(100vw - 44px);background:var(--ink);color:var(--paper);border-radius:3px;padding:10px 16px;font-size:12.5px;z-index:999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
@@ -1132,7 +1151,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
     <nav class="ctl" id="ctl" aria-label="Panneau de contrôle"></nav>
   </div>
 
-  <footer class="doc" id="footNote">Notes /100 et contenus : jugement de Claude sur les pages Notion de Kevin (Biais &amp; Force Relative, Track Record Fondamental, Live Feed) complété par des recherches web, publié par un rédacteur via « Importer une mise à jour ». Taux et probabilités : collages des rédacteurs, Polymarket pour la Fed. Rien n'est un conseil d'investissement.</footer>
+  <footer class="doc" id="footNote">Notes /100 et contenus : jugement de Claude sur les pages Notion de Kevin (Biais &amp; Force Relative, Track Record Fondamental, Live Feed) complété par des recherches web, publié par un rédacteur via « Importer une mise à jour ». Taux et probabilités : collages des rédacteurs, Polymarket pour la Fed ; taux directeurs recalés après chaque décision d'après le calendrier économique. <b>Rien de tout cela n'est un conseil en investissement</b> : j'apporte simplement des informations et, surtout, je les regroupe au même endroit.</footer>
 </div>
 <div class="toast" id="toast"></div>
 <script>
@@ -1599,10 +1618,14 @@ function subscribeRates(){
         if(data.manual) configManual=true; // attentes collées → priment sur le Fed auto
         const banks=data.banks||{};
         Object.keys(banks).forEach(code=>{
-          if(code==='USD'&&fedLive&&!configManual) return; // sinon le Fed live (Polymarket) prime
-          if(RATE_EXPECTATIONS[code]) Object.assign(RATE_EXPECTATIONS[code],banks[code]);
+          const r=RATE_EXPECTATIONS[code], b=banks[code]; if(!r||!b) return;
+          if(b.rate!=null){ r.rateBase=String(b.rate); r.rateAt=b.rateAt||null; }
+          if(code==='USD'&&fedLive&&!configManual) return; // probabilités : le Fed live (Polymarket) prime
+          Object.assign(r,b);
         });
+        applyRateDecisions();
         renderRateExpectations(); updateRateBadge(); if(typeof renderGrid==='function') renderGrid();
+        if(activeView==='compare'&&CMP) renderCompare();
       }
     }, err=>{ console.warn('rateExpectations',err.message); rateUnsub=null; });
   }catch(e){ rateUnsub=null; console.warn('subscribeRates',e.message); }
@@ -1686,12 +1709,15 @@ function openRateEdit(code){
   g('rx-save').onclick=()=>{
     const meets=g('rx-meet').value.split(/[,;\s]+/).map(x=>x.trim()).filter(x=>ISO_DAY.test(x)).sort();
     const vals={rate:g('rx-rate').value.trim(),hike:+g('rx-hike').value||0,hold:+g('rx-hold').value||0,cut:+g('rx-cut').value||0};
+    if(vals.rate!==r.rate) vals.rateAt=new Date().toISOString();   // taux corrigé à la main : prime sur les décisions antérieures
     if(meets.length) vals.meeting=fmtMeetDate(meets[0]);
     saveRateEdit(code,vals,meets); ov.remove();
   };
 }
 async function saveRateEdit(code,vals,meets){
   Object.assign(RATE_EXPECTATIONS[code],vals);
+  RATE_EXPECTATIONS[code].rateBase=vals.rate; if(vals.rateAt) RATE_EXPECTATIONS[code].rateAt=vals.rateAt;
+  applyRateDecisions();
   if(meets&&meets.length) RATE_MEETINGS=Object.assign({},RATE_MEETINGS,{[code]:meets});
   renderRateExpectations();
   if(!fxDb||!mpIsEditor()){toast('Sauvegarde impossible (non connecté)');return;}
@@ -1704,6 +1730,50 @@ async function saveRateEdit(code,vals,meets){
     toast('Attentes mises à jour ✅');
   }catch(e){toast('Erreur : '+e.message);}
 }
+
+/* ── Taux directeur recalé après chaque décision ──
+   Le taux saisi (crayon, import du Compass) reste la base. Dès que le calendrier économique
+   publie une décision plus récente que cette saisie, avec un autre taux, c'est la décision qui
+   s'affiche partout (cartes, tableau, détail, globe, Comparer). Rien n'est écrit dans Firestore. */
+let MACRO_LIVE=null, macroLiveP=null, macroLiveErr='';
+function loadMacroLive(force){
+  if(macroLiveP&&!force) return macroLiveP;
+  macroLiveP=(async()=>{
+    let live=!force&&lsGet('fxmt_macro2',3*3600*1000);
+    if(!live){ try{ live=(await apiJSON('/api/macro')).indicators||null; if(live) lsSet('fxmt_macro2',live); macroLiveErr=''; }catch(e){ macroLiveErr=e.message||'indisponible'; live=null; } }
+    MACRO_LIVE=live;
+    if(live){ applyRateDecisions(); renderRateExpectations(); if(typeof renderGrid==='function') renderGrid(); if(rdOpenCode) openRateDetail(rdOpenCode); }
+    else macroLiveP=null;   // nouvel essai au prochain appel
+    return live;
+  })();
+  return macroLiveP;
+}
+// BCE : le calendrier donne le taux de dépôt et le taux refi ; on suit la convention de la saisie.
+function rateDecisionFor(code){
+  const L=MACRO_LIVE; if(!L) return null;
+  const d=L.rate&&L.rate[code];
+  if(code!=='EUR') return d||null;
+  const mro=L.rateMro&&L.rateMro.EUR, r=RATE_EXPECTATIONS.EUR, b=r&&parseRate(r.rateBase!=null?r.rateBase:r.rate);
+  const tag=(x,sym)=>x?Object.assign({},x,{sym}):null;
+  if(!d||!mro||!b) return d?tag(d,'ECONOMICS:EUDIR'):tag(mro,'ECONOMICS:EUINTR');
+  const near=x=>Math.min(...[x.v,x.prev,x.prev0].concat((x.hist||[]).map(h=>h[1])).filter(v=>v!=null&&isFinite(v)).map(v=>Math.abs(v-b.hi)));
+  return near(mro)<near(d)?tag(mro,'ECONOMICS:EUINTR'):tag(d,'ECONOMICS:EUDIR');
+}
+function applyRateDecisions(){
+  Object.keys(RATE_EXPECTATIONS).forEach(code=>{
+    const r=RATE_EXPECTATIONS[code];
+    if(r.rateBase==null) r.rateBase=r.rate;
+    r.rate=r.rateBase; r.rateAuto=null;
+    const d=rateDecisionFor(code), b=parseRate(r.rateBase);
+    if(!d||!b||!isFinite(+d.v)) return;
+    const relT=Date.parse(d.rel)||0, setT=Date.parse(r.rateAt||'')||0;
+    if(Math.abs(b.hi-d.v)<0.001||setT>=relT) return;   // déjà à jour, ou saisi après la décision
+    const f=x=>x.toFixed(2).replace('.',b.comma?',':'.'), w=b.hi-b.lo;
+    r.rate=(b.range?f(d.v-w)+'–'+f(+d.v):f(+d.v))+(/\s%\s*$/.test(String(r.rateBase))?' %':'%');
+    r.rateAuto={from:String(r.rateBase),v:+d.v,rel:d.rel};
+  });
+}
+function rateAutoNote(r){ return r&&r.rateAuto?'Recalé d\'après la décision du '+fmtMeetDate(String(r.rateAuto.rel).slice(0,10))+' (calendrier économique) ; saisie précédente : '+r.rateAuto.from:''; }
 
 /* ── Import d'une mise à jour du Compass (fichier JSON préparé par Claude, rédacteurs) ──
    Écrit la collection macroCompass (une fiche par devise + _meta) avec le compte du rédacteur. */
@@ -1786,7 +1856,7 @@ function openCompassImport(){
         const meetings={}, banks={}, curves={};
         Object.entries(R.banks||{}).forEach(([c,b])=>{
           if(Array.isArray(b.meetings)&&b.meetings.length) meetings[c]=b.meetings.slice().sort();
-          if(b.rate) banks[c]={rate:String(b.rate)};
+          if(b.rate) banks[c]={rate:String(b.rate),rateAt:ISO_DAY.test(String(R.asOf||''))?R.asOf+'T00:00:00.000Z':new Date().toISOString()};
           if(Array.isArray(b.curve)&&b.curve.length){ curves[c]={asOf:R.asOf||new Date().toISOString().slice(0,10),points:b.curve.filter(p=>p&&ISO_DAY.test(p.date)&&isFinite(Number(p.bps))).map(p=>({date:p.date,bps:Number(p.bps)}))}; }
         });
         const upd={};
@@ -1930,7 +2000,7 @@ function openRateDetail(code){
     <button class="rd-close" id="rd-close" aria-label="Fermer">✕</button>
     <h3 id="rd-title">${r.flag} ${r.bank} · ${code}${code==='USD'&&fedLive&&!configManual?' <span style="font-size:10px;color:var(--accent)">· LIVE Polymarket</span>':''}</h3>
     <div class="rd-stats">
-      ${stat('Taux actuel',escH(r.rate||'—'))}
+      ${stat('Taux actuel',escH(r.rate||'—'),r.rateAuto?'décision du '+fmtMeetDate(String(r.rateAuto.rel).slice(0,10)):'')}
       ${stat('Attendu',fmtRate(pr,e),'après la réunion')}
       ${stat('Prochaine réunion',escH(mi.txt),mi.cd)}
       ${stat('Mouvement attendu',`<span style="color:${col[ml.k]}">${ml.ic}</span> ${ml.l}`)}
@@ -1997,15 +2067,15 @@ function renderRateDetailCharts(){
   const bpsPts=pts.filter(p=>p.bpsYE!=null);
   const span=pts.length>1?` · du ${dShort(pts[0].t)} au ${dShort(pts[pts.length-1].t)}`:'';
   const lastP=pts[pts.length-1];
-  const table=`<details><summary>Voir les données (${pts.length} point${pts.length>1?'s':''})</summary><table class="rd-tbl"><tr><th>Date</th><th>Hausse</th><th>Statu quo</th><th>Baisse</th><th>Fin d'année</th><th>Source</th></tr>${pts.slice().reverse().map(p=>`<tr><td>${dLong(p.t)}</td><td>${p.hike} %</td><td>${p.hold} %</td><td>${p.cut} %</td><td>${p.bpsYE!=null?(p.bpsYE>=0?'+':'')+p.bpsYE+' bps':'—'}</td><td>${escH(p.src)}</td></tr>`).join('')}</table></details>`;
+  const table=`<details><summary>Voir les données (${pts.length} point${pts.length>1?'s':''})</summary><table class="rd-tbl"><tr><th>Date</th><th>Variation</th><th>Hausse</th><th>Statu quo</th><th>Baisse</th><th>Fin d'année</th><th>Source</th></tr>${pts.slice().reverse().map(p=>`<tr><td>${dLong(p.t)}</td><td>${fmtBps(expMove(p),1)}</td><td>${p.hike} %</td><td>${p.hold} %</td><td>${p.cut} %</td><td>${p.bpsYE!=null?(p.bpsYE>=0?'+':'')+p.bpsYE+' bps':'—'}</td><td>${escH(p.src)}</td></tr>`).join('')}</table></details>`;
   const pmSrc=pts.length&&pts[0].src==='Polymarket';
-  let h=`<div class="rd-h">Évolution des attentes pour la prochaine réunion</div><div class="rd-sub">${pmSrc?'Probabilités cumulées (total 100 %) du marché Polymarket'+(PM_FED_TITLE?' « '+escH(PM_FED_TITLE)+' »':'')+', un point par jour':'Probabilités cumulées (total 100 %) à chaque mise à jour'}${span}</div>`;
+  let h=`<div class="rd-h">Évolution des attentes pour la prochaine réunion</div><div class="rd-sub">Variation attendue, en bps pondérés par les probabilités (hausse − baisse, par pas de 25 bps) · ${pmSrc?'marché Polymarket'+(PM_FED_TITLE?' « '+escH(PM_FED_TITLE)+' »':'')+', un point par jour':'un point à chaque mise à jour'}${span}</div>`;
   if(pts.length<2){
     box.innerHTML=h+`<div class="rd-empty">L'historique se construit à chaque collage ou modification des attentes (et à chaque import du Macro Compass) : ${pts.length} point pour l'instant. Le graphique apparaît dès le 2ᵉ point.</div>`+table;
     return;
   }
-  h+=`<div class="rd-legend"><span><i style="background:var(--rx-hike)"></i>Hausse ${lastP.hike} %</span><span><i style="background:var(--rx-hold)"></i>Statu quo ${lastP.hold} %</span><span><i style="background:var(--rx-cut)"></i>Baisse ${lastP.cut} %</span></div>
-    <div class="rd-chart"><canvas id="rd-c1" role="img" aria-label="Évolution des probabilités de hausse, statu quo et baisse"></canvas></div>`;
+  h+=`<div class="rd-legend"><span class="rd-key" aria-hidden="true"><em>Baisse</em><i class="rd-grad"></i><em>Hausse</em></span><span>gris : statu quo</span><span class="rd-now">Aujourd'hui : <b>${fmtBps(expMove(lastP),1)}</b> · hausse ${lastP.hike} % · statu quo ${lastP.hold} % · baisse ${lastP.cut} %</span></div>
+    <div class="rd-chart"><canvas id="rd-c1" role="img" aria-label="Variation attendue à la prochaine réunion, en points de base : au-dessus de zéro une hausse est attendue, en dessous une baisse"></canvas></div>`;
   if(bpsPts.length>=2) h+=`<div class="rd-h">bps attendus d'ici la fin d'année</div><div class="rd-sub">Ce que le marché price en cumul jusqu'en décembre (au-dessus de 0 : hausses, en dessous : baisses)</div><div class="rd-chart sm"><canvas id="rd-c2" role="img" aria-label="Évolution des bps attendus d'ici la fin d'année"></canvas></div>`;
   box.innerHTML=h+table;
   loadChartJs().then(Chart=>{
@@ -2016,17 +2086,30 @@ function renderRateDetailCharts(){
     const wide=box.clientWidth>=480, padR=wide?96:8;   // étiquettes directes seulement si la place le permet
     const xScale={type:'linear',min:xMin,max:xMax,ticks:{color:muted,maxTicksLimit:6,callback:t=>dShort(t),font:{size:10}},grid:{display:false},border:{color:grid}};
     const crosshair={id:'rdCross',afterDatasetsDraw(ch){const a=ch.tooltip&&ch.tooltip.getActiveElements();if(!a||!a.length)return;const x=a[0].element.x,ar=ch.chartArea,c=ch.ctx;c.save();c.beginPath();c.moveTo(x,ar.top);c.lineTo(x,ar.bottom);c.lineWidth=1;c.strokeStyle=muted;c.stroke();c.restore();}};
-    // Étiquettes directes à droite, au milieu de chaque bande (texte en encre, pas en couleur de série)
-    const endLabels={id:'rdEnd',afterDatasetsDraw(ch){if(!wide)return;const c=ch.ctx,ar=ch.chartArea;c.save();c.font='600 10.5px Inter, sans-serif';c.fillStyle=ink;c.textBaseline='middle';
-      let acc=0; ch.data.datasets.forEach((ds,i)=>{const val=ds.data[ds.data.length-1].y; const y0=ch.scales.y.getPixelForValue(acc), y1=ch.scales.y.getPixelForValue(acc+val); acc+=val; if(Math.abs(y0-y1)<13) return; c.fillText(ds.label+' '+val+' %',ar.right+8,(y0+y1)/2);}); c.restore();}};
-    const mk=(lbl,key,col,fill)=>({label:lbl,data:pts.map(p=>({x:p.t,y:p[key]})),backgroundColor:col,borderColor:surf,borderWidth:2,fill,pointRadius:0,pointHitRadius:12,pointHoverRadius:5,pointHoverBackgroundColor:col,pointHoverBorderColor:surf,pointHoverBorderWidth:2,tension:0});
     const tip={backgroundColor:v('--panel2'),titleColor:v('--t1'),bodyColor:ink,borderColor:v('--bd2'),borderWidth:1,padding:10,boxPadding:4,animation:false,caretPadding:8};
+    // Courbe lissée de la variation attendue ; la couleur suit la valeur : bleu (hausse) → gris (statu quo) → rouge (baisse)
+    const cHike=v('--rx-hike'), cHold=v('--rx-hold'), cCut=v('--rx-cut');
+    const rgba=(hex,a)=>{ const m=/^#?([0-9a-f]{6})$/i.exec(hex); if(!m) return hex; const n=parseInt(m[1],16); return 'rgba('+(n>>16)+','+((n>>8)&255)+','+(n&255)+','+a+')'; };
+    const mix=(a,b,t)=>{ if(!/^#[0-9a-f]{6}$/i.test(a)||!/^#[0-9a-f]{6}$/i.test(b)) return t<.5?a:b; const A=parseInt(a.slice(1),16), B=parseInt(b.slice(1),16), f=k=>Math.round(((A>>k)&255)+(((B>>k)&255)-((A>>k)&255))*t); return 'rgb('+f(16)+','+f(8)+','+f(0)+')'; };
+    const colorAt=y=>{ const t=Math.max(-1,Math.min(1,y/25)); return t>=0?mix(cHold,cHike,t):mix(cHold,cCut,-t); };
+    const grad=(ch,a)=>{ const ar=ch.chartArea, ys=ch.scales.y; if(!ar||!ys) return a<1?rgba(cHold,a):cHold;
+      const top=ys.getPixelForValue(25), mid=ys.getPixelForValue(0), bot=ys.getPixelForValue(-25);
+      const g=ch.ctx.createLinearGradient(0,top,0,bot); g.addColorStop(0,rgba(cHike,a)); g.addColorStop(Math.max(0,Math.min(1,(mid-top)/(bot-top))),rgba(cHold,a)); g.addColorStop(1,rgba(cCut,a)); return g; };
+    const mvPts=pts.map(p=>({x:p.t,y:Math.round(expMove(p)*100)/100,p}));
+    const lastI=mvPts.length-1, domLbl=p=>[['Hausse',p.hike],['Statu quo',p.hold],['Baisse',p.cut]].sort((a,b)=>b[1]-a[1])[0];
+    // Étiquette directe du dernier point (texte en encre, pas en couleur de série)
+    const endLabels={id:'rdEnd',afterDatasetsDraw(ch){ if(!wide) return; const el=ch.getDatasetMeta(0).data[lastI]; if(!el) return; const c=ch.ctx, ar=ch.chartArea, d=domLbl(mvPts[lastI].p);
+      c.save(); c.fillStyle=ink; c.textBaseline='middle'; c.font='600 11px Inter, sans-serif'; const y=Math.max(ar.top+8,Math.min(ar.bottom-20,el.y));
+      c.fillText(fmtBps(mvPts[lastI].y,1),ar.right+10,y); c.font='500 10px Inter, sans-serif'; c.fillStyle=muted; c.fillText(d[0]+' '+d[1]+' %',ar.right+10,y+14); c.restore(); }};
     const c1=new Chart(document.getElementById('rd-c1'),{type:'line',
-      data:{datasets:[mk('Baisse','cut',v('--rx-cut'),'origin'),mk('Statu quo','hold',v('--rx-hold'),'-1'),mk('Hausse','hike',v('--rx-hike'),'-1')]},
+      data:{datasets:[{label:'Variation attendue',data:mvPts,borderColor:c=>grad(c.chart,1),backgroundColor:c=>grad(c.chart,.14),borderWidth:2.5,fill:'origin',clip:8,
+        cubicInterpolationMode:'monotone',pointRadius:c=>c.dataIndex===lastI?4:0,pointHitRadius:12,pointHoverRadius:5,
+        pointBackgroundColor:c=>colorAt(c.raw?c.raw.y:0),pointHoverBackgroundColor:c=>colorAt(c.raw?c.raw.y:0),pointBorderColor:surf,pointHoverBorderColor:surf,pointBorderWidth:2,pointHoverBorderWidth:2}]},
       options:{responsive:true,maintainAspectRatio:false,animation:false,layout:{padding:{right:padR}},interaction:{mode:'index',intersect:false},
         events:['mousemove','mouseout','touchstart','touchmove','touchend'],
-        scales:{x:xScale,y:{stacked:true,min:0,max:100,ticks:{stepSize:25,color:muted,callback:t=>t+' %',font:{size:10}},grid:{color:grid},border:{display:false}}},
-        plugins:{legend:{display:false},tooltip:Object.assign({},tip,{itemSort:(a,b)=>b.datasetIndex-a.datasetIndex,callbacks:{title:it=>dLong(it[0].parsed.x),label:it=>' '+it.dataset.label+' : '+it.parsed.y+' %'}})}},
+        scales:{x:xScale,y:{min:-25,max:25,ticks:{stepSize:12.5,color:muted,callback:t=>t===0?'0':fmtBps(t,t%1?1:0),font:{size:10}},grid:{color:ctx=>ctx.tick&&ctx.tick.value===0?muted:grid},border:{display:false}}},
+        plugins:{legend:{display:false},tooltip:Object.assign({},tip,{displayColors:false,callbacks:{title:it=>dLong(it[0].parsed.x),
+          label:it=>{ const p=it.raw.p; return [' Variation attendue : '+fmtBps(it.parsed.y,1),' Hausse '+p.hike+' % · statu quo '+p.hold+' % · baisse '+p.cut+' %']; }}})}},
       plugins:[crosshair,endLabels]});
     rdCharts.push(c1);
     const c2el=document.getElementById('rd-c2');
@@ -2361,7 +2444,7 @@ function renderRateExpectations(){
     return `<div class="rate-card" role="button" tabindex="0" onclick="openRateDetail('${code}')" onkeydown="if(event.key==='Enter'){openRateDetail('${code}')}" aria-label="${r.bank} : historique des attentes">
       <div class="rate-hd">
         <div class="rate-cb"><span class="rate-flag">${r.flag}</span><span class="rate-bank">${r.bank} · ${code}</span></div>
-        <span class="rate-now">${r.rate}</span>
+        <span class="rate-now"${r.rateAuto?` title="${escH(rateAutoNote(r))}"`:''}>${escH(r.rate)}${r.rateAuto?'<span class="rate-auto" aria-label="recalé après la dernière décision">↻</span>':''}</span>
         ${mpIsEditor()?`<button class="rate-edit" onclick="event.stopPropagation();openRateEdit('${code}')" title="Modifier les attentes">✏️</button>`:''}
       </div>
       <div class="rate-meet">Prochaine réunion : <b>${mi.txt}</b>${mi.cd?` <span class="rate-cd">· ${mi.cd}</span>`:''}</div>
@@ -3134,7 +3217,7 @@ function initViews(){
   let rz=null;
   window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(activeView==='compare') drawCompareMap(); if(activeView==='cot') renderCotDetail(); if(activeView==='saisonnalite') renderSeaChart(); },160); });
 }
-function onThemeChange(){ if(activeView==='compare'&&CMP) renderCompare(); if(activeView==='graphiques') chRender(); if(activeView==='saisonnalite') renderSeaChart(); }
+function onThemeChange(){ if(rdOpenCode){ renderRateCurveCharts(); renderRateDetailCharts(); } if(activeView==='compare'&&CMP) renderCompare(); if(activeView==='graphiques') chRender(); if(activeView==='saisonnalite') renderSeaChart(); }
 
 /* ---------- Taux : tableau comparé ---------- */
 function renderRateTable(){
@@ -3147,7 +3230,7 @@ function renderRateTable(){
   tb.innerHTML='<thead><tr><th>Banque centrale</th><th class="n">Taux directeur</th><th>Prochaine réunion</th><th>Scénario dominant</th><th class="n">Hausse</th><th class="n">Statu quo</th><th class="n">Baisse</th><th class="n">D\'ici fin d\'année</th></tr></thead><tbody>'
     +rows.map(({code,r,mi,sc})=>'<tr onclick="openRateDetail(\''+code+'\')" title="Ouvrir le détail">'
       +'<td>'+r.flag+' <b>'+escH(r.bank)+'</b> <span style="color:var(--ink-soft);font-family:var(--font-num);font-size:10.5px">'+code+'</span></td>'
-      +'<td class="n"><b>'+escH(r.rate)+'</b></td>'
+      +'<td class="n"'+(r.rateAuto?' title="'+escH(rateAutoNote(r))+'"':'')+'><b>'+escH(r.rate)+'</b>'+(r.rateAuto?' <span class="rate-auto">↻</span>':'')+'</td>'
       +'<td>'+escH(mi.txt)+(mi.cd?' <span style="color:var(--ink-soft);font-size:11px">· '+escH(mi.cd)+'</span>':'')+'</td>'
       +'<td><span class="key" style="font-size:11.5px;color:var(--ink)"><i style="background:'+sc[2]+'"></i>'+sc[0]+' '+sc[1]+' %</span></td>'
       +'<td class="n">'+(+r.hike||0)+' %</td><td class="n">'+(+r.hold||0)+' %</td><td class="n">'+(+r.cut||0)+' %</td>'
@@ -3852,39 +3935,75 @@ function renderCal2(){
 /* ---------- Comparer : planisphère des 8 économies ---------- */
 const CMP_CCY=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 const CMP_IND={
-  cpi:{label:'Inflation',long:'Inflation — prix à la consommation, sur un an',unit:'%'},
-  unemp:{label:'Chômage',long:'Taux de chômage',unit:'%'},
+  cpi:{label:'Inflation',long:'Inflation — prix à la consommation, sur un an',unit:'%',tv:'IRYY'},
+  core:{label:'Inflation cœur',long:'Inflation sous-jacente (hors énergie et alimentation), sur un an',unit:'%',tv:'CIR',tvSkip:['NZD']},
+  unemp:{label:'Chômage',long:'Taux de chômage',unit:'%',tv:'UR'},
   emp:{label:'Emploi',long:'Taux d\'emploi — part de la population en âge de travailler qui a un emploi',unit:'%',
        caveat:'Taux d\'emploi : chaque pays a sa tranche d\'âge de référence, la comparaison est indicative.'},
-  core:{label:'Inflation cœur',long:'Inflation sous-jacente (hors énergie et alimentation), sur un an',unit:'%'},
-  gdp:{label:'PIB',long:'Croissance du PIB sur un trimestre',unit:'%',caveat:'PIB : les États-Unis publient un rythme annualisé, les autres une variation trimestrielle — à ne pas comparer tel quel.'},
-  retail:{label:'Ventes au détail',long:'Ventes au détail sur un mois',unit:'%'},
-  pmi:{label:'PMI manuf.',long:'PMI manufacturier (au-dessus de 50 : activité en expansion)',unit:''},
-  rate:{label:'Taux directeur',long:'Taux directeur de la banque centrale',unit:'%'},
+  gdp:{label:'PIB',long:'Croissance du PIB sur un trimestre',unit:'%',tv:'GDPQQ',caveat:'PIB : les États-Unis publient un rythme annualisé, les autres une variation trimestrielle — à ne pas comparer tel quel.'},
+  retail:{label:'Ventes au détail',long:'Ventes au détail sur un mois',unit:'%',tv:'RSMM',tvSkip:['CHF','NZD']},
+  pmi:{label:'PMI manuf.',long:'PMI manufacturier (au-dessus de 50 : activité en expansion)',unit:'',pmi:true},
+  pmis:{label:'PMI services',long:'PMI des services (au-dessus de 50 : activité en expansion)',unit:'',pmi:true},
+  pmic:{label:'PMI composite',long:'PMI composite, industrie et services réunis (au-dessus de 50 : activité en expansion)',unit:'',pmi:true},
+  ism:{label:'ISM manuf.',long:'ISM manufacturier, propre aux États-Unis (au-dessus de 50 : activité en expansion)',unit:'',only:['USD'],tvMap:{USD:'USBCOI'}},
+  isms:{label:'ISM services',long:'ISM des services, propre aux États-Unis (au-dessus de 50 : activité en expansion)',unit:'',only:['USD']},
+  rate:{label:'Taux directeur',long:'Taux directeur de la banque centrale (onglet Taux, recalé après chaque décision)',unit:'%',tv:'INTR',dec:2},
 };
-const cmpVal=(ind,v)=>fmt1(v)+(CMP_IND[ind].unit?' '+CMP_IND[ind].unit:'');
+const CMP_TV_CC={USD:'US',EUR:'EU',GBP:'GB',JPY:'JP',CHF:'CH',CAD:'CA',AUD:'AU',NZD:'NZ'};
+/* Série TradingView d'un indicateur pour une économie (« ECONOMICS:USINTR »), ou '' si TradingView ne la publie pas. */
+function cmpTvSym(ind,code){
+  const m=CMP_IND[ind]; if(!m) return '';
+  if(m.tvMap) return m.tvMap[code]?'ECONOMICS:'+m.tvMap[code]:'';
+  if(!m.tv||(m.tvSkip&&m.tvSkip.includes(code))) return '';
+  if(ind==='rate'&&code==='EUR'){ const d=rateDecisionFor('EUR'); return d&&d.sym?d.sym:'ECONOMICS:EUINTR'; }
+  return 'ECONOMICS:'+CMP_TV_CC[code]+m.tv;
+}
+const tvChartUrl=sym=>'https://www.tradingview.com/chart/?symbol='+encodeURIComponent(sym);
+const cmpOnly=(ind,code)=>!CMP_IND[ind].only||CMP_IND[ind].only.includes(code);
+const cmpVal=(ind,v)=>(CMP_IND[ind].dec?(+v).toFixed(CMP_IND[ind].dec).replace('.',','):fmt1(v))+(CMP_IND[ind].unit?' '+CMP_IND[ind].unit:'');
+const cmpDelta=(ind,d)=>ind==='rate'?fmtBps(d*100,0):fmtPt(d);
 let cmpAuto=0, cmpAutoErr='';
-/* Reprend dans le relevé les chiffres plus récents publiés au calendrier (route /api/macro). */
+/* Reprend dans le relevé les chiffres publiés au calendrier ou dans la presse (route /api/macro). */
 function cmpMerge(live){
   let n=0;
   Object.keys(live||{}).forEach(ind=>{
-    if(!CMP_IND[ind]) return;
+    if(!CMP_IND[ind]||ind==='rate') return;
     const slot=(CMP.indicators[ind]=CMP.indicators[ind]||{});
     Object.keys(live[ind]).forEach(ccy=>{
-      if(!CMP_CCY.includes(ccy)) return;
-      const x=live[ind][ccy], v=+x.v; let p=String(x.p||'');
-      if(!isFinite(v)||!/^\d{4}-(\d{2}|Q[1-4])$/.test(p)) return;
-      const s=slot[ccy];
-      if(!s){ slot[ccy]={freq:/Q/.test(p)?'Q':'M',src:'calendrier économique',series:[[p,v]],auto:true}; n++; return; }
-      if(s.freq==='Q'&&!/Q/.test(p)) p=p.slice(0,4)+'-Q'+Math.ceil(+p.slice(5)/3);
-      if(s.freq!=='Q'&&/Q/.test(p)) return;                       // périodicités incompatibles : on garde le relevé
-      const last=s.series[s.series.length-1];
-      if((ind==='cpi'||ind==='unemp')&&Math.abs(v-last[1])>2.5) return;   // garde-fou : un écart pareil signale une autre série
-      if(p>last[0]){ s.series.push([p,v]); s.auto=true; n++; }
-      else if(p===last[0]&&v!==+last[1]){ last[1]=v; s.auto=true; n++; }
+      if(!CMP_CCY.includes(ccy)||!cmpOnly(ind,ccy)) return;
+      const x=live[ind][ccy];
+      const pts=(Array.isArray(x.hist)&&x.hist.length?x.hist:[[x.p,x.v]]).map(h=>[String(h[0]||''),+h[1]])
+        .filter(h=>isFinite(h[1])&&/^\d{4}-(\d{2}|Q[1-4])$/.test(h[0])).sort((a,b)=>a[0]<b[0]?-1:1);
+      pts.forEach(([p,v])=>{
+        let s=slot[ccy];
+        if(!s) s=slot[ccy]={freq:/Q/.test(p)?'Q':'M',src:x.src||'calendrier économique',series:[],auto:true};
+        if(s.freq==='Q'&&!/Q/.test(p)) p=p.slice(0,4)+'-Q'+Math.ceil(+p.slice(5)/3);
+        if(s.freq!=='Q'&&/Q/.test(p)) return;                       // périodicités incompatibles : on garde le relevé
+        const a=s.series, last=a[a.length-1];
+        if(last&&(ind==='cpi'||ind==='unemp')&&Math.abs(v-last[1])>2.5) return;   // garde-fou : un écart pareil signale une autre série
+        const k=a.findIndex(q=>q[0]===p);
+        if(k>=0){ if(+a[k][1]!==v){ a[k][1]=v; s.auto=true; n++; } return; }
+        a.push([p,v]); a.sort((u,w)=>u[0]<w[0]?-1:1); s.auto=true; n++;
+      });
+      if(slot[ccy]&&x.p===slot[ccy].series[slot[ccy].series.length-1][0]&&x.title) slot[ccy].lastTitle=x.title;
     });
   });
   return n;
+}
+/* Taux directeur : celui de l'onglet Taux (après recalage sur la dernière décision). */
+const prevMonth=p=>{ const y=+p.slice(0,4), m=+p.slice(5,7); return m>1?y+'-'+String(m-1).padStart(2,'0'):(y-1)+'-12'; };
+function cmpSyncRates(){
+  if(!CMP) return;
+  const slot=CMP.indicators.rate={};
+  CMP_CCY.forEach(c=>{
+    const r=RATE_EXPECTATIONS[c], pr=r&&parseRate(r.rate); if(!pr) return;
+    const d=rateDecisionFor(c), p=d&&/^\d{4}-\d{2}$/.test(d.p)?d.p:todayKey().slice(0,7);
+    const series=d&&Array.isArray(d.hist)?d.hist.filter(h=>h[0]<p).map(h=>[h[0],+h[1]]):[];
+    if(d&&d.prev0!=null&&isFinite(d.prev0)) series.unshift([prevMonth((series[0]||[p])[0]),+d.prev0]);
+    series.push([p,pr.hi]);
+    slot[c]={freq:'M',live:true,src:r.rateAuto?'décision du '+fmtMeetDate(String(r.rateAuto.rel).slice(0,10)):'onglet Taux',
+      note:(pr.range?'borne haute de la fourchette '+r.rate:'')+(c==='EUR'&&d&&d.sym==='ECONOMICS:EUDIR'?'taux de dépôt':c==='EUR'&&d?'taux de refinancement':''),series};
+  });
 }
 /* Étiquettes de la carte : position (lon, lat) et, si l'étiquette est déportée, le point visé. */
 const CMP_LBL={USD:{at:[-99,39]},CAD:{at:[-108,60]},EUR:{at:[-34,40],to:[0,46.5]},GBP:{at:[-34,62],to:[-2.5,54]},
@@ -3896,18 +4015,15 @@ async function loadCompare(){
   if(!land.features.length&&typeof loadWorld==='function'){ try{ await loadWorld(); }catch(e){} }
   renderCompare();
   if(!CMP) return;
-  try{
-    let live=lsGet('fxmt_macro',3*3600*1000);
-    if(!live){ live=(await apiJSON('/api/macro')).indicators; lsSet('fxmt_macro',live); }
-    cmpAuto=cmpMerge(live); cmpAutoErr='';
-  }catch(e){ cmpAutoErr=e.message||'indisponible'; }
+  const live=await loadMacroLive(false);
+  if(live){ cmpAuto=cmpMerge(live); cmpAutoErr=''; } else cmpAutoErr=macroLiveErr||'indisponible';
   renderCompare();
 }
 function cmpLast(ind,code){
   const s=CMP&&CMP.indicators&&CMP.indicators[ind]&&CMP.indicators[ind][code];
   if(!s||!Array.isArray(s.series)||!s.series.length) return null;
   const a=s.series, last=a[a.length-1];
-  return {p:last[0],v:+last[1],freq:s.freq||'M',src:s.src||'',note:s.note||'',series:a};
+  return {p:last[0],v:+last[1],freq:s.freq||'M',src:s.src||'',note:s.note||'',series:a,live:!!s.live,title:s.lastTitle||''};
 }
 function cmpPeriod(p){
   let m;
@@ -3921,7 +4037,7 @@ function cmpPeriodEnd(p){
   if((m=/^(\d{4})-(\d{2})$/.exec(p))) return new Date(+m[1],+m[2],0);
   return new Date(NaN);
 }
-function cmpStale(x){ const age=(Date.now()-cmpPeriodEnd(x.p))/864e5; return isFinite(age)&&age>(x.freq==='Q'?200:110); }
+function cmpStale(x){ if(x.live) return false; const age=(Date.now()-cmpPeriodEnd(x.p))/864e5; return isFinite(age)&&age>(x.freq==='Q'?200:110); }
 function cmpYearAgo(x){
   let m, key=null;
   if((m=/^(\d{4})-Q([1-4])$/.exec(x.p))) key=(+m[1]-1)+'-Q'+m[2];
@@ -3953,43 +4069,78 @@ function renderCompare(){
     side.innerHTML=''; rank.innerHTML=''; foot.textContent=''; leg.innerHTML=''; return;
   }
   if(asof) asof.textContent='Relevé du '+(ISO_DAY.test(CMP.asOf||'')?fmtMeetDate(CMP.asOf):'—');
+  cmpSyncRates();
   const sc=cmpScale(cmpInd), meta=CMP_IND[cmpInd];
   const desc=document.getElementById('cmp-desc');
-  if(desc) desc.innerHTML='<b>'+escH(meta.long)+'.</b> Les huit économies que tu trades sont en couleur ; clique un pays, une étiquette ou une ligne du classement pour ouvrir sa fiche.';
+  if(desc) desc.innerHTML='<b>'+escH(meta.long)+'.</b> '+(meta.only?'Indicateur propre aux États-Unis : seul ce pays est en couleur. ':'Les huit économies que tu trades sont en couleur ; ')+'clique un pays ou une étiquette pour ouvrir sa fiche. Une ligne du classement marquée ↗ ouvre la série sur TradingView.';
   drawCompareMap();
-  leg.innerHTML='<span>'+cmpVal(cmpInd,sc.mn)+'</span><span class="ramp" role="img" aria-label="Du plus foncé (valeur basse) au plus clair (valeur haute)"></span><span>'+cmpVal(cmpInd,sc.mx)+'</span>'
+  if(!sc.n) leg.innerHTML='<span>Aucun chiffre disponible pour cet indicateur pour le moment.</span><span><i class="sw" style="background:var(--land)"></i> hors des 8 devises</span>';
+  else leg.innerHTML='<span>'+cmpVal(cmpInd,sc.mn)+'</span><span class="ramp" role="img" aria-label="Du plus foncé (valeur basse) au plus clair (valeur haute)"></span><span>'+cmpVal(cmpInd,sc.mx)+'</span>'
     +'<span>plus la valeur est élevée, plus la couleur est claire</span>'
-    +(sc.n<CMP_CCY.length?'<span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--land),var(--land) 2px,var(--card) 2px,var(--card) 4px)"></i> donnée absente</span>':'')
+    +(sc.n<CMP_CCY.length?'<span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--land),var(--land) 2px,var(--card) 2px,var(--card) 4px)"></i> '+(meta.only?'sans cet indicateur':'donnée absente')+'</span>':'')
     +'<span><i class="sw" style="background:var(--land)"></i> hors des 8 devises</span>';
   // fiche de l'économie sélectionnée
   const c=CCY_BY[cmpSel];
-  side.innerHTML='<div class="cmp-side-h">'+c.flag+' '+escH(c.country)+' <span>'+cmpSel+'</span></div>'+Object.keys(CMP_IND).map(k=>{
+  side.innerHTML='<div class="cmp-side-h">'+c.flag+' '+escH(c.country)+' <span>'+cmpSel+'</span></div>'+Object.keys(CMP_IND).filter(k=>cmpOnly(k,cmpSel)).map(k=>{
     const x=cmpLast(k,cmpSel);
     if(!x) return '<button type="button" class="cmp-kpi" aria-pressed="'+(cmpInd===k)+'" onclick="setCmpInd(\''+k+'\')"><span class="cmp-kpi-l">'+CMP_IND[k].label+'</span><span></span><span class="cmp-kpi-v" style="color:var(--ink-soft)">n.d.</span><span class="cmp-kpi-m">donnée absente du relevé</span></button>';
     const r=cmpRanked(k).filter(a=>a.x), pos=r.findIndex(a=>a.code===cmpSel)+1;
     const prev=x.series.length>1?+x.series[x.series.length-2][1]:null, ya=cmpYearAgo(x);
     const bits=[cmpPeriod(x.p)+(cmpStale(x)?' <span class="stale">· ancien</span>':''),'rang '+pos+'/'+r.length,escH(x.src)];
-    const d=[]; if(prev!=null) d.push(fmtPt(x.v-prev)+' vs publication précédente'); if(ya!=null) d.push(fmtPt(x.v-ya)+' sur un an');
+    const d=[]; if(prev!=null) d.push(cmpDelta(k,x.v-prev)+(k==='rate'?' à la décision précédente':' vs publication précédente')); if(ya!=null) d.push(cmpDelta(k,x.v-ya)+' sur un an');
     return '<button type="button" class="cmp-kpi" aria-pressed="'+(cmpInd===k)+'" onclick="setCmpInd(\''+k+'\')">'
       +'<span class="cmp-kpi-l">'+CMP_IND[k].label+'</span>'+sparkSVG(x.series.map(s=>+s[1]),false)
       +'<span class="cmp-kpi-v">'+cmpVal(k,x.v)+'</span>'
-      +'<span class="cmp-kpi-m">'+bits.join(' · ')+(d.length?'<br>'+d.join(' · '):'')+(x.note?'<br>'+escH(x.note):'')+'</span></button>';
+      +'<span class="cmp-kpi-m">'+bits.join(' · ')+(d.length?'<br>'+d.join(' · '):'')+(x.note?'<br>'+escH(x.note):'')+(x.title&&/presse/.test(x.src)?'<br>« '+escH(x.title)+' »':'')+'</span></button>';
   }).join('');
   // classement sur l'indicateur choisi, avec les deux autres en regard
   const others=['cpi','unemp','rate'].filter(k=>k!==cmpInd).slice(0,2), ranked=cmpRanked(cmpInd);
   const top=Math.max(...ranked.filter(a=>a.x).map(a=>Math.abs(a.x.v)),0)||1;
+  const syms=CMP_CCY.map(code=>[code,cmpOnly(cmpInd,code)?cmpTvSym(cmpInd,code):'']).filter(a=>a[1]);
   rank.innerHTML='<div class="cmp-r h"><span>#</span><span>Économie</span><span>'+escH(meta.label)+'</span><span style="text-align:right">Valeur</span><span style="text-align:right">Période</span>'
-    +others.map(k=>'<span class="o">'+CMP_IND[k].label+'</span>').join('')+'</div>'
+    +others.map(k=>'<span class="o">'+CMP_IND[k].label+'</span>').join('')+'<span></span></div>'
     +ranked.map((a,i)=>{
-      const cc=CCY_BY[a.code], x=a.x;
-      return '<button type="button" class="cmp-r" aria-pressed="'+(cmpSel===a.code)+'" onclick="setCmpSel(\''+a.code+'\')">'
-        +'<span class="rk">'+(x?i+1:'—')+'</span><span class="nm"><b>'+cc.flag+' '+a.code+'</b><span>'+escH(cc.country)+'</span></span>'
+      const cc=CCY_BY[a.code], x=a.x, sym=cmpOnly(cmpInd,a.code)?cmpTvSym(cmpInd,a.code):'';
+      const cells='<span class="rk">'+(x?i+1:'—')+'</span><span class="nm"><b>'+cc.flag+' '+a.code+'</b><span>'+escH(cc.country)+'</span></span>'
         +'<span class="bar">'+(x?'<i style="width:'+Math.max(2,Math.abs(x.v)/top*100).toFixed(1)+'%;background:'+sc.color(x.v)+'"></i>':'')+'</span>'
-        +'<span class="v">'+(x?cmpVal(cmpInd,x.v):'n.d.')+'</span><span class="p">'+(x?cmpPeriod(x.p)+(cmpStale(x)?' <span class="stale">!</span>':''):'')+'</span>'
-        +others.map(k=>{ const y=cmpLast(k,a.code); return '<span class="o">'+(y?'<b>'+cmpVal(k,y.v)+'</b>':'n.d.')+'</span>'; }).join('')+'</button>';
-    }).join('');
-  foot.innerHTML='Source : '+escH(CMP.source||'')+'. '+escH(CMP.note||'')+(meta.caveat?' '+escH(meta.caveat):'')+' Un « ancien » signale une période dépassée de plus de trois mois (six pour un chiffre trimestriel).'
+        +'<span class="v">'+(x?cmpVal(cmpInd,x.v):cmpOnly(cmpInd,a.code)?'n.d.':'—')+'</span><span class="p">'+(x?cmpPeriod(x.p)+(cmpStale(x)?' <span class="stale">!</span>':''):cmpOnly(cmpInd,a.code)?'':'É.-U. seul')+'</span>'
+        +others.map(k=>{ const y=cmpLast(k,a.code); return '<span class="o">'+(y?'<b>'+cmpVal(k,y.v)+'</b>':'n.d.')+'</span>'; }).join('')
+        +'<span class="go" aria-hidden="true">'+(sym?'↗':'')+'</span>';
+      return sym
+        ? '<a class="cmp-r'+(cmpSel===a.code?' on':'')+'" href="'+tvChartUrl(sym)+'" target="_blank" rel="noopener" title="Ouvrir '+escH(sym.replace('ECONOMICS:',''))+' sur TradingView" onclick="setTimeout(()=>setCmpSel(\''+a.code+'\'),0)">'+cells+'</a>'
+        : '<button type="button" class="cmp-r" aria-pressed="'+(cmpSel===a.code)+'" onclick="setCmpSel(\''+a.code+'\')" title="'+(meta.pmi?'S&amp;P Global ne laisse plus TradingView publier ses PMI : pas de série à ouvrir':'Pas de série TradingView pour cet indicateur')+'">'+cells+'</button>';
+    }).join('')
+    +(syms.length>1?'<button type="button" class="cmp-r cmp-all" onclick="openCmpCompare()"><span>⇄ Comparer</span><span class="sub">les '+syms.length+' économies sur un même graphique TradingView</span></button>':'');
+  foot.innerHTML='Source : '+escH(CMP.source||'')+'. '+escH(CMP.note||'')+(meta.caveat?' '+escH(meta.caveat):'')
+    +(cmpInd==='rate'?' Taux directeurs : ceux de l\'onglet Taux, recalés automatiquement après chaque décision publiée au calendrier ; pour la Fed, borne haute de la fourchette (comme TradingView).':'')
+    +(meta.pmi?' PMI S&amp;P Global / HCOB : TradingView ne les publie plus (licence S&amp;P Global). Les chiffres sont repris des titres de presse (FXStreet et autres, via Google News) et le titre d\'origine est rappelé dans la fiche : vérifie-le avant de t\'en servir. Suisse (procure.ch) et Nouvelle-Zélande (BusinessNZ) : calendrier TradingView.':'')+' Un « ancien » signale une période dépassée de plus de trois mois (six pour un chiffre trimestriel).'
     +(cmpAuto?' Mise à jour automatique : '+cmpAuto+' chiffre'+(cmpAuto>1?'s':'')+' plus récent'+(cmpAuto>1?'s':'')+' repris du calendrier économique.':cmpAutoErr?' Mise à jour automatique indisponible ('+escH(cmpAutoErr)+') : seul le relevé est affiché.':'');
+}
+/* Les 8 économies sur un même graphique TradingView (widget : symboles comparés sur la même échelle). */
+function openCmpCompare(){
+  const syms=CMP_CCY.map(code=>[code,cmpOnly(cmpInd,code)?cmpTvSym(cmpInd,code):'']).filter(a=>a[1]);
+  if(syms.length<2) return;
+  const meta=CMP_IND[cmpInd], light=isLight();
+  const ov=document.createElement('div'); ov.className='rx-modal'; ov.id='cmp-tv-modal';
+  ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true'); ov.setAttribute('aria-labelledby','cmp-tv-title');
+  ov.innerHTML='<div class="rx-box rd-box cmp-tv-box"><button class="rd-close" aria-label="Fermer">✕</button>'
+    +'<h3 id="cmp-tv-title">'+escH(meta.label)+' · '+syms.length+' économies</h3>'
+    +'<p class="cmp-tv-sub">Séries TradingView superposées sur la même échelle. Si une courbe manque, TradingView ne permet pas de l\'intégrer ici : ouvre-la avec les liens ci-dessous.</p>'
+    +'<div class="cmp-tv-chart" id="cmp-tv-chart"></div>'
+    +'<div class="cmp-tv-links">'+syms.map(([code,sym])=>'<a href="'+tvChartUrl(sym)+'" target="_blank" rel="noopener">'+CCY_BY[code].flag+' '+code+' <span>'+escH(sym.replace('ECONOMICS:',''))+'</span> ↗</a>').join('')+'</div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.rd-close').onclick=close; ov.querySelector('.rd-close').focus({preventScroll:true});
+  const box=ov.querySelector('#cmp-tv-chart');
+  const wrap=document.createElement('div'); wrap.className='tradingview-widget-container'; wrap.style.cssText='height:100%;width:100%';
+  wrap.innerHTML='<div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div><div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">Graphique par TradingView</a></div>';
+  const sc=document.createElement('script'); sc.type='text/javascript'; sc.async=true; sc.src=CH_SCRIPT;
+  sc.text=JSON.stringify({autosize:true,symbol:syms[0][1],interval:'M',timezone:'Europe/Paris',theme:light?'light':'dark',style:'2',locale:'fr',
+    allow_symbol_change:true,calendar:false,hide_side_toolbar:true,hide_volume:true,withdateranges:true,save_image:false,support_host:'https://www.tradingview.com',
+    compareSymbols:syms.slice(1).map(([,sym])=>({symbol:sym,position:'SameScale'}))});
+  sc.onerror=()=>{ box.innerHTML='<div class="empty-mini">Le graphique TradingView n\'a pas pu se charger (réseau ou bloqueur de publicité). Les liens ci-dessous ouvrent chaque série sur TradingView.</div>'; };
+  wrap.appendChild(sc); box.appendChild(wrap);
 }
 function drawCompareMap(){
   const el=document.getElementById('cmp-map'); if(!el||!CMP||typeof d3==='undefined') return;
@@ -4166,6 +4317,7 @@ function init(){
   buildFromNotion();
   fetchFxTicker(); setInterval(fetchFxTicker,15*60*1000);
   initRateSync();
+  setTimeout(()=>loadMacroLive(false),1200);
   fetchPredictions(); setInterval(fetchPredictions,10*60*1000);
   loadNews(); startNewsAutoRefresh();
   initViews();

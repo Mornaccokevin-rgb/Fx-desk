@@ -180,3 +180,45 @@ export function widgetUrlFromScript(js) {
   if (!/[?&]type=/.test(u)) u += (u.includes('?') ? (/[?&]$/.test(u) ? '' : '&') : '?') + 'type=1';
   return u;
 }
+
+/* ---------- PMI S&P Global / HCOB lus dans les titres de presse ----------
+   TradingView ne diffuse plus ces chiffres (licence S&P Global) : on les reprend des
+   titres d'articles (« Eurozone HCOB Services PMI rises to 53.6 in November »).
+   Lecture stricte : un seul pays suivi en tête du titre, un verbe de publication,
+   jamais un titre d'avant-publication (« expected », « preview », « seen »…). */
+const PMI_KIND = { manufacturing: 'pmi', services: 'pmis', composite: 'pmic' };
+const PMI_PLACE = { 'eurozone': 'EUR', 'euro zone': 'EUR', 'euro area': 'EUR', 'ez': 'EUR', 'uk': 'GBP', 'u.k.': 'GBP', 'britain': 'GBP', 'united kingdom': 'GBP',
+  'us': 'USD', 'u.s.': 'USD', 'united states': 'USD', 'japan': 'JPY', 'australia': 'AUD', 'canada': 'CAD' };
+const PMI_BRAND = /\b(?:hcob|s&p\s*global(?:\s*\/\s*cips)?|s&p|cips|au\s+jibun\s+bank|jibun\s+bank|judo\s+bank|markit|flash|final|preliminary|prelim|the)(?![a-z])/gi;
+const PMI_NOT_YET = /expect|preview|seen|forecast|poll|consensus|estimate[sd]? to|could|likely|ahead|due|set to|eyes|awaits?/i;
+const PMI_MONTHS = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
+export function pmiHeadline(title, ms) {
+  const t = String(title || '').replace(/\s+/g, ' ').trim();
+  if (!t || /preview|week ahead|calendar/i.test(t)) return null;
+  const k = /\b(Manufacturing|Services|Composite)\s+PMIs?\b/i.exec(t); if (!k) return null;
+  const prefix = t.slice(0, k.index);
+  const place = prefix.replace(/[’']s\b/gi, ' ').replace(PMI_BRAND, ' ').replace(/[^a-z.\s]/gi, ' ').replace(/\s+/g, ' ').trim().toLowerCase().replace(/\.$/, '');
+  const ccy = PMI_PLACE[place]; if (!ccy) return null;
+  if (ccy === 'USD' && !/s&p/i.test(prefix)) return null;        // aux États-Unis, sans « S&P Global » ce peut être l'ISM
+  const rest = t.slice(k.index + k[0].length);
+  const m = /^(.{0,60}?)(?:\bto|\bat|\bof|:)\s+(\d{2}(?:\.\d{1,2})?)(?![\d.%])/i.exec(rest); if (!m) return null;
+  if (PMI_NOT_YET.test(m[1])) return null;
+  const v = +m[2]; if (!(v >= 25 && v <= 75)) return null;
+  const mo = /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?(?:'s|’s)?\b/.exec(rest); if (!mo) return null;
+  const month = PMI_MONTHS[mo[1]], pub = new Date(isFinite(ms) ? ms : Date.now());
+  const year = month > pub.getUTCMonth() + 1 + (pub.getUTCDate() > 25 ? 1 : 0) ? pub.getUTCFullYear() - 1 : pub.getUTCFullYear();
+  return { ccy, key: PMI_KIND[k[1].toLowerCase()], p: year + '-' + String(month).padStart(2, '0'), v, prelim: /\bflash\b|\bprelim/i.test(t), title: t };
+}
+/* Titres d'un flux RSS Google News → relevés PMI (titre sans « - Source »). */
+export function pmiHeadlines(xml) {
+  const blocks = String(xml || '').slice(0, 600000).match(/<item\b[\s\S]*?<\/item>/gi) || [];
+  const out = [];
+  for (const b of blocks.slice(0, 120)) {
+    let title = cleanText(inner(b, 'title'), 240); const src = cleanText(inner(b, 'source'), 60);
+    if (src && title.endsWith(' - ' + src)) title = title.slice(0, -(src.length + 3));
+    const ms = Date.parse(cleanText(inner(b, 'pubDate')));
+    const x = pmiHeadline(title, ms);
+    if (x && isFinite(ms)) out.push(Object.assign(x, { rel: new Date(ms).toISOString(), source: src || 'presse' }));
+  }
+  return out;
+}

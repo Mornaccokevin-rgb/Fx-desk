@@ -10,6 +10,7 @@
      /api/macro      dernières statistiques publiées par pays (planisphère, décisions de taux,
                      PMI : calendrier TradingView et titres de presse)
      /api/rates      rendements 2 et 10 ans, stocks de pétrole
+     /api/history    clôtures quotidiennes BTC, S&P 500, Nasdaq 100, or (saisonnalité)
      /api/gdelt      tension géopolitique (volume d'articles)
    Aucune clé dans ce fichier. Pour l'API officielle Myfxbook (facultative),
    les identifiants se règlent dans Cloudflare en tant que secrets du Worker
@@ -447,6 +448,72 @@ async function macro(wantDebug) {
   return json(body, 200, wantDebug ? 'no-store' : 'public, max-age=10800');
 }
 
+/* ---------- Historique quotidien d'actifs hors devises (saisonnalité) ----------
+   Plusieurs sources gratuites, essayées dans l'ordre ; on garde la première qui renvoie
+   au moins trois ans de clôtures à jour. Depuis 1999, comme les fixings BCE. */
+const HIST_ASSETS = {
+  btc: { label: 'BTC/USD', yahoo: 'BTC-USD', stooq: 'btcusd', fred: 'CBBTCUSD' },
+  spx: { label: 'S&P 500', yahoo: '^GSPC', stooq: '^spx', fred: 'SP500' },
+  ndx: { label: 'Nasdaq 100', yahoo: '^NDX', stooq: '^ndx', fred: 'NASDAQ100' },
+  xau: { label: 'XAU/USD', yahoo: 'GC=F', stooq: 'xauusd', lbma: true },
+};
+const HIST_FROM = '1999-01-01';
+async function histYahoo(sym) {
+  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(sym) + '?period1=915148800&period2=' + Math.floor(Date.now() / 1000) + '&interval=1d&events=history&includeAdjustedClose=false';
+  const r = await fetch(url, { headers: { 'User-Agent': UA, 'Accept': 'application/json' }, signal: AbortSignal.timeout(10000), cf: { cacheTtl: 21600, cacheEverything: true } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json(), res = j && j.chart && j.chart.result && j.chart.result[0];
+  if (!res) throw new Error((j && j.chart && j.chart.error && j.chart.error.description) || 'réponse vide');
+  const ts = res.timestamp || [], close = (res.indicators && res.indicators.quote && res.indicators.quote[0] && res.indicators.quote[0].close) || [];
+  const off = (res.meta && +res.meta.gmtoffset) || 0;   // date locale de la séance
+  return ts.map((t, i) => [new Date((t + off) * 1000).toISOString().slice(0, 10), close[i]]);
+}
+async function histStooq(sym) {
+  const text = await getText('https://stooq.com/q/d/l/?s=' + encodeURIComponent(sym) + '&i=d&d1=' + HIST_FROM.replace(/-/g, '') + '&d2=' + new Date().toISOString().slice(0, 10).replace(/-/g, ''));
+  const rows = csvRows(text); if (!rows.length || !/^date$/i.test(rows[0][0])) throw new Error('réponse non CSV (' + text.slice(0, 60).replace(/\s+/g, ' ') + ')');
+  const ci = rows[0].findIndex(h => /^close$/i.test(h)); if (ci < 0) throw new Error('colonne Close absente');
+  return rows.slice(1).map(r => [r[0], parseFloat(r[ci])]);
+}
+async function histFred(id) {
+  const rows = csvRows(await getText('https://fred.stlouisfed.org/graph/fredgraph.csv?id=' + id + '&cosd=' + HIST_FROM));
+  if (!rows.length || rows[0].length < 2) throw new Error('réponse non CSV');
+  return rows.slice(1).map(r => [r[0], parseFloat(r[1])]);
+}
+async function histLbma() {
+  const r = await fetch('https://prices.lbma.org.uk/json/gold_pm.json', { headers: { 'User-Agent': UA, 'Accept': 'application/json' }, signal: AbortSignal.timeout(10000), cf: { cacheTtl: 21600, cacheEverything: true } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const a = await r.json(); if (!Array.isArray(a)) throw new Error('réponse inattendue');
+  return a.map(x => [String(x && x.d || ''), x && Array.isArray(x.v) ? +x.v[0] : NaN]);
+}
+function histClean(rows) {
+  const by = new Map();
+  (rows || []).forEach(([d, v]) => { if (/^\d{4}-\d{2}-\d{2}$/.test(d) && d >= HIST_FROM && isFinite(v) && v > 0) by.set(d, Math.round(v * 100) / 100); });
+  const dates = [...by.keys()].sort(); return { dates, p: dates.map(d => by.get(d)) };
+}
+async function history(asset, wantDebug) {
+  const A = HIST_ASSETS[asset]; if (!A) return json({ error: 'Actif inconnu (btc, spx, ndx, xau)' }, 400, 'no-store');
+  const tries = [];
+  if (A.yahoo) tries.push(['Yahoo Finance', () => histYahoo(A.yahoo)]);
+  if (A.lbma) tries.push(['LBMA (fixing de l\'après-midi)', histLbma]);
+  if (A.stooq) tries.push(['Stooq', () => histStooq(A.stooq)]);
+  if (A.fred) tries.push(['FRED (' + A.fred + ')', () => histFred(A.fred)]);
+  const trail = []; let best = null;
+  for (const [name, fn] of tries) {
+    try {
+      const s = histClean(await fn()), last = s.dates[s.dates.length - 1] || '';
+      const fresh = last && (Date.now() - Date.parse(last)) / 864e5 < 10;
+      trail.push(name + ' : ' + s.dates.length + ' jours' + (last ? ', dernier ' + last : '') + (s.dates.length && !fresh ? ' (pas à jour)' : ''));
+      if (s.dates.length >= 750 && (!best || (fresh && !best.fresh) || (fresh === best.fresh && s.dates.length > best.s.dates.length * 1.5))) best = { name, s, fresh };
+      if (best && best.fresh && best.name === name) break;
+    } catch (e) { trail.push(name + ' : ' + errText(e)); }
+  }
+  if (!best) return json({ error: 'Historique indisponible (' + trail.join(' · ') + ')', sources: trail }, 502, 'no-store');
+  const body = { asset, label: A.label, source: best.name, sources: trail, at: Date.now() };
+  if (wantDebug) Object.assign(body, { count: best.s.dates.length, first: [best.s.dates[0], best.s.p[0]], last: [best.s.dates.at(-1), best.s.p.at(-1)] });
+  else Object.assign(body, { dates: best.s.dates, p: best.s.p });
+  return json(body, 200, wantDebug ? 'no-store' : 'public, max-age=21600');
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -460,6 +527,7 @@ export default {
       if (url.pathname === '/api/calendar') return url.searchParams.has('debug') ? calendar(true) : cached(request, ctx, () => calendar(false));
       if (url.pathname === '/api/rates') return cached(request, ctx, rates);
       if (url.pathname === '/api/gdelt') return cached(request, ctx, gdelt);
+      if (url.pathname === '/api/history') return url.searchParams.has('debug') ? history(url.searchParams.get('asset'), true) : cached(request, ctx, () => history(url.searchParams.get('asset'), false));
       if (url.pathname === '/api/macro') return url.searchParams.has('debug') ? macro(true) : cached(request, ctx, () => macro(false));
       return json({ error: 'Route inconnue' }, 404, 'no-store');
     }

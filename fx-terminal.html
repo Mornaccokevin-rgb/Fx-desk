@@ -47,6 +47,8 @@
   --seq-lo:#0f2f5f;--seq-mid:#2f7fdc;--seq-hi:#bfe1ff;
   /* calendrier : impact des publications */
   --sea-cur:#d9730d;   /* saisonnalité : année en cours */
+  /* page Macro : une couleur fixe par économie (ordre validé daltonisme pour des lignes) */
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948;
   --imp-high:#c93636;--imp-med:#e07b12;--imp-high-bg:rgba(201,54,54,.07);--imp-med-bg:rgba(224,123,18,.07);
   --fg1:#2a2d30;--fg2:#6b7075;--fg3:#a9aeb3;
   --font-ui:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
@@ -68,6 +70,7 @@
   --rx-hike:#3987e5;--rx-hold:#b4b2a9;--rx-cut:#e66767;--rx-bps:#d95926;
   --seq-lo:#1b4a8c;--seq-mid:#4c9bf0;--seq-hi:#d9edff;
   --sea-cur:#f29a3f;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#0ca30c;--s7:#9085e9;--s8:#e66767;
   --imp-high:#ea5f58;--imp-med:#f29a3f;--imp-high-bg:rgba(234,95,88,.09);--imp-med-bg:rgba(242,154,63,.08);
   --fg1:#d9dcdf;--fg2:#9aa0a5;--fg3:#5a6066;
   --shadow:0 18px 50px rgba(0,0,0,.55);
@@ -817,12 +820,23 @@ button.cmp-r:hover .go{color:var(--ink)}
 .cmp-tvp{border:1px solid var(--line);border-radius:3px;padding:11px 12px 12px;min-width:0;display:flex;flex-direction:column;gap:9px}
 .cmp-tvp-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}
 .cmp-tvp-t{font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cmp-tvp-a{font-family:var(--font-num);font-size:10.5px;color:var(--ink-soft);text-decoration:none;white-space:nowrap}
-.cmp-tvp-a:hover{color:var(--ink)}
+.cmp-tvp-rng button{padding:3px 7px;font-size:10.5px}
+.cmp-tvp-note a{color:var(--ink-soft)}
+.cmp-tvp-leg{display:flex;flex-wrap:wrap;gap:4px 6px}
+.cmp-tvp-leg:empty{display:none}
+.cmp-tvp-leg button{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:3px;background:none;color:var(--ink);font-family:var(--font-num);font-size:10.5px;padding:3px 7px;cursor:pointer}
+.cmp-tvp-leg button:hover{border-color:var(--line-strong)}
+.cmp-tvp-leg button[aria-pressed="true"]{border-color:var(--ink)}
+.cmp-tvp-leg i{width:12px;height:3px;border-radius:2px;display:inline-block}
+.cmp-tvp-leg b{font-weight:600}
+.cmp-tvp-box svg{display:block;width:100%;height:100%}
+.cmp-tvp-box text{font-family:var(--font-num);font-size:10px;fill:var(--ink-soft)}
+.cmp-tvp-box text.end{fill:var(--ink);font-weight:700;font-size:11px}
+.cmp-tvp-box .chart-tip{white-space:normal;min-width:120px}
+.cmp-tvp-box .chart-tip i{display:inline-block;width:9px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
 .cmp-tvp-seg button{padding:4px 8px;font-size:11px}
 .cmp-tvp-box{height:440px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--card);position:relative}
 @container (max-width:759px){.cmp-tvp-box{height:360px}}
-.cmp-tvp-box .tradingview-widget-copyright{font-size:10.5px;padding:6px 8px}.cmp-tvp-box .tradingview-widget-copyright a{color:var(--ink-soft)}
 .cmp-tvp-box .empty-mini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;line-height:1.6}
 .cmp-tvp-note{font-size:11px;color:var(--ink-soft);line-height:1.5}
 .cmp-tvp-note:empty{display:none}
@@ -1016,9 +1030,10 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
           </div>
           <div class="cmp-duo"><div class="cmp-duo-in">
             <div class="cmp-tvp" id="cmp-tvp">
-              <div class="cmp-tvp-h"><span class="cmp-tvp-t" id="cmp-tvp-t">Graphique TradingView</span><a class="cmp-tvp-a" id="cmp-tvp-a" href="https://www.tradingview.com/" target="_blank" rel="noopener" hidden>tradingview.com ↗</a></div>
+              <div class="cmp-tvp-h"><span class="cmp-tvp-t" id="cmp-tvp-t">Évolution</span><div class="seg cmp-tvp-rng" id="cmp-tvp-rng" role="group" aria-label="Durée affichée"></div></div>
               <div class="seg cmp-tvp-seg" id="cmp-tvp-seg" role="group" aria-label="Économie affichée sur le graphique"></div>
               <div class="cmp-tvp-box" id="cmp-tvp-box"></div>
+              <div class="cmp-tvp-leg" id="cmp-tvp-leg"></div>
               <div class="cmp-tvp-note" id="cmp-tvp-note"></div>
             </div>
             <div class="cmp-rank" id="cmp-rank"></div>
@@ -3233,7 +3248,7 @@ function initViews(){
   setView(VIEWS.some(v=>v[0]===fromHash)?fromHash:(stored||'macro'),{initial:true});
   window.addEventListener('hashchange',()=>{ const h=hashView((location.hash||'').replace('#','')); if(h&&h!==activeView&&VIEWS.some(v=>v[0]===h)) setView(h,{fromHash:true}); });
   let rz=null;
-  window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(activeView==='compare') drawCompareMap(); if(activeView==='cot') renderCotDetail(); if(activeView==='saisonnalite') renderSeaChart(); },160); });
+  window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(activeView==='compare'){ drawCompareMap(); renderCmpTv(); } if(activeView==='cot') renderCotDetail(); if(activeView==='saisonnalite') renderSeaChart(); },160); });
 }
 function onThemeChange(){ if(rdOpenCode){ renderRateCurveCharts(); renderRateDetailCharts(); } if(activeView==='compare'&&CMP) renderCompare(); if(activeView==='graphiques') chRender(); if(activeView==='saisonnalite') renderSeaChart(); }
 
@@ -4068,13 +4083,14 @@ function cmpSyncRates(){
 /* Étiquettes de la carte : position (lon, lat) et, si l'étiquette est déportée, le point visé. */
 const CMP_LBL={USD:{at:[-99,39]},CAD:{at:[-108,60]},EUR:{at:[-34,40],to:[0,46.5]},GBP:{at:[-34,62],to:[-2.5,54]},
   CHF:{at:[10,25],to:[8.2,46.6]},JPY:{at:[163,27],to:[139,36]},AUD:{at:[134,-25]},NZD:{at:[156,-56],to:[171.5,-43]}};
-let CMP=null, cmpErr='', cmpInd='cpi', cmpSel='USD', cmpTvAll=false, cmpTvKey='';
+let CMP=null, cmpErr='', cmpInd='cpi', cmpSel='USD', cmpTvAll=false;
 async function loadCompare(){
   try{ const r=await fetch('compare-data.json',{cache:'no-cache'}); if(!r.ok) throw new Error('HTTP '+r.status); CMP=await r.json(); cmpErr=''; }
   catch(e){ CMP=null; cmpErr=e.message||'indisponible'; }
   if(!land.features.length&&typeof loadWorld==='function'){ try{ await loadWorld(); }catch(e){} }
   renderCompare();
   if(!CMP) return;
+  loadEconHist();
   const live=await loadMacroLive(false);
   if(live){ cmpAuto=cmpMerge(live); cmpAutoErr=''; } else cmpAutoErr=macroLiveErr||'indisponible';
   renderCompare();
@@ -4128,13 +4144,13 @@ function renderCompare(){
   const asof=document.getElementById('cmp-asof'), side=document.getElementById('cmp-side'), rank=document.getElementById('cmp-rank'), foot=document.getElementById('cmp-foot'), leg=document.getElementById('cmp-legend');
   if(!CMP){
     document.getElementById('cmp-map').innerHTML='<div class="empty-mini">Données de comparaison indisponibles ('+escH(cmpErr||'chargement')+').</div>';
-    side.innerHTML=''; rank.innerHTML=''; foot.textContent=''; leg.innerHTML=''; const tb=document.getElementById('cmp-tvp-box'); if(tb){ tb.innerHTML=''; cmpTvKey=''; } return;
+    side.innerHTML=''; rank.innerHTML=''; foot.textContent=''; leg.innerHTML=''; const tb=document.getElementById('cmp-tvp-box'); if(tb) tb.innerHTML=''; return;
   }
   if(asof) asof.textContent='Relevé du '+(ISO_DAY.test(CMP.asOf||'')?fmtMeetDate(CMP.asOf):'—');
   cmpSyncRates();
   const sc=cmpScale(cmpInd), meta=CMP_IND[cmpInd];
   const desc=document.getElementById('cmp-desc');
-  if(desc) desc.innerHTML='<b>'+escH(meta.long)+'.</b> '+(meta.only?'Indicateur propre aux États-Unis : seul ce pays est en couleur. ':'Les huit économies que tu trades sont en couleur ; ')+'clique un pays, une étiquette ou une ligne du classement : la fiche et le graphique TradingView à côté du classement passent sur cette économie.';
+  if(desc) desc.innerHTML='<b>'+escH(meta.long)+'.</b> '+(meta.only?'Indicateur propre aux États-Unis : seul ce pays est en couleur. ':'Les huit économies que tu trades sont en couleur ; ')+'clique un pays, une étiquette ou une ligne du classement : la fiche et le graphique à côté du classement passent sur cette économie.';
   drawCompareMap();
   if(!sc.n) leg.innerHTML='<span>Aucun chiffre disponible pour cet indicateur pour le moment.</span><span><i class="sw" style="background:var(--land)"></i> hors des 8 devises</span>';
   else leg.innerHTML='<span>'+cmpVal(cmpInd,sc.mn)+'</span><span class="ramp" role="img" aria-label="Du plus foncé (valeur basse) au plus clair (valeur haute)"></span><span>'+cmpVal(cmpInd,sc.mx)+'</span>'
@@ -4167,8 +4183,8 @@ function renderCompare(){
         +'<span class="bar">'+(x?'<i style="width:'+Math.max(2,Math.abs(x.v)/top*100).toFixed(1)+'%;background:'+sc.color(x.v)+'"></i>':'')+'</span>'
         +'<span class="v">'+(x?cmpVal(cmpInd,x.v):cmpOnly(cmpInd,a.code)?'n.d.':'—')+'</span><span class="p">'+(x?cmpPeriod(x.p)+(cmpStale(x)?' <span class="stale">!</span>':''):cmpOnly(cmpInd,a.code)?'':'É.-U. seul')+'</span>'
         +others.map(k=>{ const y=cmpLast(k,a.code); return '<span class="o">'+(y?'<b>'+cmpVal(k,y.v)+'</b>':'n.d.')+'</span>'; }).join('')
-        +'<span class="go" aria-hidden="true">'+(sym?CMP_CHART_ICON:'')+'</span>';
-      return '<button type="button" class="cmp-r" aria-pressed="'+(!cmpTvAll&&cmpSel===a.code)+'" onclick="setCmpTv(\''+a.code+'\')" title="'+(sym?'Afficher '+escH(sym.replace('ECONOMICS:',''))+' sur le graphique':meta.pmi?'S&amp;P Global ne laisse plus TradingView publier ses PMI : pas de graphique':'Pas de série TradingView pour cette donnée')+'">'+cells+'</button>';
+        +'<span class="go" aria-hidden="true">'+(x?CMP_CHART_ICON:'')+'</span>';
+      return '<button type="button" class="cmp-r" aria-pressed="'+(!cmpTvAll&&cmpSel===a.code)+'" onclick="setCmpTv(\''+a.code+'\')" title="Afficher '+a.code+' sur le graphique">'+cells+'</button>';
     }).join('')
     +(syms.length>1?'<button type="button" class="cmp-r cmp-all" aria-pressed="'+cmpTvAll+'" onclick="setCmpTv(\'all\')"><span>⇄ Comparer</span><span class="sub">les '+syms.length+' économies sur le graphique</span></button>':'');
   foot.innerHTML='Source : '+escH(CMP.source||'')+'. '+escH(CMP.note||'')+(meta.caveat?' '+escH(meta.caveat):'')
@@ -4177,40 +4193,127 @@ function renderCompare(){
     +(cmpAuto?' Mise à jour automatique : '+cmpAuto+' chiffre'+(cmpAuto>1?'s':'')+' plus récent'+(cmpAuto>1?'s':'')+' repris du calendrier économique.':cmpAutoErr?' Mise à jour automatique indisponible ('+escH(cmpAutoErr)+') : seul le relevé est affiché.':'');
   renderCmpTv();
 }
-/* Graphique TradingView toujours ouvert à côté du classement (widget officiel, comme la vue Graphiques) :
-   l'évolution de la donnée pour l'économie choisie, ou les 8 superposées sur la même échelle. */
+/* ── Graphique de la page Macro ──
+   Le widget TradingView refuse les séries économiques (« symbole disponible uniquement sur TradingView ») :
+   on reconstruit l'historique à partir des chiffres publiés au calendrier économique TradingView
+   (route /api/econ, un trimestre par appel, gardé sur l'appareil), complété par le relevé, et on trace
+   nous-mêmes la courbe. Une couleur fixe par économie. */
 const CMP_CHART_ICON='<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13.5h12"/><path d="M3 10.5l3.2-3.6 2.6 2.2L13 4"/></svg>';
-const cmpChartSyms=()=>CMP_CCY.map(code=>[code,cmpOnly(cmpInd,code)?cmpTvSym(cmpInd,code):'']).filter(a=>a[1]);
-function renderCmpTv(){
-  const box=document.getElementById('cmp-tvp-box'); if(!box) return;
-  const meta=CMP_IND[cmpInd], syms=cmpChartSyms(), all=cmpTvAll&&syms.length>1, one=syms.find(a=>a[0]===cmpSel), cc=CCY_BY[cmpSel];
-  const list=all?syms:one?[one]:[];
-  document.getElementById('cmp-tvp-t').textContent=meta.label+' · '+(all?'les '+syms.length+' économies':cc.flag+' '+cc.country);
-  document.getElementById('cmp-tvp-seg').innerHTML=syms.length?syms.map(([code])=>'<button type="button" aria-pressed="'+(!all&&cmpSel===code)+'" onclick="setCmpTv(\''+code+'\')">'+CCY_BY[code].flag+' '+code+'</button>').join('')
-    +(syms.length>1?'<button type="button" aria-pressed="'+all+'" onclick="setCmpTv(\'all\')">⇄ Les '+syms.length+'</button>':''):'';
-  const a=document.getElementById('cmp-tvp-a');
-  if(list.length===1){ a.hidden=false; a.href=tvChartUrl(list[0][1]); a.textContent=list[0][1].replace('ECONOMICS:','')+' sur tradingview.com ↗'; } else a.hidden=true;
-  const note=document.getElementById('cmp-tvp-note');
-  note.textContent=all?'Séries superposées sur la même échelle. Si une courbe manque, TradingView ne permet pas de l\'afficher ici : choisis l\'économie seule.':'';
-  if(!list.length){
-    cmpTvKey='';
-    const why=meta.pmi?'S&P Global ne laisse plus TradingView publier ses PMI : pas de graphique pour cet indicateur. Les chiffres de la fiche viennent du calendrier et de la presse.'
-      :!syms.length?'TradingView ne publie pas de série « '+meta.label+' » pour ces économies.'
-      :meta.only&&!meta.only.includes(cmpSel)?'Indicateur propre aux États-Unis : choisis 🇺🇸 USD au-dessus du graphique.'
-      :'Pas de série TradingView « '+meta.label+' » pour '+cc.flag+' '+cmpSel+'. Choisis une autre économie au-dessus du graphique.';
-    box.innerHTML='<div class="empty-mini">'+escH(why)+'</div>'; return;
+const CMP_COL={USD:'var(--s1)',EUR:'var(--s2)',GBP:'var(--s3)',JPY:'var(--s4)',CHF:'var(--s5)',CAD:'var(--s6)',AUD:'var(--s7)',NZD:'var(--s8)'};
+const ECON_KEY='fxmt_econ_v1', ECON_FROM=2019;
+let ECON={v:1,q:{}}, econLoading=false, econDone=0, econNeed=0, econFail=0, cmpRange=5;
+try{ const c=JSON.parse(localStorage.getItem(ECON_KEY)); if(c&&c.v===1&&c.q) ECON=c; }catch(e){}
+function econQuarters(){
+  const n=new Date(), cy=n.getFullYear(), cq=Math.floor(n.getMonth()/3)+1, out=[];
+  for(let y=ECON_FROM;y<=cy;y++) for(let q=1;q<=4;q++){ if(y===cy&&q>cq) break; out.push(y+'Q'+q); }
+  return out;
+}
+const econQEnd=q=>new Date(+q.slice(0,4),(+q.slice(5))*3,1).getTime();
+async function loadEconHist(){
+  if(econLoading) return;
+  const need=econQuarters().filter(q=>{ const c=ECON.q[q]; if(!c) return true; return econQEnd(q)>Date.now()-20*864e5&&Date.now()-c.t>3*3600e3; }).reverse();   // le plus récent d'abord
+  if(!need.length) return;
+  econLoading=true; econDone=0; econNeed=need.length; econFail=0;
+  const save=()=>{ try{ localStorage.setItem(ECON_KEY,JSON.stringify(ECON)); }catch(e){} };
+  let k=0;
+  const worker=async()=>{ while(k<need.length){ const q=need[k++];
+    try{ const j=await apiJSON('/api/econ?q='+q); if(!j||!j.data) throw new Error('réponse vide'); ECON.q[q]={t:Date.now(),d:j.data}; }catch(e){ econFail++; }
+    econDone++; if(econDone%4===0){ save(); if(activeView==='compare'&&CMP) renderCmpTv(); } } };
+  await Promise.all([worker(),worker(),worker()]);
+  econLoading=false; save();
+  if(activeView==='compare'&&CMP) renderCmpTv();
+}
+/* Points d'une série : {d (ms), v, lbl} triés ; l'historique du calendrier d'abord, le relevé comble les trous. */
+function cmpSeriesPts(ind,ccy){
+  const key=ind==='rate'&&ccy==='EUR'&&(rateDecisionFor('EUR')||{}).sym==='ECONOMICS:EUINTR'?'rateMro':ind;
+  const m=new Map();
+  Object.values(ECON.q).forEach(Q=>{ const a=Q.d&&Q.d[key]&&Q.d[key][ccy]; if(!a) return;
+    a.forEach(([p,v,rel])=>{ const k=ind==='rate'?rel:p, c=m.get(k); if(isFinite(+v)&&(!c||c.rel<rel)) m.set(k,{p,v:+v,rel}); }); });
+  if(ind!=='rate'){ const x=cmpLast(ind,ccy); if(x) x.series.forEach(([p,v])=>{ if(!m.has(p)&&isFinite(+v)) m.set(p,{p,v:+v,rel:''}); }); }
+  else if(!m.size){ const x=cmpLast('rate',ccy); if(x) x.series.forEach(([p,v])=>{ if(isFinite(+v)) m.set(p+'-15',{p,v:+v,rel:p+'-15',approx:true}); }); }   // sans historique : les décisions récentes
+  const dateOf=(o,k)=>{ let r; if(ind==='rate') return isoToDate(k).getTime();
+    if((r=/^(\d{4})-(\d{2})$/.exec(o.p))) return new Date(+r[1],+r[2]-1,15).getTime();
+    if((r=/^(\d{4})-Q([1-4])$/.exec(o.p))) return new Date(+r[1],(+r[2]-1)*3+1,15).getTime(); return NaN; };
+  const pts=[...m.entries()].map(([k,o])=>({d:dateOf(o,k),v:o.v,lbl:ind==='rate'&&!o.approx?fmtMeetDate(k):cmpPeriod(o.p)})).filter(o=>isFinite(o.d)).sort((a,b)=>a.d-b.d);
+  if(ind==='rate'&&pts.length){   // marche d'escalier jusqu'à aujourd'hui, au taux affiché dans l'onglet Taux
+    const r=RATE_EXPECTATIONS[ccy], pr=r&&parseRate(r.rate), now=Date.now(), last=pts[pts.length-1];
+    pts.push({d:now,v:pr?pr.hi:last.v,lbl:'aujourd\'hui',tail:true});
   }
-  const key=list.map(x=>x[1]).join(',')+'|'+(isLight()?'clair':'sombre');
-  if(key===cmpTvKey&&box.querySelector('.tradingview-widget-container')) return;   // déjà affiché : on ne recharge pas le widget
-  cmpTvKey=key; box.innerHTML='';
-  const wrap=document.createElement('div'); wrap.className='tradingview-widget-container'; wrap.style.cssText='height:100%;width:100%';
-  wrap.innerHTML='<div class="tradingview-widget-container__widget" style="height:calc(100% - 30px);width:100%"></div><div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">Graphique par TradingView</a></div>';
-  const sc=document.createElement('script'); sc.type='text/javascript'; sc.async=true; sc.src=CH_SCRIPT;
-  sc.text=JSON.stringify(Object.assign({autosize:true,symbol:list[0][1],interval:'M',timezone:'Europe/Paris',theme:isLight()?'light':'dark',style:'2',locale:'fr',
-    allow_symbol_change:true,calendar:false,hide_side_toolbar:true,hide_volume:true,withdateranges:true,save_image:false,support_host:'https://www.tradingview.com'},
-    list.length>1?{compareSymbols:list.slice(1).map(([,sym])=>({symbol:sym,position:'SameScale'}))}:{}));
-  sc.onerror=()=>{ cmpTvKey=''; box.innerHTML='<div class="empty-mini">Le graphique TradingView n\'a pas pu se charger (réseau ou bloqueur de publicité).</div>'; };
-  wrap.appendChild(sc); box.appendChild(wrap);
+  return pts;
+}
+function setCmpRange(y){ cmpRange=+y||0; renderCmpTv(); }
+function renderCmpTv(){
+  const box=document.getElementById('cmp-tvp-box'); if(!box||!CMP) return;
+  const meta=CMP_IND[cmpInd], all=cmpTvAll, cc=CCY_BY[cmpSel];
+  const codes=CMP_CCY.filter(c=>cmpOnly(cmpInd,c));
+  const since=cmpRange?Date.now()-cmpRange*365.25*864e5:0;
+  const S=(all?codes:[cmpSel]).map(code=>({code,pts:cmpSeriesPts(cmpInd,code).filter(p=>p.d>=since)})).filter(x=>x.pts.length);
+  document.getElementById('cmp-tvp-t').textContent=meta.label+' · '+(all?'les '+codes.length+' économies':cc.flag+' '+cc.country);
+  document.getElementById('cmp-tvp-rng').innerHTML=[[2,'2 ans'],[5,'5 ans'],[0,'Tout']].map(([y,l])=>'<button type="button" aria-pressed="'+(cmpRange===y)+'" onclick="setCmpRange('+y+')">'+l+'</button>').join('');
+  document.getElementById('cmp-tvp-seg').innerHTML=codes.map(code=>'<button type="button" aria-pressed="'+(!all&&cmpSel===code)+'" onclick="setCmpTv(\''+code+'\')">'+CCY_BY[code].flag+' '+code+'</button>').join('')
+    +(codes.length>1?'<button type="button" aria-pressed="'+all+'" onclick="setCmpTv(\'all\')">⇄ Les '+codes.length+'</button>':'');
+  const sym=!all&&cmpOnly(cmpInd,cmpSel)?cmpTvSym(cmpInd,cmpSel):'';
+  const prog=econLoading?' Chargement de l\'historique : '+econDone+'/'+econNeed+' trimestres…':econFail?' '+econFail+' trimestre'+(econFail>1?'s':'')+' sans réponse : nouvel essai au prochain chargement.':'';
+  document.getElementById('cmp-tvp-note').innerHTML='Chiffres publiés au calendrier économique TradingView depuis '+ECON_FROM+', complétés par le relevé ; gardés sur cet appareil.'+escH(prog)
+    +(sym?' <a href="'+tvChartUrl(sym)+'" target="_blank" rel="noopener">Ouvrir '+escH(sym.replace('ECONOMICS:',''))+' sur tradingview.com ↗</a>':'');
+  const leg=document.getElementById('cmp-tvp-leg');
+  leg.innerHTML=all?S.map(x=>{ const l=x.pts.filter(p=>!p.tail).pop()||x.pts[x.pts.length-1]; return '<button type="button" aria-pressed="'+(cmpSel===x.code)+'" onclick="setCmpTv(\''+x.code+'\')" title="Afficher '+x.code+' seul"><i style="background:'+CMP_COL[x.code]+'"></i>'+x.code+' <b>'+cmpVal(cmpInd,l.v)+'</b></button>'; }).join(''):'';
+  if(!S.length){
+    box.innerHTML='<div class="empty-mini">'+escH(econLoading?'Chargement de l\'historique ('+econDone+'/'+econNeed+' trimestres)…'
+      :meta.only&&!meta.only.includes(cmpSel)&&!all?'Indicateur propre aux États-Unis : choisis 🇺🇸 USD au-dessus du graphique.'
+      :'Pas encore d\'historique « '+meta.label+' » pour '+(all?'ces économies':cc.flag+' '+cmpSel)+'.')+'</div>';
+    return;
+  }
+  drawCmpChart(box,S,all);
+}
+function drawCmpChart(box,S,all){
+  if(typeof d3==='undefined') return;
+  const ind=cmpInd, meta=CMP_IND[ind], W=Math.max(260,box.clientWidth||600), H=Math.max(220,box.clientHeight||360), small=W<480;
+  const m={l:44,r:small?12:62,t:14,b:24};
+  const allPts=S.flatMap(x=>x.pts), dMin=d3.min(allPts,p=>p.d), dMax=Math.max(Date.now(),d3.max(allPts,p=>p.d));
+  let lo=d3.min(allPts,p=>p.v), hi=d3.max(allPts,p=>p.v);
+  const ref=/^(pmi|pmis|pmic|ism|isms)$/.test(ind)?50:(lo<0&&hi>0?0:null);
+  if(ref!=null){ lo=Math.min(lo,ref); hi=Math.max(hi,ref); }
+  const pad=(hi-lo)*0.08||Math.abs(hi)*0.1||1; lo-=pad; hi+=pad;
+  const x=d3.scaleTime().domain([dMin,dMax]).range([m.l,W-m.r]), y=d3.scaleLinear().domain([lo,hi]).range([H-m.b,m.t]).nice(5);
+  const unit=meta.unit?' '+meta.unit:'', dec=meta.dec||1, fv=v=>(+v).toFixed(dec).replace('.',',')+unit;
+  const yrs=(dMax-dMin)/(365.25*864e5), xt=yrs>3.5?x.ticks(d3.timeYear.every(yrs>8?2:1)):x.ticks(d3.timeMonth.every(6));
+  const xf=d=>d.getMonth()===0?String(d.getFullYear()):d.toLocaleDateString('fr-FR',{month:'short'}).replace('.','')+' '+String(d.getFullYear()).slice(2);
+  const curve=ind==='rate'?d3.curveStepAfter:d3.curveMonotoneX, line=d3.line().x(p=>x(p.d)).y(p=>y(p.v)).curve(curve);
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+escH(meta.long)+' : évolution">';
+  y.ticks(5).forEach(t=>{ s+='<line x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+y(t).toFixed(1)+'" y2="'+y(t).toFixed(1)+'" stroke="var(--line)" stroke-width="1"/><text x="'+(m.l-6)+'" y="'+(y(t)+3.5).toFixed(1)+'" text-anchor="end">'+(+t).toFixed(Math.abs(t)%1?1:0).replace('.',',')+unit+'</text>'; });
+  xt.forEach(t=>{ s+='<text x="'+x(t).toFixed(1)+'" y="'+(H-7)+'" text-anchor="middle">'+xf(t)+'</text>'; });
+  if(ref!=null) s+='<line x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+y(ref).toFixed(1)+'" y2="'+y(ref).toFixed(1)+'" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="4 3"/>'
+    +(ref===50?'<text x="'+(m.l+4)+'" y="'+(y(ref)-4).toFixed(1)+'">50 : expansion au-dessus, contraction en dessous</text>':'');
+  const order=all?S.slice().sort((a,b)=>(a.code===cmpSel)-(b.code===cmpSel)):S;   // l'économie choisie par-dessus
+  order.forEach(xs=>{
+    const on=!all||xs.code===cmpSel, col=CMP_COL[xs.code];
+    s+='<path d="'+line(xs.pts)+'" fill="none" stroke="'+col+'" stroke-width="'+(all?(on?2.6:1.5):2)+'" stroke-linejoin="round" stroke-linecap="round"'+(all&&!on?' opacity=".85"':'')+'/>';
+    if(!all&&xs.pts.length<=48) xs.pts.forEach(p=>{ if(!p.tail) s+='<circle cx="'+x(p.d).toFixed(1)+'" cy="'+y(p.v).toFixed(1)+'" r="2.6" fill="'+col+'"/>'; });
+  });
+  if(!all){   // dernier chiffre : point cerclé + étiquette directe
+    const xs=S[0], l=xs.pts.filter(p=>!p.tail).pop();
+    if(l){ s+='<circle cx="'+x(l.d).toFixed(1)+'" cy="'+y(l.v).toFixed(1)+'" r="4.5" fill="'+CMP_COL[xs.code]+'" stroke="var(--card)" stroke-width="2"/>';
+      if(!small) s+='<text class="end" x="'+(W-m.r+6)+'" y="'+(y(xs.pts[xs.pts.length-1].v)+4).toFixed(1)+'">'+fv(xs.pts[xs.pts.length-1].v)+'</text>'; }
+  }
+  s+='<line class="cg" x1="0" x2="0" y1="'+m.t+'" y2="'+(H-m.b)+'" stroke="var(--ink-soft)" stroke-width="1" visibility="hidden"/><g class="cd"></g>'
+    +'<rect class="ch" x="'+m.l+'" y="'+m.t+'" width="'+(W-m.l-m.r)+'" height="'+(H-m.t-m.b)+'" fill="transparent"/></svg><div class="chart-tip" hidden></div>';
+  box.innerHTML=s;
+  const svg=box.querySelector('svg'), tip=box.querySelector('.chart-tip'), cg=box.querySelector('.cg'), cd=box.querySelector('.cd'), hit=box.querySelector('.ch');
+  const near=(pts,t)=>{ let b=null; for(const p of pts){ if(p.tail&&ind!=='rate') continue; if(ind==='rate'){ if(p.d<=t) b=p; } else if(!b||Math.abs(p.d-t)<Math.abs(b.d-t)) b=p; } return b; };
+  const move=ev=>{
+    const r=svg.getBoundingClientRect(), k=W/r.width, px=Math.max(m.l,Math.min(W-m.r,(ev.clientX-r.left)*k)), t=x.invert(px).getTime();
+    const rows=S.map(xs=>({code:xs.code,p:near(xs.pts,t)})).filter(a=>a.p&&(ind==='rate'||Math.abs(a.p.d-t)<75*864e5));
+    if(!rows.length){ tip.hidden=true; cg.setAttribute('visibility','hidden'); cd.innerHTML=''; return; }
+    const ref0=ind==='rate'?{d:t}:rows.reduce((a,b)=>Math.abs(b.p.d-t)<Math.abs(a.p.d-t)?b:a).p, gx=x(ind==='rate'?t:ref0.d);
+    cg.setAttribute('x1',gx); cg.setAttribute('x2',gx); cg.setAttribute('visibility','visible');
+    cd.innerHTML=rows.map(a=>'<circle cx="'+(ind==='rate'?gx:x(a.p.d)).toFixed(1)+'" cy="'+y(a.p.v).toFixed(1)+'" r="4" fill="var(--card)" stroke="'+CMP_COL[a.code]+'" stroke-width="2"/>').join('');
+    const head=ind==='rate'?new Date(t).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}):rows.find(a=>a.p.d===ref0.d).p.lbl;
+    tip.innerHTML='<b>'+escH(head)+'</b>'+rows.slice().sort((a,b)=>b.p.v-a.p.v).map(a=>'<br><i style="background:'+CMP_COL[a.code]+'"></i>'+a.code+' '+fv(a.p.v)+(ind==='rate'||a.p.lbl===head?'':' <span style="opacity:.7">('+escH(a.p.lbl)+')</span>')).join('');
+    tip.hidden=false; tip.style.left=Math.max(80,Math.min(r.width-80,gx/k))+'px'; tip.style.top=(Math.min(...rows.map(a=>y(a.p.v)))/k)+'px';
+  };
+  hit.addEventListener('pointermove',move); hit.addEventListener('pointerdown',move);
+  hit.addEventListener('pointerleave',()=>{ tip.hidden=true; cg.setAttribute('visibility','hidden'); cd.innerHTML=''; });
 }
 function drawCompareMap(){
   const el=document.getElementById('cmp-map'); if(!el||!CMP||typeof d3==='undefined') return;

@@ -11,6 +11,7 @@
                      PMI : calendrier TradingView et titres de presse)
      /api/rates      rendements 2 et 10 ans, stocks de pétrole
      /api/history    clôtures quotidiennes BTC, S&P 500, Nasdaq 100, or (saisonnalité)
+     /api/econ       chiffres publiés d'un trimestre (graphiques de la page Macro)
      /api/gdelt      tension géopolitique (volume d'articles)
    Aucune clé dans ce fichier. Pour l'API officielle Myfxbook (facultative),
    les identifiants se règlent dans Cloudflare en tant que secrets du Worker
@@ -381,21 +382,67 @@ function macroPeriod(e, key) {   // période de référence d'une publication �
   if (m) { const y = m > rel.getUTCMonth() + 1 ? rel.getUTCFullYear() - 1 : rel.getUTCFullYear(); return y + '-' + String(m).padStart(2, '0'); }
   return '';
 }
-/* Le calendrier TradingView tronque les longues périodes : on le lit par tranches de 15 jours. */
-async function tvEvents(days, span) {
-  const end = Date.now(), parts = [];
-  for (let t = end - days * 864e5; t < end; t += span * 864e5) parts.push([t, Math.min(end, t + span * 864e5)]);
-  const res = await Promise.all(parts.map(async ([a, b]) => {
-    const url = 'https://economic-calendar.tradingview.com/events?from=' + new Date(a).toISOString() + '&to=' + new Date(b).toISOString() + '&countries=' + Object.keys(MACRO_COUNTRIES).join(',');
-    try {
-      const r = await fetch(url, { headers: { 'User-Agent': UA, 'Origin': 'https://www.tradingview.com', 'Referer': 'https://www.tradingview.com/', 'Accept': 'application/json' }, signal: AbortSignal.timeout(12000), cf: { cacheTtl: 3600, cacheEverything: true } });
-      if (!r.ok) return { err: 'HTTP ' + r.status };
-      const j = await r.json(); return { list: Array.isArray(j && j.result) ? j.result : [] };
-    } catch (e) { return { err: errText(e) }; }
-  }));
+/* Le calendrier TradingView tronque les longues périodes : on le lit par tranches. Une tranche qui
+   s'arrête plusieurs jours avant sa fin a sans doute été tronquée : elle est recoupée en deux. */
+async function tvSlice(a, b, depth, trail) {
+  const url = 'https://economic-calendar.tradingview.com/events?from=' + new Date(a).toISOString() + '&to=' + new Date(b).toISOString() + '&countries=' + Object.keys(MACRO_COUNTRIES).join(',');
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': UA, 'Origin': 'https://www.tradingview.com', 'Referer': 'https://www.tradingview.com/', 'Accept': 'application/json' }, signal: AbortSignal.timeout(12000), cf: { cacheTtl: b < Date.now() - 864e5 ? 86400 : 3600, cacheEverything: true } });
+    if (!r.ok) { trail.push('HTTP ' + r.status); return []; }
+    const j = await r.json(), list = Array.isArray(j && j.result) ? j.result : [];
+    const last = list.reduce((m, e) => Math.max(m, Date.parse(e.date) || 0), 0);
+    if (depth < 2 && list.length > 300 && last && last < Math.min(b, Date.now()) - 4 * 864e5) {
+      const mid = Math.floor((a + b) / 2);
+      const [x, y] = await Promise.all([tvSlice(a, mid, depth + 1, trail), tvSlice(mid, b, depth + 1, trail)]);
+      return x.concat(y);
+    }
+    trail.push(list.length); return list;
+  } catch (e) { trail.push(errText(e)); return []; }
+}
+async function tvRange(from, to, span) {
+  const parts = [];
+  for (let t = from; t < to; t += span * 864e5) parts.push([t, Math.min(to, t + span * 864e5)]);
+  const trails = parts.map(() => []);
+  const res = await Promise.all(parts.map(([a, b], i) => tvSlice(a, b, 0, trails[i])));
   const seen = new Set(), list = [];
-  res.forEach(x => (x.list || []).forEach(e => { const k = e.id || (e.country + '|' + e.title + '|' + e.date); if (!seen.has(k)) { seen.add(k); list.push(e); } }));
-  return { list, parts: res.map(x => (x.list ? x.list.length : x.err)) };
+  res.forEach(l => l.forEach(e => { const k = e.id || (e.country + '|' + e.title + '|' + e.date); if (!seen.has(k)) { seen.add(k); list.push(e); } }));
+  return { list, parts: trails.map(t => t.join('+')) };
+}
+const tvEvents = (days, span) => tvRange(Date.now() - days * 864e5, Date.now(), span);
+/* Valeurs publiées d'une liste d'événements : indicateur → devise → période → meilleure publication
+   (définitive plutôt que provisoire, puis la plus récente). */
+function econCandidates(list, cand) {
+  let used = 0;
+  list.forEach(e => {
+    const ccy = MACRO_COUNTRIES[e.country], v = typeof e.actual === 'number' ? e.actual : parseFloat(e.actual);
+    if (!ccy || !isFinite(v) || !e.title || !isFinite(Date.parse(e.date))) return;
+    const key = macroKey(e); if (!key) return;
+    const p = macroPeriod(e, key); if (!p) return;
+    const prev = typeof e.previous === 'number' ? e.previous : parseFloat(e.previous);
+    const x = { v, title: String(e.title), rel: new Date(e.date).toISOString(), rank: 2, prelim: /\b(Flash|Prel|Adv|Preliminary)\b/i.test(e.title) ? 1 : 0,
+      src: 'calendrier TradingView', ticker: e.ticker || '', prev: isFinite(prev) ? prev : null };
+    const slot = ((cand[key] = cand[key] || {})[ccy] = cand[key][ccy] || {}), pk = key === 'rate' || key === 'rateMro' ? x.rel.slice(0, 10) : p, cur = slot[pk];
+    x.p = p;
+    if (cur && (cur.rank > x.rank || (cur.rank === x.rank && (cur.prelim < x.prelim || (cur.prelim === x.prelim && cur.rel >= x.rel))))) return;
+    slot[pk] = x; used++;
+  });
+  return used;
+}
+/* Historique d'un trimestre (« 2024Q1 ») pour les graphiques de la page Macro. */
+async function econQuarter(q) {
+  const m = /^(\d{4})Q([1-4])$/.exec(String(q || ''));
+  if (!m || +m[1] < 2010) return json({ error: 'Trimestre attendu au format 2024Q1 (depuis 2010)' }, 400, 'no-store');
+  const from = Date.UTC(+m[1], (+m[2] - 1) * 3, 1), to = Math.min(Date.UTC(+m[1], +m[2] * 3, 1), Date.now());
+  if (from > Date.now()) return json({ error: 'Trimestre à venir' }, 400, 'no-store');
+  const r = await tvRange(from, to, 23), cand = {};
+  if (!r.list.length) return json({ error: 'Calendrier TradingView : ' + r.parts.join(' · ') }, 502, 'no-store');
+  econCandidates(r.list, cand);
+  const data = {};
+  Object.entries(cand).forEach(([key, byCcy]) => Object.entries(byCcy).forEach(([ccy, byP]) => {
+    (data[key] = data[key] || {})[ccy] = Object.values(byP).sort((a, b) => (a.rel < b.rel ? -1 : 1)).map(x => [x.p, x.v, x.rel.slice(0, 10)]);
+  }));
+  const closed = Date.UTC(+m[1], +m[2] * 3, 1) < Date.now() - 20 * 864e5;   // trimestre fini depuis 20 jours : figé
+  return json({ q: m[0], events: r.list.length, parts: r.parts, data, at: Date.now() }, 200, closed ? 'public, max-age=2592000' : 'public, max-age=10800');
 }
 /* PMI S&P Global / HCOB : chiffres absents du calendrier TradingView, repris des titres de presse. */
 const PMI_NEWS = [['Manufacturing PMI', 'Eurozone OR UK OR Japan'], ['Manufacturing PMI', 'Australia OR Canada OR "S&P Global"'], ['Services PMI', 'Eurozone OR UK OR Japan'],
@@ -416,28 +463,18 @@ async function macro(wantDebug) {
   const pmiTrail = [], [tv, news] = await Promise.all([tvEvents(120, 15), pmiNews(pmiTrail)]);
   if (!tv.list.length && !news.length) return json({ error: 'Calendrier TradingView : ' + tv.parts.join(' · '), pmi: pmiTrail }, 502, 'no-store');
   // candidats par indicateur / devise / période ; à période égale : calendrier > presse, définitif > provisoire, puis le plus récent
-  const cand = {}; let used = 0;
+  const cand = {}; let used = econCandidates(tv.list, cand);
   const put = (key, ccy, p, x) => {
     const slot = ((cand[key] = cand[key] || {})[ccy] = cand[key][ccy] || {}), cur = slot[p];
     if (cur && (cur.rank > x.rank || (cur.rank === x.rank && (cur.prelim < x.prelim || (cur.prelim === x.prelim && cur.rel >= x.rel))))) return;
     slot[p] = x;
   };
-  tv.list.forEach(e => {
-    const ccy = MACRO_COUNTRIES[e.country], v = typeof e.actual === 'number' ? e.actual : parseFloat(e.actual);
-    if (!ccy || !isFinite(v) || !e.title || !isFinite(Date.parse(e.date))) return;
-    const key = macroKey(e); if (!key) return;
-    const p = macroPeriod(e, key); if (!p) return;
-    const prev = typeof e.previous === 'number' ? e.previous : parseFloat(e.previous);
-    put(key, ccy, p, { v, title: String(e.title), rel: new Date(e.date).toISOString(), rank: 2, prelim: /\b(Flash|Prel|Adv|Preliminary)\b/i.test(e.title) ? 1 : 0,
-      src: 'calendrier TradingView', ticker: e.ticker || '', prev: isFinite(prev) ? prev : null });
-    used++;
-  });
-  news.forEach(x => { put(x.key, x.ccy, x.p, { v: x.v, title: x.title, rel: x.rel, rank: 1, prelim: x.prelim ? 1 : 0, src: 'presse (' + x.source + ')' }); used++; });
+  news.forEach(x => { put(x.key, x.ccy, x.p, { p: x.p, v: x.v, title: x.title, rel: x.rel, rank: 1, prelim: x.prelim ? 1 : 0, src: 'presse (' + x.source + ')' }); used++; });
   const indicators = {};
   Object.entries(cand).forEach(([key, byCcy]) => Object.entries(byCcy).forEach(([ccy, byP]) => {
     const ps = Object.keys(byP).sort(), last = byP[ps[ps.length - 1]];
-    (indicators[key] = indicators[key] || {})[ccy] = { p: ps[ps.length - 1], v: last.v, title: last.title, rel: last.rel, src: last.src, prelim: !!last.prelim,
-      prev: last.prev == null ? undefined : last.prev, prev0: byP[ps[0]].prev == null ? undefined : byP[ps[0]].prev, ticker: last.ticker || undefined, hist: ps.map(p => [p, byP[p].v]) };
+    (indicators[key] = indicators[key] || {})[ccy] = { p: last.p || ps[ps.length - 1], v: last.v, title: last.title, rel: last.rel, src: last.src, prelim: !!last.prelim,
+      prev: last.prev == null ? undefined : last.prev, prev0: byP[ps[0]].prev == null ? undefined : byP[ps[0]].prev, ticker: last.ticker || undefined, hist: ps.map(p => [byP[p].p || p, byP[p].v]) };
   }));
   const body = { indicators, events: tv.list.length, sources: { tradingview: tv.parts, pmi: pmiTrail }, at: Date.now() };
   if (wantDebug) {
@@ -528,6 +565,7 @@ export default {
       if (url.pathname === '/api/rates') return cached(request, ctx, rates);
       if (url.pathname === '/api/gdelt') return cached(request, ctx, gdelt);
       if (url.pathname === '/api/history') return url.searchParams.has('debug') ? history(url.searchParams.get('asset'), true) : cached(request, ctx, () => history(url.searchParams.get('asset'), false));
+      if (url.pathname === '/api/econ') return cached(request, ctx, () => econQuarter(url.searchParams.get('q')));
       if (url.pathname === '/api/macro') return url.searchParams.has('debug') ? macro(true) : cached(request, ctx, () => macro(false));
       return json({ error: 'Route inconnue' }, 404, 'no-store');
     }

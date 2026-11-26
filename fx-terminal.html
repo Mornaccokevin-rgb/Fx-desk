@@ -802,7 +802,7 @@ button.dmx-sym:hover{text-decoration:underline}
 .cmp-kpi-m{grid-column:1 / -1;font-family:var(--font-num);font-size:9.5px;color:var(--ink-soft);line-height:1.6}
 .cmp-kpi .spark{grid-row:1 / span 2;grid-column:2;height:36px}
 .stale{color:var(--warn);font-weight:700}
-.cmp-rank{display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:14px}
+.cmp-rank{display:flex;flex-direction:column;border-top:1px solid var(--line);container-type:inline-size;min-width:0}
 .cmp-r{display:grid;grid-template-columns:20px 150px minmax(110px,1fr) 62px 80px 88px 88px 14px;gap:12px;align-items:center;padding:8px 4px;border:0;border-bottom:1px solid var(--line);background:none;color:inherit;text-align:left;width:100%;font:inherit;text-decoration:none}
 button.cmp-r{cursor:pointer}
 button.cmp-r:hover,button.cmp-r[aria-pressed="true"]{background:var(--hover)}
@@ -811,17 +811,21 @@ button.cmp-r:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 button.cmp-r:hover .go{color:var(--ink)}
 .cmp-r.cmp-all{display:flex;align-items:baseline;justify-content:center;gap:10px;padding:12px 4px;font-family:var(--font-num);font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
 .cmp-r.cmp-all .sub{font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink-soft);font-size:11px}
-.cmp-tv-box{max-width:1100px}
-.cmp-tv-box h3{margin:0 0 4px;font-size:15px}
-.cmp-tv-sub{font-size:11.5px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5}
-.cmp-tv-chart{height:min(560px,62vh);border:1px solid var(--line);border-radius:3px;overflow:hidden}
-.cmp-tv-chart .tradingview-widget-copyright{font-size:10.5px;padding:6px 8px}.cmp-tv-chart .tradingview-widget-copyright a{color:var(--ink-soft)}
-.cmp-tv-links{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
-.cmp-tv-l{font-family:var(--font-num);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-right:2px}
-.cmp-tv-seg{margin-bottom:10px}
-.cmp-tv-links a{font-family:var(--font-num);font-size:11px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:3px;padding:5px 8px}
-.cmp-tv-links a:hover{border-color:var(--ink)}
-.cmp-tv-links a span{color:var(--ink-soft)}
+.cmp-duo{container-type:inline-size;margin-top:14px}
+.cmp-duo-in{display:flex;flex-direction:column;gap:14px}
+@container (min-width:760px){.cmp-duo-in{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(330px,1fr);gap:16px;align-items:start}}
+.cmp-tvp{border:1px solid var(--line);border-radius:3px;padding:11px 12px 12px;min-width:0;display:flex;flex-direction:column;gap:9px}
+.cmp-tvp-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}
+.cmp-tvp-t{font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp-tvp-a{font-family:var(--font-num);font-size:10.5px;color:var(--ink-soft);text-decoration:none;white-space:nowrap}
+.cmp-tvp-a:hover{color:var(--ink)}
+.cmp-tvp-seg button{padding:4px 8px;font-size:11px}
+.cmp-tvp-box{height:440px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--card);position:relative}
+@container (max-width:759px){.cmp-tvp-box{height:360px}}
+.cmp-tvp-box .tradingview-widget-copyright{font-size:10.5px;padding:6px 8px}.cmp-tvp-box .tradingview-widget-copyright a{color:var(--ink-soft)}
+.cmp-tvp-box .empty-mini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;line-height:1.6}
+.cmp-tvp-note{font-size:11px;color:var(--ink-soft);line-height:1.5}
+.cmp-tvp-note:empty{display:none}
 .cmp-r.h{font-family:var(--font-num);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:7px 4px}
 .cmp-r .rk{font-family:var(--font-num);font-size:10.5px;color:var(--ink-soft)}
 .cmp-r .nm{display:flex;flex-direction:column;min-width:0}
@@ -832,7 +836,8 @@ button.cmp-r:hover .go{color:var(--ink)}
 .cmp-r .v{font-family:var(--font-num);font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .cmp-r .p,.cmp-r .o{font-family:var(--font-num);font-size:10.5px;color:var(--ink-soft);text-align:right;white-space:nowrap}
 .cmp-r .o b{color:var(--ink);font-weight:600}
-@media (max-width:860px){.cmp-r{grid-template-columns:18px 64px minmax(60px,1fr) 58px 74px 12px}.cmp-r.cmp-all{flex-direction:column;align-items:center;gap:2px}.cmp-r .o{display:none}.cmp-r .nm span{display:none}}
+@container (max-width:640px){.cmp-r{grid-template-columns:20px 118px minmax(44px,1fr) 64px 74px 14px;gap:10px}.cmp-r .o{display:none}.cmp-r.cmp-all{flex-direction:column;align-items:center;gap:2px}}
+@container (max-width:420px){.cmp-r{grid-template-columns:18px 52px minmax(36px,1fr) 60px 68px 12px;gap:8px}.cmp-r .nm span{display:none}}
 
 /* ---------- divers ---------- */
 .toast{position:fixed;bottom:22px;right:22px;max-width:calc(100vw - 44px);background:var(--ink);color:var(--paper);border-radius:3px;padding:10px 16px;font-size:12.5px;z-index:999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
@@ -994,7 +999,7 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
       <section class="view" data-view="compare" id="view-compare" hidden>
         <section class="card" data-tile="compare">
           <div class="card-head">
-            <span class="card-title">Comparer les économies</span>
+            <span class="card-title">Données macro des 8 économies</span>
             <span class="card-sub"><span class="badge-est" id="cmp-asof">—</span></span>
           </div>
           <div class="tools">
@@ -1009,7 +1014,15 @@ footer.doc{font-family:var(--font-num);font-size:10px;color:var(--ink-soft);line
             </div>
             <div class="cmp-side" id="cmp-side"></div>
           </div>
-          <div class="cmp-rank" id="cmp-rank"></div>
+          <div class="cmp-duo"><div class="cmp-duo-in">
+            <div class="cmp-tvp" id="cmp-tvp">
+              <div class="cmp-tvp-h"><span class="cmp-tvp-t" id="cmp-tvp-t">Graphique TradingView</span><a class="cmp-tvp-a" id="cmp-tvp-a" href="https://www.tradingview.com/" target="_blank" rel="noopener" hidden>tradingview.com ↗</a></div>
+              <div class="seg cmp-tvp-seg" id="cmp-tvp-seg" role="group" aria-label="Économie affichée sur le graphique"></div>
+              <div class="cmp-tvp-box" id="cmp-tvp-box"></div>
+              <div class="cmp-tvp-note" id="cmp-tvp-note"></div>
+            </div>
+            <div class="cmp-rank" id="cmp-rank"></div>
+          </div></div>
           <div class="foot" id="cmp-foot" style="margin-top:12px"></div>
         </section>
       </section>
@@ -3158,11 +3171,11 @@ function renderFG(){
    première ouverture.
 ══════════════════════════════════════════════════════════════ */
 const VIEWS=[
-  ['macro','Macro','Globe · 4 piliers'],
+  ['macro','Dashboard','Globe · 4 piliers'],
   ['graphiques','Graphiques','TradingView'],
   ['calendrier','Calendrier','Publications · consensus'],
   ['saisonnalite','Saisonnalité','Devises, indices, or, BTC'],
-  ['compare','Comparer','Planisphère'],
+  ['compare','Macro','8 économies · TradingView'],
   ['taux','Taux','Banques centrales'],
   ['cot','COT','Institutionnels'],
   ['dmx','DMX','Particuliers · contrarian'],
@@ -3172,6 +3185,9 @@ const VIEWS=[
   ['ia','Brief IA','Synthèse du jour'],
 ];
 const VIEW_KEY='fxmt_view';
+// Nom affiché dans l'adresse : « Macro » (le globe) s'appelle désormais Dashboard, et « Comparer » s'appelle Macro.
+const VIEW_HASH={macro:'dashboard',compare:'macro'};
+const hashView=h=>h==='dashboard'?'macro':h==='macro'?'compare':h;   // l'ancienne ancre #compare reste valable
 let activeView='macro'; const viewSeen={};
 const VIEW_HOOKS={
   macro:()=>{ if(typeof size==='function') size(); },
@@ -3200,7 +3216,7 @@ function setView(name,opts){
     else b.removeAttribute('aria-current');
   });
   try{ localStorage.setItem(VIEW_KEY,name); }catch(e){}
-  if(!(opts&&opts.fromHash)){ try{ history.replaceState(null,'','#'+name); }catch(e){} }
+  if(!(opts&&opts.fromHash)){ try{ history.replaceState(null,'','#'+(VIEW_HASH[name]||name)); }catch(e){} }
   if(prev==='live'&&name!=='live') tvStop();
   if(layoutEdit) layoutBarText();
   const first=!viewSeen[name]; viewSeen[name]=true;
@@ -3212,10 +3228,10 @@ function setView(name,opts){
 }
 function initViews(){
   buildCtl();
-  const fromHash=(location.hash||'').replace('#','');
+  const fromHash=hashView((location.hash||'').replace('#',''));
   let stored=''; try{ stored=localStorage.getItem(VIEW_KEY)||''; }catch(e){}
   setView(VIEWS.some(v=>v[0]===fromHash)?fromHash:(stored||'macro'),{initial:true});
-  window.addEventListener('hashchange',()=>{ const h=(location.hash||'').replace('#',''); if(h&&h!==activeView&&VIEWS.some(v=>v[0]===h)) setView(h,{fromHash:true}); });
+  window.addEventListener('hashchange',()=>{ const h=hashView((location.hash||'').replace('#','')); if(h&&h!==activeView&&VIEWS.some(v=>v[0]===h)) setView(h,{fromHash:true}); });
   let rz=null;
   window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(activeView==='compare') drawCompareMap(); if(activeView==='cot') renderCotDetail(); if(activeView==='saisonnalite') renderSeaChart(); },160); });
 }
@@ -4052,7 +4068,7 @@ function cmpSyncRates(){
 /* Étiquettes de la carte : position (lon, lat) et, si l'étiquette est déportée, le point visé. */
 const CMP_LBL={USD:{at:[-99,39]},CAD:{at:[-108,60]},EUR:{at:[-34,40],to:[0,46.5]},GBP:{at:[-34,62],to:[-2.5,54]},
   CHF:{at:[10,25],to:[8.2,46.6]},JPY:{at:[163,27],to:[139,36]},AUD:{at:[134,-25]},NZD:{at:[156,-56],to:[171.5,-43]}};
-let CMP=null, cmpErr='', cmpInd='cpi', cmpSel='USD';
+let CMP=null, cmpErr='', cmpInd='cpi', cmpSel='USD', cmpTvAll=false, cmpTvKey='';
 async function loadCompare(){
   try{ const r=await fetch('compare-data.json',{cache:'no-cache'}); if(!r.ok) throw new Error('HTTP '+r.status); CMP=await r.json(); cmpErr=''; }
   catch(e){ CMP=null; cmpErr=e.message||'indisponible'; }
@@ -4102,7 +4118,9 @@ function cmpRanked(ind){
   return all.filter(a=>a.x).sort((a,b)=>b.x.v-a.x.v).concat(all.filter(a=>!a.x));
 }
 function setCmpInd(k){ if(CMP_IND[k]){ cmpInd=k; renderCompare(); } }
-function setCmpSel(c){ if(CMP_CCY.includes(c)){ cmpSel=c; renderCompare(); } }
+function setCmpSel(c){ if(CMP_CCY.includes(c)){ cmpSel=c; cmpTvAll=false; renderCompare(); } }
+// Graphique : une économie (celle de la fiche) ou les 8 superposées
+function setCmpTv(sel){ if(sel==='all'){ cmpTvAll=true; renderCompare(); } else setCmpSel(sel); }
 function renderCompare(){
   const indEl=document.getElementById('cmp-ind'); if(!indEl) return;
   indEl.innerHTML='<span class="seg-l">Indicateur</span>'+Object.keys(CMP_IND).map(k=>'<button type="button" aria-pressed="'+(cmpInd===k)+'" onclick="setCmpInd(\''+k+'\')">'+CMP_IND[k].label+'</button>').join('');
@@ -4110,13 +4128,13 @@ function renderCompare(){
   const asof=document.getElementById('cmp-asof'), side=document.getElementById('cmp-side'), rank=document.getElementById('cmp-rank'), foot=document.getElementById('cmp-foot'), leg=document.getElementById('cmp-legend');
   if(!CMP){
     document.getElementById('cmp-map').innerHTML='<div class="empty-mini">Données de comparaison indisponibles ('+escH(cmpErr||'chargement')+').</div>';
-    side.innerHTML=''; rank.innerHTML=''; foot.textContent=''; leg.innerHTML=''; return;
+    side.innerHTML=''; rank.innerHTML=''; foot.textContent=''; leg.innerHTML=''; const tb=document.getElementById('cmp-tvp-box'); if(tb){ tb.innerHTML=''; cmpTvKey=''; } return;
   }
   if(asof) asof.textContent='Relevé du '+(ISO_DAY.test(CMP.asOf||'')?fmtMeetDate(CMP.asOf):'—');
   cmpSyncRates();
   const sc=cmpScale(cmpInd), meta=CMP_IND[cmpInd];
   const desc=document.getElementById('cmp-desc');
-  if(desc) desc.innerHTML='<b>'+escH(meta.long)+'.</b> '+(meta.only?'Indicateur propre aux États-Unis : seul ce pays est en couleur. ':'Les huit économies que tu trades sont en couleur ; ')+'clique un pays ou une étiquette pour ouvrir sa fiche. Clique une ligne du classement pour voir l\'évolution de la donnée sur un graphique TradingView, ici dans le Compass.';
+  if(desc) desc.innerHTML='<b>'+escH(meta.long)+'.</b> '+(meta.only?'Indicateur propre aux États-Unis : seul ce pays est en couleur. ':'Les huit économies que tu trades sont en couleur ; ')+'clique un pays, une étiquette ou une ligne du classement : la fiche et le graphique TradingView à côté du classement passent sur cette économie.';
   drawCompareMap();
   if(!sc.n) leg.innerHTML='<span>Aucun chiffre disponible pour cet indicateur pour le moment.</span><span><i class="sw" style="background:var(--land)"></i> hors des 8 devises</span>';
   else leg.innerHTML='<span>'+cmpVal(cmpInd,sc.mn)+'</span><span class="ramp" role="img" aria-label="Du plus foncé (valeur basse) au plus clair (valeur haute)"></span><span>'+cmpVal(cmpInd,sc.mx)+'</span>'
@@ -4150,58 +4168,48 @@ function renderCompare(){
         +'<span class="v">'+(x?cmpVal(cmpInd,x.v):cmpOnly(cmpInd,a.code)?'n.d.':'—')+'</span><span class="p">'+(x?cmpPeriod(x.p)+(cmpStale(x)?' <span class="stale">!</span>':''):cmpOnly(cmpInd,a.code)?'':'É.-U. seul')+'</span>'
         +others.map(k=>{ const y=cmpLast(k,a.code); return '<span class="o">'+(y?'<b>'+cmpVal(k,y.v)+'</b>':'n.d.')+'</span>'; }).join('')
         +'<span class="go" aria-hidden="true">'+(sym?CMP_CHART_ICON:'')+'</span>';
-      return sym
-        ? '<button type="button" class="cmp-r" aria-pressed="'+(cmpSel===a.code)+'" aria-haspopup="dialog" onclick="openCmpChart(\''+a.code+'\')" title="Graphique TradingView : '+escH(sym.replace('ECONOMICS:',''))+'">'+cells+'</button>'
-        : '<button type="button" class="cmp-r" aria-pressed="'+(cmpSel===a.code)+'" onclick="setCmpSel(\''+a.code+'\')" title="'+(meta.pmi?'S&amp;P Global ne laisse plus TradingView publier ses PMI : pas de série à ouvrir':'Pas de série TradingView pour cet indicateur')+'">'+cells+'</button>';
+      return '<button type="button" class="cmp-r" aria-pressed="'+(!cmpTvAll&&cmpSel===a.code)+'" onclick="setCmpTv(\''+a.code+'\')" title="'+(sym?'Afficher '+escH(sym.replace('ECONOMICS:',''))+' sur le graphique':meta.pmi?'S&amp;P Global ne laisse plus TradingView publier ses PMI : pas de graphique':'Pas de série TradingView pour cette donnée')+'">'+cells+'</button>';
     }).join('')
-    +(syms.length>1?'<button type="button" class="cmp-r cmp-all" aria-haspopup="dialog" onclick="openCmpChart(\'all\')"><span>⇄ Comparer</span><span class="sub">les '+syms.length+' économies sur un même graphique TradingView</span></button>':'');
+    +(syms.length>1?'<button type="button" class="cmp-r cmp-all" aria-pressed="'+cmpTvAll+'" onclick="setCmpTv(\'all\')"><span>⇄ Comparer</span><span class="sub">les '+syms.length+' économies sur le graphique</span></button>':'');
   foot.innerHTML='Source : '+escH(CMP.source||'')+'. '+escH(CMP.note||'')+(meta.caveat?' '+escH(meta.caveat):'')
     +(cmpInd==='rate'?' Taux directeurs : ceux de l\'onglet Taux, recalés automatiquement après chaque décision publiée au calendrier ; pour la Fed, borne haute de la fourchette (comme TradingView).':'')
     +(meta.pmi?' PMI S&amp;P Global / HCOB : TradingView ne les publie plus (licence S&amp;P Global). Les chiffres sont repris des titres de presse (FXStreet et autres, via Google News) et le titre d\'origine est rappelé dans la fiche : vérifie-le avant de t\'en servir. Suisse (procure.ch) et Nouvelle-Zélande (BusinessNZ) : calendrier TradingView.':'')+' Un « ancien » signale une période dépassée de plus de trois mois (six pour un chiffre trimestriel).'
     +(cmpAuto?' Mise à jour automatique : '+cmpAuto+' chiffre'+(cmpAuto>1?'s':'')+' plus récent'+(cmpAuto>1?'s':'')+' repris du calendrier économique.':cmpAutoErr?' Mise à jour automatique indisponible ('+escH(cmpAutoErr)+') : seul le relevé est affiché.':'');
+  renderCmpTv();
 }
-/* Graphique TradingView intégré : l'évolution de la donnée pour une économie, ou les 8 superposées
-   (widget officiel, symboles comparés sur la même échelle). On passe d'une économie à l'autre sans fermer. */
+/* Graphique TradingView toujours ouvert à côté du classement (widget officiel, comme la vue Graphiques) :
+   l'évolution de la donnée pour l'économie choisie, ou les 8 superposées sur la même échelle. */
 const CMP_CHART_ICON='<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13.5h12"/><path d="M3 10.5l3.2-3.6 2.6 2.2L13 4"/></svg>';
 const cmpChartSyms=()=>CMP_CCY.map(code=>[code,cmpOnly(cmpInd,code)?cmpTvSym(cmpInd,code):'']).filter(a=>a[1]);
-function openCmpChart(sel){
-  const syms=cmpChartSyms(); if(!syms.length) return;
-  if(sel!=='all'){ if(!syms.some(a=>a[0]===sel)) return; if(cmpSel!==sel) setCmpSel(sel); }
-  let ov=document.getElementById('cmp-tv-modal');
-  if(!ov){
-    ov=document.createElement('div'); ov.className='rx-modal'; ov.id='cmp-tv-modal';
-    ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true'); ov.setAttribute('aria-labelledby','cmp-tv-title');
-    ov.innerHTML='<div class="rx-box rd-box cmp-tv-box"><button class="rd-close" aria-label="Fermer">✕</button><h3 id="cmp-tv-title"></h3><p class="cmp-tv-sub" id="cmp-tv-sub"></p>'
-      +'<div class="seg cmp-tv-seg" id="cmp-tv-seg" role="group" aria-label="Économie"></div><div class="cmp-tv-chart" id="cmp-tv-chart"></div><div class="cmp-tv-links" id="cmp-tv-links"></div></div>';
-    document.body.appendChild(ov);
-    ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
-    ov.querySelector('.rd-close').onclick=()=>ov.remove();
+function renderCmpTv(){
+  const box=document.getElementById('cmp-tvp-box'); if(!box) return;
+  const meta=CMP_IND[cmpInd], syms=cmpChartSyms(), all=cmpTvAll&&syms.length>1, one=syms.find(a=>a[0]===cmpSel), cc=CCY_BY[cmpSel];
+  const list=all?syms:one?[one]:[];
+  document.getElementById('cmp-tvp-t').textContent=meta.label+' · '+(all?'les '+syms.length+' économies':cc.flag+' '+cc.country);
+  document.getElementById('cmp-tvp-seg').innerHTML=syms.length?syms.map(([code])=>'<button type="button" aria-pressed="'+(!all&&cmpSel===code)+'" onclick="setCmpTv(\''+code+'\')">'+CCY_BY[code].flag+' '+code+'</button>').join('')
+    +(syms.length>1?'<button type="button" aria-pressed="'+all+'" onclick="setCmpTv(\'all\')">⇄ Les '+syms.length+'</button>':''):'';
+  const a=document.getElementById('cmp-tvp-a');
+  if(list.length===1){ a.hidden=false; a.href=tvChartUrl(list[0][1]); a.textContent=list[0][1].replace('ECONOMICS:','')+' sur tradingview.com ↗'; } else a.hidden=true;
+  const note=document.getElementById('cmp-tvp-note');
+  note.textContent=all?'Séries superposées sur la même échelle. Si une courbe manque, TradingView ne permet pas de l\'afficher ici : choisis l\'économie seule.':'';
+  if(!list.length){
+    cmpTvKey='';
+    const why=meta.pmi?'S&P Global ne laisse plus TradingView publier ses PMI : pas de graphique pour cet indicateur. Les chiffres de la fiche viennent du calendrier et de la presse.'
+      :!syms.length?'TradingView ne publie pas de série « '+meta.label+' » pour ces économies.'
+      :meta.only&&!meta.only.includes(cmpSel)?'Indicateur propre aux États-Unis : choisis 🇺🇸 USD au-dessus du graphique.'
+      :'Pas de série TradingView « '+meta.label+' » pour '+cc.flag+' '+cmpSel+'. Choisis une autre économie au-dessus du graphique.';
+    box.innerHTML='<div class="empty-mini">'+escH(why)+'</div>'; return;
   }
-  cmpChartShow(sel);
-  ov.querySelector('.rd-close').focus({preventScroll:true});
-}
-function cmpChartShow(sel){
-  const ov=document.getElementById('cmp-tv-modal'); if(!ov) return;
-  const syms=cmpChartSyms(), meta=CMP_IND[cmpInd], all=sel==='all', one=!all&&syms.find(a=>a[0]===sel);
-  if(!all&&!one) return;
-  if(!all&&cmpSel!==sel) setCmpSel(sel);
-  const cc=one&&CCY_BY[one[0]], x=one&&cmpLast(cmpInd,one[0]);
-  ov.querySelector('#cmp-tv-title').textContent=meta.label+' · '+(all?syms.length+' économies':cc.flag+' '+cc.country);
-  ov.querySelector('#cmp-tv-sub').textContent=all
-    ?'Les séries TradingView des '+syms.length+' économies superposées sur la même échelle. Si une courbe manque, TradingView ne permet pas de l\'afficher ici : ouvre-la avec les liens ci-dessous.'
-    :'Évolution de la série TradingView '+one[1].replace('ECONOMICS:','')+(x?' · dernier chiffre au Compass : '+cmpVal(cmpInd,x.v)+' ('+cmpPeriod(x.p)+')':'')+'. Si le graphique reste vide, TradingView ne permet pas de l\'afficher ici : utilise le lien ci-dessous.';
-  ov.querySelector('#cmp-tv-seg').innerHTML=syms.map(([code])=>'<button type="button" aria-pressed="'+(sel===code)+'" onclick="cmpChartShow(\''+code+'\')">'+CCY_BY[code].flag+' '+code+'</button>').join('')
-    +(syms.length>1?'<button type="button" aria-pressed="'+all+'" onclick="cmpChartShow(\'all\')">⇄ Les '+syms.length+'</button>':'');
-  ov.querySelector('#cmp-tv-links').innerHTML='<span class="cmp-tv-l">Ouvrir sur tradingview.com</span>'+(all?syms:[one]).map(([code,sym])=>'<a href="'+tvChartUrl(sym)+'" target="_blank" rel="noopener">'+CCY_BY[code].flag+' '+code+' <span>'+escH(sym.replace('ECONOMICS:',''))+'</span> ↗</a>').join('');
-  const box=ov.querySelector('#cmp-tv-chart'); box.innerHTML='';
+  const key=list.map(x=>x[1]).join(',')+'|'+(isLight()?'clair':'sombre');
+  if(key===cmpTvKey&&box.querySelector('.tradingview-widget-container')) return;   // déjà affiché : on ne recharge pas le widget
+  cmpTvKey=key; box.innerHTML='';
   const wrap=document.createElement('div'); wrap.className='tradingview-widget-container'; wrap.style.cssText='height:100%;width:100%';
   wrap.innerHTML='<div class="tradingview-widget-container__widget" style="height:calc(100% - 30px);width:100%"></div><div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">Graphique par TradingView</a></div>';
-  const list=all?syms:[one];
   const sc=document.createElement('script'); sc.type='text/javascript'; sc.async=true; sc.src=CH_SCRIPT;
   sc.text=JSON.stringify(Object.assign({autosize:true,symbol:list[0][1],interval:'M',timezone:'Europe/Paris',theme:isLight()?'light':'dark',style:'2',locale:'fr',
     allow_symbol_change:true,calendar:false,hide_side_toolbar:true,hide_volume:true,withdateranges:true,save_image:false,support_host:'https://www.tradingview.com'},
     list.length>1?{compareSymbols:list.slice(1).map(([,sym])=>({symbol:sym,position:'SameScale'}))}:{}));
-  sc.onerror=()=>{ box.innerHTML='<div class="empty-mini">Le graphique TradingView n\'a pas pu se charger (réseau ou bloqueur de publicité). Le lien ci-dessous ouvre la série sur TradingView.</div>'; };
+  sc.onerror=()=>{ cmpTvKey=''; box.innerHTML='<div class="empty-mini">Le graphique TradingView n\'a pas pu se charger (réseau ou bloqueur de publicité).</div>'; };
   wrap.appendChild(sc); box.appendChild(wrap);
 }
 function drawCompareMap(){
